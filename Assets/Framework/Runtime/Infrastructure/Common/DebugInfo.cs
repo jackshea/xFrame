@@ -1,6 +1,4 @@
-﻿using System.Collections;
-
-namespace uFrame.Common
+﻿namespace Framework.Runtime.Infrastructure.Common
 {
 
     public class DebugInfo

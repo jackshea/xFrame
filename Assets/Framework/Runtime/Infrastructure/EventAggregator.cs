@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using JetBrains.Annotations;
-using uFrame.Attributes;
+using Framework.Runtime.Infrastructure.Attributes;
 using UniRx;
 
-namespace uFrame.Kernel
+namespace Framework.Runtime.Infrastructure
 {
     public interface IEventManager
     {

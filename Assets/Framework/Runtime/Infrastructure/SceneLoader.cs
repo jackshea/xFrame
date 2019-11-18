@@ -1,8 +1,7 @@
 using System;
 using System.Collections;
-using UnityEngine;
 
-namespace uFrame.Kernel
+namespace Framework.Runtime.Infrastructure
 {
     public abstract class SceneLoader<T> : uFrameComponent, ISceneLoader where T : IScene
     {

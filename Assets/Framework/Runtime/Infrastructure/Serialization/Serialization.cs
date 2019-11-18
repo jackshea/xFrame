@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using uFrame.Json;
+using Framework.Runtime.Infrastructure.Common;
 using UnityEngine;
 
-namespace uFrame.Kernel.Serialization
+namespace Framework.Runtime.Infrastructure.Serialization
 {
     public static class SerializationExtensions{
 

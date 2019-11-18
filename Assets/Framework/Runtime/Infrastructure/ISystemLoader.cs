@@ -1,8 +1,8 @@
-﻿using UnityEngine;
-using System.Collections;
-using uFrame.IOC;
+﻿using System.Collections;
+using Framework.Runtime.Infrastructure.IOC;
+using UnityEngine;
 
-namespace uFrame.Kernel
+namespace Framework.Runtime.Infrastructure
 {
     public interface ISystemLoader
     {

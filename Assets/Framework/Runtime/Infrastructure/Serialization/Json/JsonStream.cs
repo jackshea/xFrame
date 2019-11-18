@@ -1,15 +1,11 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using uFrame;
-using uFrame.IOC;
-using uFrame.Json;
-using uFrame.Kernel;
-
+using Framework.Runtime.Infrastructure.Common;
+using Framework.Runtime.Infrastructure.IOC;
 using UnityEngine;
 
-namespace uFrame.Kernel.Serialization.Json
+namespace Framework.Runtime.Infrastructure.Serialization.Json
 {
     public class JsonStream : ISerializerStream
     {

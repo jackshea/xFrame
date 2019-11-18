@@ -47,7 +47,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
-namespace uFrame.Json
+
+namespace Framework.Runtime.Infrastructure.Common
 {
     [AttributeUsage(AttributeTargets.Property)]
     public class JsonProperty : Attribute
@@ -59,7 +60,7 @@ namespace uFrame.Json
 
         public static T DeserializeObject<T>(string json)
         {
-            return DeserializeObject<T>(Json.JSON.Parse(json));
+            return DeserializeObject<T>(JSON.Parse(json));
         }
 
         public static T DeserializeObject<T>(JSONNode node)

@@ -3,7 +3,7 @@
 /// <summary>
 /// Custom Action Atrributes of uFrame
 /// </summary>
-namespace uFrame.Attributes
+namespace Framework.Runtime.Infrastructure.Attributes
 {
     public class ActionMetaAttribute : Attribute { }
 

@@ -3,13 +3,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Framework.Runtime.Infrastructure.Attributes;
+using Framework.Runtime.Infrastructure.IOC;
 using UnityEngine;
-using uFrame.Attributes;
-using uFrame.IOC;
-using UniRx;
 using UnityEngine.SceneManagement;
 
-namespace uFrame.Kernel
+namespace Framework.Runtime.Infrastructure
 {
     public class uFrameKernel : MonoBehaviour
     {

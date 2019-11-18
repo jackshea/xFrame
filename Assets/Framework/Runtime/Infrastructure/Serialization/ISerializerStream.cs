@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using uFrame.IOC;
+using Framework.Runtime.Infrastructure.IOC;
 using UnityEngine;
 
-namespace uFrame.Kernel.Serialization
+namespace Framework.Runtime.Infrastructure.Serialization
 {
     public interface ISerializerStream
     {

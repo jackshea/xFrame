@@ -1,7 +1,7 @@
 #if !UNITY_WEBPLAYER
 using System.IO;
 
-namespace uFrame.Kernel.Serialization.Storage
+namespace Framework.Runtime.Infrastructure.Serialization.Storage
 {
     public class FileSerializerStorage : ISerializerStorage
     {

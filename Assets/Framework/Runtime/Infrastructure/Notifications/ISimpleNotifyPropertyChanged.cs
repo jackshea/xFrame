@@ -1,4 +1,4 @@
-﻿namespace uFrame.Kernel
+﻿namespace Framework.Runtime.Infrastructure.Notifications
 {
     public interface ISimpleNotifyPropertyChanged
     {

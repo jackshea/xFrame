@@ -1,7 +1,6 @@
 using System;
 
-
-namespace uFrame.IOC
+namespace Framework.Runtime.Infrastructure.IOC
 {
     /// <summary>
     /// Used by the injection container to determine if a property or field should be injected.

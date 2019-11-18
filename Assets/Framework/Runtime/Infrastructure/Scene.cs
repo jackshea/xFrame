@@ -1,9 +1,7 @@
-﻿using System.Collections;
-using UnityEngine;
-using UniRx;
+﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace uFrame.Kernel
+namespace Framework.Runtime.Infrastructure
 {
     /// <summary>
     /// The scene class is used to define a scene as a class, 

@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace uFrame.Kernel.Serialization.Storage
+namespace Framework.Runtime.Infrastructure.Serialization.Storage
 {
     public class StringSerializerStorage : ISerializerStorage
     {

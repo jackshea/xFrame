@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UniRx;
 
-namespace uFrame.Kernel
+namespace Framework.Runtime.Infrastructure
 {
     public class SimpleSubject<T> : ISubject<T>
     {

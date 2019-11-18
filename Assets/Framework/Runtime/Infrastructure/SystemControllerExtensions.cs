@@ -1,7 +1,6 @@
 using System;
-using UniRx;
 
-namespace uFrame.Kernel
+namespace Framework.Runtime.Infrastructure
 {
     public static class SystemControllerExtensions
     {

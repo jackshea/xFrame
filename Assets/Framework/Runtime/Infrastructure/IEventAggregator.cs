@@ -1,7 +1,8 @@
-using UniRx;
-using System; // Required for WP8 and Store APPS
+using System;
 
-namespace uFrame.Kernel
+// Required for WP8 and Store APPS
+
+namespace Framework.Runtime.Infrastructure
 {
     public interface IEventAggregator
     {

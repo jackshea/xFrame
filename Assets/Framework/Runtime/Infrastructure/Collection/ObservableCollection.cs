@@ -23,13 +23,13 @@
 //	Chris Toshok (toshok@novell.com)
 //	Brian O'Keefe (zer0keefie@gmail.com)
 //
-using System.Collections.Generic;
-using System.ComponentModel;
-using System;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 
-namespace uFrame.Kernel.Collection
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using Framework.Runtime.Infrastructure.Notifications;
+
+namespace Framework.Runtime.Infrastructure.Collection
 {
 #if DLL
     [Serializable]

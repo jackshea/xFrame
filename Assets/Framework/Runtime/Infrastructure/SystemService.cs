@@ -1,9 +1,8 @@
 using System;
 using System.Collections;
-using uFrame.IOC;
-using UniRx;
+using Framework.Runtime.Infrastructure.IOC;
 
-namespace uFrame.Kernel
+namespace Framework.Runtime.Infrastructure
 {
     /// <summary>
     /// This class is a generic base class for a systemservice, your probably looking for SystemServiceMonoBehaviour.

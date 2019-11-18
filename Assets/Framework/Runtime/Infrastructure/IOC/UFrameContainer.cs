@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using UniRx;
 
-namespace uFrame.IOC
+namespace Framework.Runtime.Infrastructure.IOC
 
 {
     /// <summary>

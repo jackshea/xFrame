@@ -1,4 +1,4 @@
-namespace uFrame.Kernel.Serialization
+namespace Framework.Runtime.Infrastructure.Serialization
 {
     public interface ISerializerStorage
     {
