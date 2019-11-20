@@ -1,13 +1,16 @@
 ﻿using NLog;
+using UnityEngine;
+using Logger = NLog.Logger;
 
 namespace SceneFlow
 {
     public class StartupScene : BaseScene
     {
-        static readonly Logger _log = LoggerFactory.GetLogger(typeof(StartupScene).Name);
         public override void KernelLoaded()
         {
             base.KernelLoaded();
+            Logger _log = LogManager.GetCurrentClassLogger();
+            Debug.Log("KernelLoaded");
             _log.Trace("test nlog trace");
             _log.Debug("test nlog debug");
             _log.Info("test nlog info");
