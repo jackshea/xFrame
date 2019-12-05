@@ -1,5 +1,7 @@
 ﻿using System.IO;
 using Framework.Runtime.Infrastructure;
+using Framework.Runtime.Logger.Interface;
+using Framework.Runtime.Logger.LoggerImplement;
 using NLog;
 using NLog.Targets;
 using UnityEngine;
@@ -11,14 +13,13 @@ public class LoggerLoader : SystemLoader
         base.Load();
         Target.Register<UnityConsoleTarget>("UnityConsole");
         string configFile = GetConfigFile();
-
         LogManager.LoadConfiguration(configFile);
         if (string.IsNullOrEmpty(LogManager.Configuration.Variables["LogRoot"].Text))
         {
             LogManager.Configuration.Variables["LogRoot"] = Application.persistentDataPath;
         }
 
-        Debug.Log("LogManager.LoadConfiguration");
+        Container.Register<ILog,LogImpl>();
     }
 
     public string GetConfigFile()

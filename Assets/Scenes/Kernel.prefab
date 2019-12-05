@@ -52,6 +52,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2155822642560416357}
+  - component: {fileID: 8230555548724710176}
   m_Layer: 0
   m_Name: SceneLoaders
   m_TagString: Untagged
@@ -73,6 +74,18 @@ Transform:
   m_Father: {fileID: 1189647562811342313}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8230555548724710176
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3689884409651862458}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 144814fa0fbe46142b1f7a5a1e737505, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &4450867939541571711
 GameObject:
   m_ObjectHideFlags: 0
@@ -82,6 +95,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9092102600873308506}
+  - component: {fileID: 8357813287946515147}
   m_Layer: 0
   m_Name: Services
   m_TagString: Untagged
@@ -103,6 +117,18 @@ Transform:
   m_Father: {fileID: 1189647562811342313}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8357813287946515147
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4450867939541571711}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d3f0122adb3dbd4883439138b7291a7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &6739513272405253453
 GameObject:
   m_ObjectHideFlags: 0
