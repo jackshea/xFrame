@@ -1,7 +1,6 @@
 ﻿using System.IO;
-using Framework.Runtime.Infrastructure;
-using Framework.Runtime.Logger.Interface;
-using Framework.Runtime.Logger.LoggerImplement;
+using xFrame.Infrastructure;
+using xFrame.Logger;
 using NLog;
 using NLog.Targets;
 using UnityEngine;

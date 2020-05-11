@@ -1,6 +1,6 @@
 using System;
 
-namespace Framework.Runtime.Infrastructure.Serialization
+namespace xFrame.Infrastructure
 {
     public class DefaultTypeResolver : ITypeResolver
     {

@@ -1,7 +1,7 @@
 using System.Collections;
 using UniRx;
 
-namespace Framework.Runtime.Infrastructure
+namespace xFrame.Infrastructure
 {
     /// <summary>
     /// The base class for all services on the kernel.  Services provide an easy communication layer with the use

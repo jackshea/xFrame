@@ -6,7 +6,7 @@ using UniRx;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Framework.Runtime.Infrastructure
+namespace xFrame.Infrastructure
 {
     public class SceneManagementService : SystemServiceMonoBehavior
     {

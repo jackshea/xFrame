@@ -2,7 +2,7 @@ using System;
 
 // Required for WP8 and Store APPS
 
-namespace Framework.Runtime.Infrastructure
+namespace xFrame.Infrastructure
 {
     public interface IEventAggregator
     {

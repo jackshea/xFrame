@@ -1,6 +1,6 @@
 ﻿namespace Scene.SceneFlow
 {
-    public class BaseScene : Framework.Runtime.Infrastructure.Scene
+    public class BaseScene : xFrame.Infrastructure.Scene
     {
         public override string DefaultKernelScene
         {

@@ -1,4 +1,4 @@
-namespace Framework.Runtime.Infrastructure
+namespace xFrame.Infrastructure
 {
     public class SceneSettings<T> : ISceneSettings where T : IScene
     {

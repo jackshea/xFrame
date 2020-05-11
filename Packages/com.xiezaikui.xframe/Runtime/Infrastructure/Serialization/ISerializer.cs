@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Framework.Runtime.Infrastructure.Serialization
+namespace xFrame.Infrastructure
 {
     public interface ISerializer
     {

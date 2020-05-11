@@ -1,4 +1,4 @@
-﻿namespace Framework.Runtime.Logger.Interface
+﻿namespace xFrame.Logger
 {
     public interface ILog
     {

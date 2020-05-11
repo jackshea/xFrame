@@ -1,7 +1,8 @@
 #if !UNITY_WEBPLAYER
 using System.IO;
+using xFrame.Infrastructure;
 
-namespace Framework.Runtime.Infrastructure.Serialization.Storage
+namespace xFrame.Infrastructure
 {
     public class FileSerializerStorage : ISerializerStorage
     {

@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 
-namespace Framework.Runtime.Infrastructure
+namespace xFrame.Infrastructure
 {
     public abstract class SceneLoader<T> : uFrameComponent, ISceneLoader where T : IScene
     {

@@ -1,7 +1,7 @@
 using System;
 using UniRx;
 
-namespace Framework.Runtime.Infrastructure
+namespace xFrame.Infrastructure
 {
     public interface IDisposableContainer
     {

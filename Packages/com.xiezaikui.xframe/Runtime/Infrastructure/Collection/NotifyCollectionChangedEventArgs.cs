@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Framework.Runtime.Infrastructure.Collection
+namespace xFrame.Infrastructure
 {
  #if !(NETFX_CORE || NET_4_6)
     public class NotifyCollectionChangedEventArgs : EventArgs

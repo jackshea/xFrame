@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Framework.Runtime.Infrastructure
+namespace xFrame.Infrastructure
 {
     /// <summary>
     /// The scene class is used to define a scene as a class, 

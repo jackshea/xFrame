@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Framework.Runtime.Infrastructure.Attributes;
 using UniRx;
+using xFrame.Infrastructure;
 
-namespace Framework.Runtime.Infrastructure
+namespace xFrame.Infrastructure
 {
     public interface IEventManager
     {

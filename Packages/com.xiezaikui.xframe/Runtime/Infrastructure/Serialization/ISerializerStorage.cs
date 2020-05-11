@@ -1,4 +1,4 @@
-namespace Framework.Runtime.Infrastructure.Serialization
+namespace xFrame.Infrastructure
 {
     public interface ISerializerStorage
     {

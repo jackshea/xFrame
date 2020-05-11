@@ -1,7 +1,7 @@
-﻿using Framework.Runtime.Serialization.Interface;
-using MessagePack;
+﻿using MessagePack;
+using xFrame.Serialization;
 
-namespace Framework.Runtime.Serialization.Implement
+namespace xFrame.Serialization
 {
     public class JsonConvertImpl : IJsonConvert
     {

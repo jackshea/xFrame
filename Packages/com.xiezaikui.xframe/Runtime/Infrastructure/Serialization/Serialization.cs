@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using Framework.Runtime.Infrastructure.Common;
 using UnityEngine;
+using xFrame.Infrastructure;
 
-namespace Framework.Runtime.Infrastructure.Serialization
+namespace xFrame.Infrastructure
 {
     public static class SerializationExtensions{
 

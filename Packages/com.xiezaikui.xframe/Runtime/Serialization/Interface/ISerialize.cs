@@ -1,4 +1,4 @@
-﻿namespace Framework.Runtime.Serialization.Interface
+﻿namespace xFrame.Serialization
 {
     /// 序列化为二进制
     /// 一般序列化用于发送网络消息

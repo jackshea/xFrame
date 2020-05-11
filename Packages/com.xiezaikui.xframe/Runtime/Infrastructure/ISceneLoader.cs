@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 
-namespace Framework.Runtime.Infrastructure
+namespace xFrame.Infrastructure
 {
     /// <summary>
     /// The Scene Loader is used to manage loading and unloading a scene, it is part of the kernel and is always available,

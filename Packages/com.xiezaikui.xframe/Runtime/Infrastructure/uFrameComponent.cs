@@ -2,7 +2,7 @@ using System;
 using UniRx;
 using UnityEngine;
 
-namespace Framework.Runtime.Infrastructure
+namespace xFrame.Infrastructure
 {
     /// <summary>
     /// The uFrameComponent is a simple class that extends from MonoBehaviour, and is directly plugged into the kernel.

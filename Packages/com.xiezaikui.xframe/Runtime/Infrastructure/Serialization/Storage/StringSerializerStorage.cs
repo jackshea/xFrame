@@ -1,6 +1,7 @@
 using System.Text;
+using xFrame.Infrastructure;
 
-namespace Framework.Runtime.Infrastructure.Serialization.Storage
+namespace xFrame.Infrastructure
 {
     public class StringSerializerStorage : ISerializerStorage
     {

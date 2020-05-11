@@ -1,4 +1,4 @@
-﻿namespace Framework.Runtime.Infrastructure
+﻿namespace xFrame.Infrastructure
 {
     public interface IScene
     {

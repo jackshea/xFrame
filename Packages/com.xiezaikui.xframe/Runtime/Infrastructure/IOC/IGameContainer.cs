@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Framework.Runtime.Infrastructure.IOC
+namespace xFrame.Infrastructure
 
 {
 

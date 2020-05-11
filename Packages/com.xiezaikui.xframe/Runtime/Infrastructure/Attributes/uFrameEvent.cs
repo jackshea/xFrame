@@ -3,7 +3,7 @@
 /// <summary>
 /// Custom Event Attributes of uFrame
 /// </summary>
-namespace Framework.Runtime.Infrastructure.Attributes
+namespace xFrame.Infrastructure
 {
     public class uFrameEvent : Attribute
     {

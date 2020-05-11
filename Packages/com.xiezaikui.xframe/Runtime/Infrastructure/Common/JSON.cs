@@ -48,7 +48,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-namespace Framework.Runtime.Infrastructure.Common
+namespace xFrame.Infrastructure
 {
     [AttributeUsage(AttributeTargets.Property)]
     public class JsonProperty : Attribute

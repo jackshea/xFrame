@@ -27,9 +27,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Framework.Runtime.Infrastructure.Notifications;
+using xFrame.Infrastructure;
 
-namespace Framework.Runtime.Infrastructure.Collection
+namespace xFrame.Infrastructure
 {
 #if DLL
     [Serializable]

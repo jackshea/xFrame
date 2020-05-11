@@ -1,6 +1,6 @@
 using System;
 
-namespace Framework.Runtime.Infrastructure
+namespace xFrame.Infrastructure
 {
     public static class SystemControllerExtensions
     {

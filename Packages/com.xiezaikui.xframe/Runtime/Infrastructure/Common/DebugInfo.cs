@@ -1,4 +1,4 @@
-﻿namespace Framework.Runtime.Infrastructure.Common
+﻿namespace xFrame.Infrastructure
 {
 
     public class DebugInfo

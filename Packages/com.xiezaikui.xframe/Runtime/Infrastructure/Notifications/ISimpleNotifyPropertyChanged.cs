@@ -1,4 +1,4 @@
-﻿namespace Framework.Runtime.Infrastructure.Notifications
+﻿namespace xFrame.Infrastructure
 {
     public interface ISimpleNotifyPropertyChanged
     {

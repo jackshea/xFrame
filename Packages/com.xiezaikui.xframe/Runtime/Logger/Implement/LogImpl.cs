@@ -1,7 +1,7 @@
-﻿using Framework.Runtime.Logger.Interface;
-using NLog;
+﻿using NLog;
+using xFrame.Logger;
 
-namespace Framework.Runtime.Logger.LoggerImplement
+namespace xFrame.Logger
 {
     public class LogImpl : ILog
     {

@@ -1,8 +1,8 @@
 using System;
 using System.Collections;
-using Framework.Runtime.Infrastructure.IOC;
+using xFrame.Infrastructure;
 
-namespace Framework.Runtime.Infrastructure
+namespace xFrame.Infrastructure
 {
     /// <summary>
     /// This class is a generic base class for a systemservice, your probably looking for SystemServiceMonoBehaviour.

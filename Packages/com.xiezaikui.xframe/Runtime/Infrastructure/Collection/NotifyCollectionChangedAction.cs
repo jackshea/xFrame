@@ -1,4 +1,4 @@
-namespace Framework.Runtime.Infrastructure.Collection
+namespace xFrame.Infrastructure
 {
      #if !(NETFX_CORE || NET_4_6)
     public enum NotifyCollectionChangedAction

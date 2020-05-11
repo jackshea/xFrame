@@ -1,6 +1,6 @@
 using System.Collections;
 
-namespace Framework.Runtime.Infrastructure
+namespace xFrame.Infrastructure
 {
     public interface ISystemService
     {

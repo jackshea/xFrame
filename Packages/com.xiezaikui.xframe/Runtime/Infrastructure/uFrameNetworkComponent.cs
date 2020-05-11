@@ -3,7 +3,7 @@ using System.Collections;
 using UniRx;
 using UnityEngine.Networking;
 
-namespace Framework.Runtime.Infrastructure
+namespace xFrame.Infrastructure
 {
     public class uFrameNetworkComponent : NetworkBehaviour, IDisposableContainer
     {
