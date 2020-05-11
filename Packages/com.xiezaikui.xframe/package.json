@@ -1,0 +1,10 @@
+{
+  "name": "com.xiezaikui.xframe",
+  "displayName": "xFrame",
+  "version": "0.1.0",
+  "description": "一个简单的游戏开发框架",
+  "keywords": [
+    "Framework"
+  ],
+  "dependencies": {}
+}
