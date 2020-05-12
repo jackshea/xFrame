@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace xFrame.Container
+﻿namespace xFrame.Core
 {
     public interface IContainer
     {

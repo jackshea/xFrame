@@ -1,16 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace xFrame.Container
+namespace xFrame.Core
 {
     /// 简单的IOC容器
-    public class Container : IContainer, IDisposable
+    public class Container : IContainer
     {
-        private readonly Dictionary<string, object> services = new Dictionary<string, object>();
+        private readonly Dictionary<string, object> items = new Dictionary<string, object>();
 
         public virtual void Register(string name, object obj)
         {
-            services[name] = obj;
+            items[name] = obj;
         }
 
         public virtual void Register<T>(T obj)
@@ -25,40 +24,18 @@ namespace xFrame.Container
 
         public virtual object Resolve(string name)
         {
-            object obj = null;
-            services.TryGetValue(name, out obj);
+            items.TryGetValue(name, out var obj);
             return obj;
         }
 
         public virtual void Unregister(string name)
         {
-            services.Remove(name);
+            items.Remove(name);
         }
 
         public virtual void Unregister<T>()
         {
             Unregister(typeof(T).Name);
         }
-
-        #region IDisposable Support
-
-        private bool disposed;
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposed)
-            {
-                if (disposing) services.Clear();
-                disposed = true;
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        #endregion
     }
 }
