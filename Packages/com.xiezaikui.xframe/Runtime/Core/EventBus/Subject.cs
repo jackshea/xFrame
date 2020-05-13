@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace xFrame.Messaging
+namespace xFrame.Core
 {
     public abstract class SubjectBase
     {
@@ -17,13 +17,13 @@ namespace xFrame.Messaging
         {
             lock (_lock)
             {
-                return this.actions.Count <= 0;
+                return actions.Count <= 0;
             }
         }
 
         public override void Publish(object message)
         {
-            this.Publish((T)message);
+            Publish((T)message);
         }
 
         public void Publish(T message)
@@ -34,25 +34,18 @@ namespace xFrame.Messaging
                 if (actions.Count <= 0)
                     return;
 
-                array = this.actions.ToArray();
+                array = actions.ToArray();
             }
 
-            if (array == null || array.Length <= 0)
-                return;
-
-            for (int i = 0; i < array.Length; i++)
+            foreach (var action in array)
             {
-                try
-                {
-                    array[i](message);
-                }
-                catch (Exception) { }
+                action(message);
             }
         }
 
         public IDisposable Subscribe(Action<T> action)
         {
-            this.Add(action);
+            Add(action);
             return new Subscription(this, action);
         }
 
@@ -60,7 +53,7 @@ namespace xFrame.Messaging
         {
             lock (_lock)
             {
-                this.actions.Add(action);
+                actions.Add(action);
             }
         }
 
@@ -68,15 +61,15 @@ namespace xFrame.Messaging
         {
             lock (_lock)
             {
-                this.actions.Remove(action);
+                actions.Remove(action);
             }
         }
 
-        class Subscription : IDisposable
+        private class Subscription : IDisposable
         {
             private readonly object _lock = new object();
-            private Subject<T> parent;
             private Action<T> action;
+            private Subject<T> parent;
 
             public Subscription(Subject<T> parent, Action<T> action)
             {
@@ -85,18 +78,19 @@ namespace xFrame.Messaging
             }
 
             #region IDisposable Support
-            private bool disposed = false;
+
+            private bool disposed;
 
             protected virtual void Dispose(bool disposing)
             {
-                if (this.disposed)
+                if (disposed)
                     return;
 
                 lock (_lock)
                 {
                     try
                     {
-                        if (this.disposed)
+                        if (disposed)
                             return;
 
                         if (parent != null)
@@ -106,7 +100,10 @@ namespace xFrame.Messaging
                             parent = null;
                         }
                     }
-                    catch (Exception) { }
+                    catch (Exception)
+                    {
+                    }
+
                     disposed = true;
                 }
             }
@@ -121,6 +118,7 @@ namespace xFrame.Messaging
                 Dispose(true);
                 GC.SuppressFinalize(this);
             }
+
             #endregion
         }
     }

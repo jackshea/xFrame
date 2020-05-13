@@ -1,6 +1,6 @@
 ﻿using Core.Module;
 
-namespace xFrame.Messaging
+namespace xFrame.Core
 {
     public class MessagingModule : IModule
     {
