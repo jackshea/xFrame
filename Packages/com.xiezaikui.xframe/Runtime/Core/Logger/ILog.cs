@@ -1,4 +1,4 @@
-﻿namespace xFrame.Logger
+﻿namespace xFrame.Core
 {
     public interface ILog
     {

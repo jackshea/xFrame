@@ -1,5 +1,5 @@
 ﻿using NLog;
-using xFrame.Logger;
+using xFrame.Core;
 
 namespace xFrame.Logger
 {

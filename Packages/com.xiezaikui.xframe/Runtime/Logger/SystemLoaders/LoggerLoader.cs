@@ -4,6 +4,7 @@ using xFrame.Logger;
 using NLog;
 using NLog.Targets;
 using UnityEngine;
+using xFrame.Core;
 
 public class LoggerLoader : SystemLoader
 {
@@ -18,7 +19,8 @@ public class LoggerLoader : SystemLoader
             LogManager.Configuration.Variables["LogRoot"] = Application.persistentDataPath;
         }
 
-        Container.Register<ILog,LogImpl>();
+        Container.Register<ILog, LogImpl>();
+        XFrameContext.SetLogger(Container.Resolve<ILog>());
     }
 
     public string GetConfigFile()

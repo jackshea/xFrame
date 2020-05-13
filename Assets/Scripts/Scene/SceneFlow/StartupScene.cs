@@ -1,12 +1,13 @@
-﻿using xFrame.Infrastructure;
-using xFrame.Logger;
-using UnityEngine;
+﻿using UnityEngine;
+using xFrame.Core;
+using xFrame.Infrastructure;
 
 namespace Scene.SceneFlow
 {
     public class StartupScene : BaseScene
     {
         [Inject] public ILog log;
+        private ILog otherLog;
         public override void KernelLoaded()
         {
             base.KernelLoaded();
@@ -19,6 +20,9 @@ namespace Scene.SceneFlow
             log.Error("test nlog error");
             log.Fatal("test nlog fatal");
             log.Assert(false, "test assert");
+
+            otherLog = XFrameContext.GetLogger();
+            otherLog.Info("This is xFrame Logger!");
         }
     }
 }

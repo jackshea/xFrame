@@ -5,6 +5,5 @@
         void PreInitialize();
         void Initialize();
         void Release();
-        void AfterRelease();
     }
 }
