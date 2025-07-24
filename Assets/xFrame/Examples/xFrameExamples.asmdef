@@ -1,0 +1,17 @@
+{
+    "name": "xFrameExamples",
+    "rootNamespace": "",
+    "references": [
+        "GUID:59270932edc81b24d825b66e1b1a60ff",
+        "GUID:b0214a6008ed146ff8f122a6a9c2f6cc"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
