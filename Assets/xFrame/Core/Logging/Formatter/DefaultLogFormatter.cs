@@ -33,7 +33,7 @@ namespace xFrame.Core.Logging
         /// </summary>
         /// <param name="entry">日志条目</param>
         /// <returns>格式化后的日志字符串</returns>
-        public string Format(LogEntry entry)
+        public virtual string Format(LogEntry entry)
         {
             var sb = new StringBuilder();
             
@@ -87,7 +87,7 @@ namespace xFrame.Core.Logging
         /// </summary>
         /// <param name="level">日志等级</param>
         /// <returns>等级字符串</returns>
-        private string GetLevelString(LogLevel level)
+        protected virtual string GetLevelString(LogLevel level)
         {
             switch (level)
             {

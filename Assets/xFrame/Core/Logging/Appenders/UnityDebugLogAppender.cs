@@ -32,7 +32,7 @@ namespace xFrame.Core.Logging.Appenders
         /// <param name="formatter">日志格式化器</param>
         public UnityDebugLogAppender(ILogFormatter formatter = null)
         {
-            _formatter = formatter ?? new DefaultLogFormatter();
+            _formatter = formatter ?? new SimpleLogFormatter();
         }
 
         /// <summary>

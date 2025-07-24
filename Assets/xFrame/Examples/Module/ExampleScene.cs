@@ -50,13 +50,17 @@ namespace xFrame.Examples
                 updaterObj.transform.SetParent(scopeObj.transform);
                 var updater = updaterObj.AddComponent<ModuleUpdater>();
                 
-                // 设置引用
+                // 设置引用 - 修正字段名称为moduleUpdater
                 var field = _lifetimeScope.GetType().GetField("moduleUpdater", 
                     System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
                 
                 if (field != null)
                 {
                     field.SetValue(_lifetimeScope, updater);
+                }
+                else
+                {
+                    Debug.LogError("无法找到moduleUpdater字段，请检查ExampleLifetimeScope类中的字段名称");
                 }
             }
             

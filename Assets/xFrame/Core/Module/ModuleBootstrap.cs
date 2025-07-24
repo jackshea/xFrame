@@ -1,5 +1,6 @@
 using UnityEngine;
 using VContainer.Unity;
+using xFrame.Core.DI;
 
 namespace xFrame.Core
 {
@@ -41,7 +42,6 @@ namespace xFrame.Core
             {
                 // 如果已经指定了预制体，直接实例化
                 var instance = Instantiate(lifetimeScopePrefab);
-                instance.name = "xFrameLifetimeScope";
                 Debug.Log($"已实例化模块生命周期容器预制体: {instance.name}");
             }
             

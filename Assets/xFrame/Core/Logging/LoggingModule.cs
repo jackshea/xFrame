@@ -10,7 +10,7 @@ namespace xFrame.Core.Logging
     /// 日志模块
     /// 负责初始化和配置整个日志系统，集成到VContainer依赖注入框架
     /// </summary>
-    public class LoggingModule : IInitializable, IDisposable
+    public class LoggingModule : BaseModule
     {
         private readonly ILogManager _logManager;
         private readonly ILogger _moduleLogger;
@@ -25,10 +25,13 @@ namespace xFrame.Core.Logging
             _moduleLogger = _logManager.GetLogger<LoggingModule>();
         }
 
+        public override string ModuleName { get; } = nameof(LoggingModule);
+        public override int Priority { get; } = 1;
+
         /// <summary>
         /// 初始化日志模块
         /// </summary>
-        public void Initialize()
+        public override void OnInit()
         {
             _moduleLogger.Info("日志模块初始化开始...");
 
@@ -36,7 +39,7 @@ namespace xFrame.Core.Logging
             {
                 // 配置默认的日志输出器
                 ConfigureDefaultAppenders();
-                
+
                 _moduleLogger.Info("日志模块初始化完成");
             }
             catch (Exception ex)
@@ -58,7 +61,6 @@ namespace xFrame.Core.Logging
                 IsEnabled = true
             };
             _logManager.AddGlobalAppender(unityDebugAppender);
-            _moduleLogger.Debug("已添加Unity Debug日志输出器");
 
             // 控制台输出器 - 用于独立构建版本
             if (!Application.isEditor)
@@ -69,7 +71,6 @@ namespace xFrame.Core.Logging
                     IsEnabled = true
                 };
                 _logManager.AddGlobalAppender(consoleAppender);
-                _moduleLogger.Debug("已添加控制台日志输出器");
             }
 
             // 文件输出器 - 持久化日志
@@ -135,7 +136,7 @@ namespace xFrame.Core.Logging
         /// <summary>
         /// 释放资源
         /// </summary>
-        public void Dispose()
+        public override void OnDestroy()
         {
             _moduleLogger?.Info("日志模块正在关闭...");
             _logManager?.Shutdown();
