@@ -184,7 +184,7 @@ namespace xFrame.Core.Logging
         /// </summary>
         private void RegisterUnityExceptionHandler()
         {
-            Application.logMessageReceived += OnUnityLogMessageReceived;
+            // Application.logMessageReceived += OnUnityLogMessageReceived;
         }
 
         /// <summary>

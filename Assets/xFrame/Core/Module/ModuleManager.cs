@@ -21,6 +21,7 @@ namespace xFrame.Core
         /// <summary>
         /// 构造函数
         /// </summary>
+        /// <param name="builder">VContainer 依赖注入构建器</param>
         /// <param name="container">VContainer依赖注入容器</param>
         public ModuleManager(IObjectResolver container)
         {
@@ -38,7 +39,7 @@ namespace xFrame.Core
                 Debug.LogError("无法注册模块，模块管理器已经初始化");
                 return;
             }
-
+          
             T module = _container.Resolve<T>();
             RegisterModule(module);
         }

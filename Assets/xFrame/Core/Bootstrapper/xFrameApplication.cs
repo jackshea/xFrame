@@ -107,7 +107,7 @@ namespace xFrame.Core
 
             _initialized = true;
             Debug.Log("xFrame应用程序初始化完成");
-
+            
             // 触发初始化完成事件
             OnApplicationInitialized?.Invoke();
         }
@@ -168,6 +168,7 @@ namespace xFrame.Core
         private void Start()
         {
             // 在这里可以添加应用程序启动后的逻辑
+            DemonstrateBasicLogging();
         }
 
         /// <summary>
@@ -190,6 +191,23 @@ namespace xFrame.Core
         {
             // 在应用程序退出时执行清理操作
             Debug.Log("xFrame应用程序退出");
+        }
+        
+        /// <summary>
+        /// 演示基本日志功能
+        /// </summary>
+        private void DemonstrateBasicLogging()
+        {
+            var logger= _bootstrapper.LogManager.GetLogger("LogTester");
+            logger.Info("=== 基本日志功能演示 ===");
+            
+            // 不同等级的日志
+            logger.Verbose("这是一条详细日志，通常用于最详细的调试信息");
+            logger.Debug("这是一条调试日志，用于开发时的调试信息");
+            logger.Info("这是一条信息日志，记录程序的正常运行信息");
+            logger.Warning("这是一条警告日志，表示可能存在的问题");
+            logger.Error("这是一条错误日志，表示程序出现了错误");
+            logger.Fatal("这是一条致命日志，表示严重的系统错误");
         }
     }
 }

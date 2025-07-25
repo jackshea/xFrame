@@ -54,7 +54,6 @@ namespace xFrame.Core.Logging
                 sb.Append("异常信息: ");
                 sb.Append(entry.Exception.ToString());
             }
-            Debug.Log("Format:"+sb.ToString());
             return sb.ToString();
         }
     }

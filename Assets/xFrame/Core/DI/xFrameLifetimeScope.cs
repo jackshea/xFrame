@@ -51,6 +51,7 @@ namespace xFrame.Core.DI
             // 构建完成后初始化模块更新器
             builder.RegisterBuildCallback(container => 
             {
+                xFrame.Core.ModuleRegistry.SetupInContainer(container);
                 if (moduleUpdater != null)
                 {
                     moduleUpdater.Initialize(container);
