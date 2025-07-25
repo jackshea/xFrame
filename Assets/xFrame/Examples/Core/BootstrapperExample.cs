@@ -1,7 +1,6 @@
 using UnityEngine;
 using xFrame.Core;
 using xFrame.Core.Logging;
-using ILogger = xFrame.Core.Logging.ILogger;
 
 namespace xFrame.Examples.Core
 {
@@ -20,7 +19,7 @@ namespace xFrame.Examples.Core
         /// <summary>
         /// 日志
         /// </summary>
-        private ILogger _logger;
+        private IXLogger _logger;
 
         /// <summary>
         /// Unity Awake生命周期
@@ -49,7 +48,7 @@ namespace xFrame.Examples.Core
             }
 
             // 获取日志记录器
-            _logger = (xFrameApplication.Instance.Bootstrapper.LifetimeScope.Container.Resolve(typeof(ILogManager)) as ILogManager)?.GetLogger(GetType());
+            _logger = (xFrameApplication.Instance.Bootstrapper.LifetimeScope.Container.Resolve(typeof(IXLogManager)) as IXLogManager)?.GetLogger(GetType());
             
             // 输出日志
             _logger.Info("BootstrapperExample已启动");

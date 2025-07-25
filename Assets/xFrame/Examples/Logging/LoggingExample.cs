@@ -2,7 +2,6 @@ using System;
 using UnityEngine;
 using VContainer;
 using xFrame.Core.Logging;
-using ILogger = xFrame.Core.Logging.ILogger;
 
 namespace xFrame.Examples.Logging
 {
@@ -12,8 +11,8 @@ namespace xFrame.Examples.Logging
     /// </summary>
     public class LoggingExample : MonoBehaviour
     {
-        [Inject] private ILogManager _logManager;
-        private ILogger _logger;
+        [Inject] private IXLogManager _logManager;
+        private IXLogger _logger;
 
         /// <summary>
         /// Unity Start生命周期方法
@@ -24,7 +23,7 @@ namespace xFrame.Examples.Logging
             _logger = _logManager.GetLogger<LoggingExample>();
             
             // 初始化静态日志访问接口
-            Log.Initialize(_logManager);
+            XLog.Initialize(_logManager);
             
             // 演示各种日志功能
             DemonstrateBasicLogging();
@@ -54,15 +53,15 @@ namespace xFrame.Examples.Logging
         /// </summary>
         private void DemonstrateStaticLogging()
         {
-            Log.Info("=== 静态日志访问演示 ===", "StaticExample");
+            XLog.Info("=== 静态日志访问演示 ===", "StaticExample");
             
             // 使用静态方法记录日志
-            Log.Debug("使用静态方法记录调试日志", "StaticExample");
-            Log.Info("使用静态方法记录信息日志", "StaticExample");
-            Log.Warning("使用静态方法记录警告日志", "StaticExample");
+            XLog.Debug("使用静态方法记录调试日志", "StaticExample");
+            XLog.Info("使用静态方法记录信息日志", "StaticExample");
+            XLog.Warning("使用静态方法记录警告日志", "StaticExample");
             
             // 获取特定类型的Logger
-            var specificLogger = Log.GetLogger<LoggingExample>();
+            var specificLogger = XLog.GetLogger<LoggingExample>();
             specificLogger.Info("通过静态接口获取的特定类型Logger");
         }
 
@@ -82,7 +81,7 @@ namespace xFrame.Examples.Logging
             {
                 // 记录带异常信息的错误日志
                 _logger.Error("捕获到异常", ex);
-                Log.Error("使用静态方法记录异常", ex, "ExceptionExample");
+                XLog.Error("使用静态方法记录异常", ex, "ExceptionExample");
             }
         }
 
@@ -157,7 +156,7 @@ namespace xFrame.Examples.Logging
         [ContextMenu("刷新日志缓冲区")]
         public void FlushAllLogs()
         {
-            Log.FlushAll();
+            XLog.FlushAll();
             _logger.Info("已刷新所有日志缓冲区");
         }
     }

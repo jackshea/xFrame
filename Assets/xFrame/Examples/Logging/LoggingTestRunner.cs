@@ -2,7 +2,6 @@ using System.Collections;
 using UnityEngine;
 using VContainer;
 using xFrame.Core.Logging;
-using ILogger = xFrame.Core.Logging.ILogger;
 
 namespace xFrame.Examples.Logging
 {
@@ -12,8 +11,8 @@ namespace xFrame.Examples.Logging
     /// </summary>
     public class LoggingTestRunner : MonoBehaviour
     {
-        [Inject] private ILogManager _logManager;
-        private ILogger _logger;
+        [Inject] private IXLogManager _logManager;
+        private IXLogger _logger;
 
         [Header("测试配置")]
         [SerializeField] private bool autoRunTests = true;
@@ -63,7 +62,7 @@ namespace xFrame.Examples.Logging
             _logger.Info("自动化测试完成");
             
             // 最终刷新所有日志
-            Log.FlushAll();
+            XLog.FlushAll();
         }
 
         /// <summary>
@@ -180,7 +179,7 @@ namespace xFrame.Examples.Logging
         /// <param name="logger">日志记录器</param>
         /// <param name="threadId">模拟线程ID</param>
         /// <returns>协程</returns>
-        private IEnumerator SimulateThreadLogging(ILogger logger, int threadId)
+        private IEnumerator SimulateThreadLogging(IXLogger logger, int threadId)
         {
             for (int i = 0; i < 10; i++)
             {
@@ -215,7 +214,7 @@ namespace xFrame.Examples.Logging
             yield return StartCoroutine(TestExceptionHandling());
             
             _logger.Info("单次测试完成");
-            Log.FlushAll();
+            XLog.FlushAll();
         }
 
         /// <summary>

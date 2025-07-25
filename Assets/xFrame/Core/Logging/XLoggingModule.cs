@@ -10,22 +10,22 @@ namespace xFrame.Core.Logging
     /// 日志模块
     /// 负责初始化和配置整个日志系统，集成到VContainer依赖注入框架
     /// </summary>
-    public class LoggingModule : BaseModule
+    public class XLoggingModule : BaseModule
     {
-        private readonly ILogManager _logManager;
-        private readonly ILogger _moduleLogger;
+        private readonly IXLogManager _logManager;
+        private readonly IXLogger _moduleLogger;
 
         /// <summary>
         /// 构造函数
         /// </summary>
         /// <param name="logManager">日志管理器</param>
-        public LoggingModule(ILogManager logManager)
+        public XLoggingModule(IXLogManager logManager)
         {
             _logManager = logManager ?? throw new ArgumentNullException(nameof(logManager));
-            _moduleLogger = _logManager.GetLogger<LoggingModule>();
+            _moduleLogger = _logManager.GetLogger<XLoggingModule>();
         }
 
-        public override string ModuleName { get; } = nameof(LoggingModule);
+        public override string ModuleName { get; } = nameof(XLoggingModule);
         public override int Priority { get; } = 1;
 
         /// <summary>

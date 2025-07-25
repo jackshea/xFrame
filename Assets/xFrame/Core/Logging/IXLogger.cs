@@ -6,7 +6,7 @@ namespace xFrame.Core.Logging
     /// 日志记录器接口
     /// 提供统一的日志记录功能
     /// </summary>
-    public interface ILogger
+    public interface IXLogger
     {
         /// <summary>
         /// 模块名称

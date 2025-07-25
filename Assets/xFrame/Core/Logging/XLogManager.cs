@@ -9,9 +9,9 @@ namespace xFrame.Core.Logging
     /// 日志管理器实现
     /// 提供全局的日志管理功能，包括Logger创建、全局配置等
     /// </summary>
-    public class LogManager : ILogManager
+    public class XLogManager : IXLogManager
     {
-        private readonly ConcurrentDictionary<string, ILogger> _loggers;
+        private readonly ConcurrentDictionary<string, IXLogger> _loggers;
         private readonly List<ILogAppender> _globalAppenders;
         private readonly object _lock = new object();
 
@@ -28,9 +28,9 @@ namespace xFrame.Core.Logging
         /// <summary>
         /// 构造函数
         /// </summary>
-        public LogManager()
+        public XLogManager()
         {
-            _loggers = new ConcurrentDictionary<string, ILogger>();
+            _loggers = new ConcurrentDictionary<string, IXLogger>();
             _globalAppenders = new List<ILogAppender>();
             
             // 注册Unity异常处理
@@ -42,14 +42,14 @@ namespace xFrame.Core.Logging
         /// </summary>
         /// <param name="moduleName">模块名称</param>
         /// <returns>日志记录器</returns>
-        public ILogger GetLogger(string moduleName)
+        public IXLogger GetLogger(string moduleName)
         {
             if (string.IsNullOrEmpty(moduleName))
                 moduleName = "Default";
 
             return _loggers.GetOrAdd(moduleName, name =>
             {
-                var logger = new Logger(name)
+                var logger = new XLogger(name)
                 {
                     IsEnabled = IsGlobalEnabled,
                     MinLevel = GlobalMinLevel
@@ -73,7 +73,7 @@ namespace xFrame.Core.Logging
         /// </summary>
         /// <param name="type">类型</param>
         /// <returns>日志记录器</returns>
-        public ILogger GetLogger(Type type)
+        public IXLogger GetLogger(Type type)
         {
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
@@ -86,7 +86,7 @@ namespace xFrame.Core.Logging
         /// </summary>
         /// <typeparam name="T">类型</typeparam>
         /// <returns>日志记录器</returns>
-        public ILogger GetLogger<T>()
+        public IXLogger GetLogger<T>()
         {
             return GetLogger(typeof(T));
         }
@@ -107,7 +107,7 @@ namespace xFrame.Core.Logging
                 // 为所有现有的Logger添加此输出器
                 foreach (var logger in _loggers.Values)
                 {
-                    if (logger is Logger concreteLogger)
+                    if (logger is XLogger concreteLogger)
                     {
                         concreteLogger.AddAppender(appender);
                     }
@@ -131,7 +131,7 @@ namespace xFrame.Core.Logging
                 // 从所有现有的Logger中移除此输出器
                 foreach (var logger in _loggers.Values)
                 {
-                    if (logger is Logger concreteLogger)
+                    if (logger is XLogger concreteLogger)
                     {
                         concreteLogger.RemoveAppender(appender);
                     }
@@ -146,7 +146,7 @@ namespace xFrame.Core.Logging
         {
             foreach (var logger in _loggers.Values)
             {
-                if (logger is Logger concreteLogger)
+                if (logger is XLogger concreteLogger)
                 {
                     concreteLogger.Flush();
                 }
@@ -171,7 +171,7 @@ namespace xFrame.Core.Logging
 
             foreach (var logger in _loggers.Values)
             {
-                if (logger is Logger concreteLogger)
+                if (logger is XLogger concreteLogger)
                 {
                     concreteLogger.Dispose();
                 }

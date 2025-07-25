@@ -21,7 +21,7 @@ MonoBehaviour:
     ShowLogsInConsole: 1
     ShowTimestamp: 1
     ShowLogLevel: 1
-    ShowModuleName: 1
+    ShowModuleName: 0
   ModuleConfig:
     AutoInitializeModules: 1
     AutoStartModules: 1

@@ -6,16 +6,16 @@ namespace xFrame.Core.Logging
     /// 静态日志访问接口
     /// 提供全局的静态日志访问方法，便于在任何地方使用日志功能
     /// </summary>
-    public static class Log
+    public static class XLog
     {
-        private static ILogManager _logManager;
+        private static IXLogManager _logManager;
         private static readonly object _lock = new object();
 
         /// <summary>
         /// 初始化静态日志系统
         /// </summary>
         /// <param name="logManager">日志管理器实例</param>
-        public static void Initialize(ILogManager logManager)
+        public static void Initialize(IXLogManager logManager)
         {
             lock (_lock)
             {
@@ -28,7 +28,7 @@ namespace xFrame.Core.Logging
         /// </summary>
         /// <param name="moduleName">模块名称</param>
         /// <returns>日志记录器</returns>
-        public static ILogger GetLogger(string moduleName)
+        public static IXLogger GetLogger(string moduleName)
         {
             EnsureInitialized();
             return _logManager.GetLogger(moduleName);
@@ -39,7 +39,7 @@ namespace xFrame.Core.Logging
         /// </summary>
         /// <param name="type">类型</param>
         /// <returns>日志记录器</returns>
-        public static ILogger GetLogger(Type type)
+        public static IXLogger GetLogger(Type type)
         {
             EnsureInitialized();
             return _logManager.GetLogger(type);
@@ -50,7 +50,7 @@ namespace xFrame.Core.Logging
         /// </summary>
         /// <typeparam name="T">类型</typeparam>
         /// <returns>日志记录器</returns>
-        public static ILogger GetLogger<T>()
+        public static IXLogger GetLogger<T>()
         {
             EnsureInitialized();
             return _logManager.GetLogger<T>();

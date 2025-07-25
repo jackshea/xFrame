@@ -44,7 +44,7 @@ namespace xFrame.Core
         /// <summary>
         /// 日志管理器实例
         /// </summary>
-        private ILogManager _logManager;
+        private IXLogManager _logManager;
 
         /// <summary>
         /// 框架是否已初始化
@@ -74,7 +74,7 @@ namespace xFrame.Core
         /// <summary>
         /// 获取日志管理器
         /// </summary>
-        public ILogManager LogManager => _logManager;
+        public IXLogManager LogManager => _logManager;
 
         /// <summary>
         /// Unity Awake生命周期
@@ -121,7 +121,7 @@ namespace xFrame.Core
 
             // 获取核心服务
             _moduleManager = _lifetimeScope.Container.Resolve<ModuleManager>();
-            _logManager = _lifetimeScope.Container.Resolve<ILogManager>();
+            _logManager = _lifetimeScope.Container.Resolve<IXLogManager>();
 
             // 初始化模块
             _moduleManager.InitializeModules();

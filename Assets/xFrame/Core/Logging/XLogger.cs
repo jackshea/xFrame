@@ -7,7 +7,7 @@ namespace xFrame.Core.Logging
     /// 日志记录器实现
     /// 提供线程安全的日志记录功能，支持多个输出器
     /// </summary>
-    public class Logger : ILogger
+    public class XLogger : IXLogger
     {
         private readonly List<ILogAppender> _appenders;
         private readonly object _lock = new object();
@@ -31,7 +31,7 @@ namespace xFrame.Core.Logging
         /// 构造函数
         /// </summary>
         /// <param name="moduleName">模块名称</param>
-        public Logger(string moduleName)
+        public XLogger(string moduleName)
         {
             ModuleName = moduleName ?? "Unknown";
             _appenders = new List<ILogAppender>();

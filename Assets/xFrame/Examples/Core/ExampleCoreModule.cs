@@ -1,7 +1,6 @@
 using UnityEngine;
 using xFrame.Core;
 using xFrame.Core.Logging;
-using ILogger = xFrame.Core.Logging.ILogger;
 
 namespace xFrame.Examples.Core
 {
@@ -22,7 +21,7 @@ namespace xFrame.Examples.Core
         /// <summary>
         /// 日志记录器
         /// </summary>
-        private readonly ILogger _logger;
+        private readonly IXLogger _logger;
 
         /// <summary>
         /// 运行时间计数器
@@ -43,7 +42,7 @@ namespace xFrame.Examples.Core
         /// 构造函数
         /// </summary>
         /// <param name="logManager">日志管理器</param>
-        public ExampleCoreModule(ILogManager logManager)
+        public ExampleCoreModule(IXLogManager logManager)
         {
             _logger = logManager.GetLogger(GetType());
         }
