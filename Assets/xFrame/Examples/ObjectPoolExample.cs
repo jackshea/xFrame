@@ -297,8 +297,14 @@ namespace xFrame.Examples
             Debug.Log("\n-- 容量限制演示 --");
 
             // 创建一个容量限制为2的对象池
-            var limitedPool = ObjectPoolFactory.Create(
+            var limitedPool = ObjectPoolFactory.Create<Enemy>(
                 () => new Enemy(),
+                onGet: enemy => { /* 对象获取时的处理 */ },
+                onRelease: enemy => {
+                    // 对象释放时的处理
+                    Debug.Log($"敌人因容量限制被释放: {enemy.GetHashCode()}");
+                    enemy.Reset(); // 重置敌人状态
+                },
                 onDestroy: enemy => Debug.Log($"敌人因容量限制被销毁: {enemy.GetHashCode()}"),
                 maxSize: 2
             );

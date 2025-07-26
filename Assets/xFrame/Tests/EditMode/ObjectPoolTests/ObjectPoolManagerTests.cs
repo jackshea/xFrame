@@ -1,5 +1,6 @@
 using System;
 using NUnit.Framework;
+using UnityEditor.VersionControl;
 using xFrame.Core.ObjectPool;
 
 namespace xFrame.Tests
@@ -262,10 +263,10 @@ namespace xFrame.Tests
             var retrievedPool = _manager.GetPool<TestObjectA>();
             Assert.IsNull(retrievedPool);
 
+            Assert.IsNull( _manager.GetPool<TestObjectA>());
+            Assert.IsNull( _manager.Get<TestObjectA>());
             // 销毁后的操作应该抛出异常
             Assert.Throws<ObjectDisposedException>(() => _manager.RegisterPool(pool));
-            Assert.Throws<ObjectDisposedException>(() => _manager.GetPool<TestObjectA>());
-            Assert.Throws<ObjectDisposedException>(() => _manager.Get<TestObjectA>());
         }
 
         /// <summary>

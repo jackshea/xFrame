@@ -64,7 +64,9 @@ namespace xFrame.Core.ObjectPool
         /// <returns>对象池实例，如果不存在则返回null</returns>
         public IObjectPool<T> GetPool<T>() where T : class
         {
-            ThrowIfDisposed();
+            // 如果已销毁，返回null而不是抛出异常
+            if (_disposed)
+                return null;
 
             Type type = typeof(T);
 
