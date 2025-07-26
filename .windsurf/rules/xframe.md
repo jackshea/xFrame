@@ -10,3 +10,4 @@ globs:
 4. 尽可能不依赖Unity/MonoBehaviour，方便在不同引擎下使用。
 5. 使用插件 VContianer，实现IoC/DI 功能
 6. 使用 Unity TestFramework(NUnit) 用于单元测试，请将xFrame相关的单元测试放到Assets/xFrame/Tests文件夹下
+7. 注意使用模块化实现
