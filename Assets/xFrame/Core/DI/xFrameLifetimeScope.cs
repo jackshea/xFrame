@@ -19,6 +19,12 @@ namespace xFrame.Core.DI
         [SerializeField]
         private ModuleUpdater moduleUpdater;
         
+        /// <summary>
+        /// 资源管理器缓存容量
+        /// </summary>
+        [SerializeField]
+        private int assetManagerCacheCapacity = 100;
+        
         
         
         /// <summary>
@@ -96,6 +102,9 @@ namespace xFrame.Core.DI
         /// <param name="builder">容器构建器</param>
         private void RegisterResourceSystem(IContainerBuilder builder)
         {
+            // 注册缓存容量参数
+            builder.RegisterInstance(assetManagerCacheCapacity);
+            
             // 注册资源管理器实现为单例
             builder.Register<IAssetManager, AddressableAssetManager>(Lifetime.Singleton);
 
