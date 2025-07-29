@@ -3,6 +3,7 @@ using VContainer;
 using VContainer.Unity;
 using xFrame.Core;
 using xFrame.Core.Logging;
+using xFrame.Core.ResourceManager;
 
 namespace xFrame.Core.DI
 {
@@ -29,6 +30,7 @@ namespace xFrame.Core.DI
             // 注册核心系统
             RegisterModuleSystem(builder);
             RegisterLoggingSystem(builder);
+            RegisterResourceSystem(builder);
         }
 
         /// <summary>
@@ -86,6 +88,21 @@ namespace xFrame.Core.DI
                 var logManager = container.Resolve<IXLogManager>();
                 return (type) => logManager.GetLogger(type);
             }, Lifetime.Singleton);
+        }
+
+        /// <summary>
+        /// 注册资源管理系统到VContainer
+        /// </summary>
+        /// <param name="builder">容器构建器</param>
+        private void RegisterResourceSystem(IContainerBuilder builder)
+        {
+            // 注册资源管理器实现为单例
+            builder.Register<IAssetManager, AddressableAssetManager>(Lifetime.Singleton);
+
+            // 注册资源管理模块为单例，并标记为可初始化
+            builder.Register<AssetManagerModule>(Lifetime.Singleton)
+                .AsImplementedInterfaces()
+                .AsSelf();
         }
     }
 }

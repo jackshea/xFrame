@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using VContainer;
 using xFrame.Core.Logging;
+using xFrame.Core.ResourceManager;
 
 namespace xFrame.Core
 {
@@ -21,6 +22,7 @@ namespace xFrame.Core
                 throw new ArgumentNullException(nameof(moduleManager));
                 
             moduleManager.RegisterModule<XLoggingModule>();
+            moduleManager.RegisterModule<AssetManagerModule>();
         }
         
         /// <summary>

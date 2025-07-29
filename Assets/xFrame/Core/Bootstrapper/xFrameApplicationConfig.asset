@@ -15,7 +15,7 @@ MonoBehaviour:
   ApplicationName: "xFrame\u5E94\u7528"
   ApplicationVersion: 1.0.0
   LogConfig:
-    GlobalLogLevel: 1
+    GlobalLogLevel: 2
     EnableFileLogging: 0
     LogFilePath: Logs/xFrame.log
     ShowLogsInConsole: 1
