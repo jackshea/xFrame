@@ -4,6 +4,9 @@ using VContainer.Unity;
 using xFrame.Core;
 using xFrame.Core.Logging;
 using xFrame.Core.ResourceManager;
+using xFrame.Core.MessagePipe;
+using MessagePipe;
+using MessagePipe.VContainer;
 
 namespace xFrame.Core.DI
 {
@@ -37,6 +40,7 @@ namespace xFrame.Core.DI
             RegisterModuleSystem(builder);
             RegisterLoggingSystem(builder);
             RegisterResourceSystem(builder);
+            RegisterMessagePipeSystem(builder);
         }
 
         /// <summary>
@@ -110,6 +114,31 @@ namespace xFrame.Core.DI
 
             // 注册资源管理模块为单例，并标记为可初始化
             builder.Register<AssetManagerModule>(Lifetime.Singleton)
+                .AsImplementedInterfaces()
+                .AsSelf();
+        }
+
+        /// <summary>
+        /// 注册MessagePipe事件系统到VContainer
+        /// </summary>
+        /// <param name="builder">容器构建器</param>
+        private void RegisterMessagePipeSystem(IContainerBuilder builder)
+        {
+            // 配置MessagePipe选项
+            var options = builder.RegisterMessagePipe(options =>
+            {
+                // 启用堆栈跟踪捕获以帮助调试订阅泄漏
+                options.EnableCaptureStackTrace = true;
+                
+                // 设置实例生命周期为单例
+                options.InstanceLifetime = global::MessagePipe.InstanceLifetime.Singleton;
+                
+                // 配置异步发布策略
+                options.DefaultAsyncPublishStrategy = global::MessagePipe.AsyncPublishStrategy.Parallel;
+            });
+
+            // 注册MessagePipe模块为单例，并标记为可初始化
+            builder.Register<xFrame.Core.MessagePipe.MessagePipeModule>(Lifetime.Singleton)
                 .AsImplementedInterfaces()
                 .AsSelf();
         }
