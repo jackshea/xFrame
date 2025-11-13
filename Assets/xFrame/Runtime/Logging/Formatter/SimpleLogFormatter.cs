@@ -1,8 +1,6 @@
-using System;
 using System.Text;
-using UnityEngine;
 
-namespace xFrame.Core.Logging
+namespace xFrame.Runtime.Logging
 {
     /// <summary>
     /// 简单的日志格式化器
@@ -31,29 +29,30 @@ namespace xFrame.Core.Logging
         public override string Format(LogEntry entry)
         {
             var sb = new StringBuilder();
-            
+
             // 时间戳
             sb.Append('[');
             sb.Append(entry.Timestamp.ToString(_dateTimeFormat));
             sb.Append(']');
-            
+
             // 日志等级
             sb.Append(' ');
             sb.Append('[');
             sb.Append(GetLevelString(entry.Level));
             sb.Append(']');
-            
+
             // 消息内容
             sb.Append(' ');
             sb.Append(entry.Message);
-            
+
             // 异常信息
             if (entry.Exception != null)
             {
                 sb.AppendLine();
                 sb.Append("异常信息: ");
-                sb.Append(entry.Exception.ToString());
+                sb.Append(entry.Exception);
             }
+
             return sb.ToString();
         }
     }

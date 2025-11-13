@@ -1,8 +1,9 @@
+using System;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
-using xFrame.Core;
-using xFrame.Core.Logging;
+using xFrame.Runtime;
+using xFrame.Runtime.Logging;
 using xFrame.Examples;
 
 public class ExampleLifetimeScope : LifetimeScope
@@ -12,41 +13,35 @@ public class ExampleLifetimeScope : LifetimeScope
     /// </summary>
     [SerializeField]
     private ModuleUpdater moduleUpdater;
-    
+
     protected override void Configure(IContainerBuilder builder)
     {
         RegisterExampleModule(builder);
         RegisterLoggingSystem(builder);
     }
-    
+
     private void RegisterExampleModule(IContainerBuilder builder)
     {
         // 注册模块管理器为单例，并实现IStartable接口
         builder.Register<ModuleManager>(Lifetime.Singleton)
             .AsImplementedInterfaces()
             .AsSelf();
-            
+
         // 注册模块更新器
-        if (moduleUpdater != null)
-        {
-            builder.RegisterComponent(moduleUpdater);
-        }
-        
+        if (moduleUpdater != null) builder.RegisterComponent(moduleUpdater);
+
         // 注册示例模块
         builder.Register<ExampleModule>(Lifetime.Singleton)
             .AsImplementedInterfaces()
             .AsSelf();
-            
+
         // 构建完成后初始化模块更新器
-        builder.RegisterBuildCallback(container => 
+        builder.RegisterBuildCallback(container =>
         {
-            if (moduleUpdater != null)
-            {
-                moduleUpdater.Initialize(container);
-            }
+            if (moduleUpdater != null) moduleUpdater.Initialize(container);
         });
     }
-    
+
     /// <summary>
     /// 注册日志系统到VContainer
     /// </summary>
@@ -65,14 +60,14 @@ public class ExampleLifetimeScope : LifetimeScope
         builder.RegisterFactory<string, IXLogger>(container =>
         {
             var logManager = container.Resolve<IXLogManager>();
-            return (moduleName) => logManager.GetLogger(moduleName);
+            return moduleName => logManager.GetLogger(moduleName);
         }, Lifetime.Singleton);
 
         // 注册泛型日志工厂方法
-        builder.RegisterFactory<System.Type, IXLogger>(container =>
+        builder.RegisterFactory<Type, IXLogger>(container =>
         {
             var logManager = container.Resolve<IXLogManager>();
-            return (type) => logManager.GetLogger(type);
+            return type => logManager.GetLogger(type);
         }, Lifetime.Singleton);
     }
 }

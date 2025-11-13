@@ -1,8 +1,9 @@
 using System;
 using System.Threading.Tasks;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
-namespace xFrame.Core.ResourceManager
+namespace xFrame.Runtime.ResourceManager
 {
     /// <summary>
     /// 基于Unity Resources系统的资源提供者
@@ -10,12 +11,12 @@ namespace xFrame.Core.ResourceManager
     /// </summary>
     public class ResourcesAssetProvider : IAssetProvider
     {
-        private readonly object _lockObject = new object();
-        
+        private readonly object _lockObject = new();
+
         // 统计信息
         private int _loadedAssetCount;
-        private int _loadSuccessCount;
         private int _loadFailureCount;
+        private int _loadSuccessCount;
         private int _releaseCount;
 
         /// <summary>
@@ -34,22 +35,23 @@ namespace xFrame.Core.ResourceManager
         /// <typeparam name="T">资源类型</typeparam>
         /// <param name="address">资源地址（Resources路径）</param>
         /// <returns>加载的资源对象</returns>
-        public T LoadAsset<T>(string address) where T : UnityEngine.Object
+        public T LoadAsset<T>(string address) where T : Object
         {
             if (string.IsNullOrEmpty(address))
             {
-                Debug.LogError($"[ResourcesAssetProvider] 资源地址不能为空");
+                Debug.LogError("[ResourcesAssetProvider] 资源地址不能为空");
                 lock (_lockObject)
                 {
                     _loadFailureCount++;
                 }
+
                 return null;
             }
 
             try
             {
                 var asset = Resources.Load<T>(address);
-                
+
                 lock (_lockObject)
                 {
                     if (asset != null)
@@ -72,6 +74,7 @@ namespace xFrame.Core.ResourceManager
                 {
                     _loadFailureCount++;
                 }
+
                 return null;
             }
         }
@@ -82,15 +85,16 @@ namespace xFrame.Core.ResourceManager
         /// <typeparam name="T">资源类型</typeparam>
         /// <param name="address">资源地址</param>
         /// <returns>异步任务，包含加载的资源对象</returns>
-        public async Task<T> LoadAssetAsync<T>(string address) where T : UnityEngine.Object
+        public async Task<T> LoadAssetAsync<T>(string address) where T : Object
         {
             if (string.IsNullOrEmpty(address))
             {
-                Debug.LogError($"[ResourcesAssetProvider] 资源地址不能为空");
+                Debug.LogError("[ResourcesAssetProvider] 资源地址不能为空");
                 lock (_lockObject)
                 {
                     _loadFailureCount++;
                 }
+
                 return null;
             }
 
@@ -98,15 +102,12 @@ namespace xFrame.Core.ResourceManager
             {
                 // 使用Resources.LoadAsync进行异步加载
                 var request = Resources.LoadAsync<T>(address);
-                
+
                 // 等待加载完成
-                while (!request.isDone)
-                {
-                    await Task.Yield();
-                }
+                while (!request.isDone) await Task.Yield();
 
                 var asset = request.asset as T;
-                
+
                 lock (_lockObject)
                 {
                     if (asset != null)
@@ -129,6 +130,7 @@ namespace xFrame.Core.ResourceManager
                 {
                     _loadFailureCount++;
                 }
+
                 return null;
             }
         }
@@ -139,32 +141,34 @@ namespace xFrame.Core.ResourceManager
         /// <param name="address">资源地址</param>
         /// <param name="type">资源类型</param>
         /// <returns>加载的资源对象</returns>
-        public UnityEngine.Object LoadAsset(string address, Type type)
+        public Object LoadAsset(string address, Type type)
         {
             if (string.IsNullOrEmpty(address))
             {
-                Debug.LogError($"[ResourcesAssetProvider] 资源地址不能为空");
+                Debug.LogError("[ResourcesAssetProvider] 资源地址不能为空");
                 lock (_lockObject)
                 {
                     _loadFailureCount++;
                 }
+
                 return null;
             }
 
             if (type == null)
             {
-                Debug.LogError($"[ResourcesAssetProvider] 资源类型不能为空");
+                Debug.LogError("[ResourcesAssetProvider] 资源类型不能为空");
                 lock (_lockObject)
                 {
                     _loadFailureCount++;
                 }
+
                 return null;
             }
 
             try
             {
                 var asset = Resources.Load(address, type);
-                
+
                 lock (_lockObject)
                 {
                     if (asset != null)
@@ -187,6 +191,7 @@ namespace xFrame.Core.ResourceManager
                 {
                     _loadFailureCount++;
                 }
+
                 return null;
             }
         }
@@ -197,25 +202,27 @@ namespace xFrame.Core.ResourceManager
         /// <param name="address">资源地址</param>
         /// <param name="type">资源类型</param>
         /// <returns>异步任务，包含加载的资源对象</returns>
-        public async Task<UnityEngine.Object> LoadAssetAsync(string address, Type type)
+        public async Task<Object> LoadAssetAsync(string address, Type type)
         {
             if (string.IsNullOrEmpty(address))
             {
-                Debug.LogError($"[ResourcesAssetProvider] 资源地址不能为空");
+                Debug.LogError("[ResourcesAssetProvider] 资源地址不能为空");
                 lock (_lockObject)
                 {
                     _loadFailureCount++;
                 }
+
                 return null;
             }
 
             if (type == null)
             {
-                Debug.LogError($"[ResourcesAssetProvider] 资源类型不能为空");
+                Debug.LogError("[ResourcesAssetProvider] 资源类型不能为空");
                 lock (_lockObject)
                 {
                     _loadFailureCount++;
                 }
+
                 return null;
             }
 
@@ -223,15 +230,12 @@ namespace xFrame.Core.ResourceManager
             {
                 // 使用Resources.LoadAsync进行异步加载
                 var request = Resources.LoadAsync(address, type);
-                
+
                 // 等待加载完成
-                while (!request.isDone)
-                {
-                    await Task.Yield();
-                }
+                while (!request.isDone) await Task.Yield();
 
                 var asset = request.asset;
-                
+
                 lock (_lockObject)
                 {
                     if (asset != null)
@@ -254,6 +258,7 @@ namespace xFrame.Core.ResourceManager
                 {
                     _loadFailureCount++;
                 }
+
                 return null;
             }
         }
@@ -264,21 +269,17 @@ namespace xFrame.Core.ResourceManager
         /// </summary>
         /// <param name="address">资源地址</param>
         /// <param name="asset">资源对象</param>
-        public void ReleaseAsset(string address, UnityEngine.Object asset)
+        public void ReleaseAsset(string address, Object asset)
         {
             lock (_lockObject)
             {
                 _releaseCount++;
-                if (_loadedAssetCount > 0)
-                {
-                    _loadedAssetCount--;
-                }
+                if (_loadedAssetCount > 0) _loadedAssetCount--;
             }
 
             // Resources系统的资源通常不需要手动释放
             // 但可以调用Resources.UnloadAsset来释放非GameObject资源
             if (asset != null && !(asset is GameObject) && !(asset is Component))
-            {
                 try
                 {
                     Resources.UnloadAsset(asset);
@@ -287,7 +288,6 @@ namespace xFrame.Core.ResourceManager
                 {
                     Debug.LogWarning($"[ResourcesAssetProvider] 释放资源时发生异常: {ex.Message}");
                 }
-            }
         }
 
         /// <summary>
@@ -298,10 +298,7 @@ namespace xFrame.Core.ResourceManager
         /// <returns>如果资源存在返回true，否则返回false</returns>
         public bool AssetExists(string address)
         {
-            if (string.IsNullOrEmpty(address))
-            {
-                return false;
-            }
+            if (string.IsNullOrEmpty(address)) return false;
 
             try
             {
@@ -324,7 +321,7 @@ namespace xFrame.Core.ResourceManager
         public async Task PreloadAsync(string address)
         {
             // 对于Resources系统，预加载就是异步加载资源
-            await LoadAssetAsync<UnityEngine.Object>(address);
+            await LoadAssetAsync<Object>(address);
         }
 
         /// <summary>

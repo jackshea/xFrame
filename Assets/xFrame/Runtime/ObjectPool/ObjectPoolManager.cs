@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace xFrame.Core.ObjectPool
+namespace xFrame.Runtime.ObjectPool
 {
     /// <summary>
     /// 对象池管理器
@@ -9,8 +9,8 @@ namespace xFrame.Core.ObjectPool
     /// </summary>
     public class ObjectPoolManager : IDisposable
     {
-        private readonly Dictionary<Type, object> _pools;
         private readonly object _lock;
+        private readonly Dictionary<Type, object> _pools;
         private readonly bool _threadSafe;
         private bool _disposed;
 
@@ -24,10 +24,19 @@ namespace xFrame.Core.ObjectPool
             _threadSafe = threadSafe;
             _disposed = false;
 
-            if (_threadSafe)
-            {
-                _lock = new object();
-            }
+            if (_threadSafe) _lock = new object();
+        }
+
+        /// <summary>
+        /// 销毁对象池管理器，释放所有资源
+        /// </summary>
+        public void Dispose()
+        {
+            if (_disposed)
+                return;
+
+            ClearAll();
+            _disposed = true;
         }
 
         /// <summary>
@@ -42,19 +51,15 @@ namespace xFrame.Core.ObjectPool
 
             ThrowIfDisposed();
 
-            Type type = typeof(T);
+            var type = typeof(T);
 
             if (_threadSafe)
-            {
                 lock (_lock)
                 {
                     _pools[type] = pool;
                 }
-            }
             else
-            {
                 _pools[type] = pool;
-            }
         }
 
         /// <summary>
@@ -68,18 +73,16 @@ namespace xFrame.Core.ObjectPool
             if (_disposed)
                 return null;
 
-            Type type = typeof(T);
+            var type = typeof(T);
 
             if (_threadSafe)
-            {
                 lock (_lock)
                 {
-                    return _pools.TryGetValue(type, out object pool) ? (IObjectPool<T>)pool : null;
+                    return _pools.TryGetValue(type, out var pool) ? (IObjectPool<T>)pool : null;
                 }
-            }
-            else
+
             {
-                return _pools.TryGetValue(type, out object pool) ? (IObjectPool<T>)pool : null;
+                return _pools.TryGetValue(type, out var pool) ? (IObjectPool<T>)pool : null;
             }
         }
 
@@ -172,16 +175,12 @@ namespace xFrame.Core.ObjectPool
             ThrowIfDisposed();
 
             if (_threadSafe)
-            {
                 lock (_lock)
                 {
                     ClearAllInternal();
                 }
-            }
             else
-            {
                 ClearAllInternal();
-            }
         }
 
         /// <summary>
@@ -190,25 +189,10 @@ namespace xFrame.Core.ObjectPool
         private void ClearAllInternal()
         {
             foreach (var pool in _pools.Values)
-            {
                 if (pool is IDisposable disposable)
-                {
                     disposable.Dispose();
-                }
-            }
+
             _pools.Clear();
-        }
-
-        /// <summary>
-        /// 销毁对象池管理器，释放所有资源
-        /// </summary>
-        public void Dispose()
-        {
-            if (_disposed)
-                return;
-
-            ClearAll();
-            _disposed = true;
         }
 
         /// <summary>

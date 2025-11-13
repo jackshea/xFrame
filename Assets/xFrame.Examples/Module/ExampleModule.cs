@@ -1,5 +1,5 @@
 using UnityEngine;
-using xFrame.Core;
+using xFrame.Runtime;
 
 namespace xFrame.Examples
 {
@@ -9,6 +9,8 @@ namespace xFrame.Examples
     /// </summary>
     public class ExampleModule : BaseModule, IUpdatableModule
     {
+        private float _timer;
+
         /// <summary>
         /// 模块名称
         /// </summary>
@@ -18,8 +20,6 @@ namespace xFrame.Examples
         /// 模块优先级，数值越小优先级越高
         /// </summary>
         public override int Priority => 10;
-
-        private float _timer = 0f;
 
         /// <summary>
         /// 模块初始化
@@ -37,7 +37,7 @@ namespace xFrame.Examples
         {
             base.OnStart();
             Debug.Log($"[{ModuleName}] 自定义启动逻辑");
-            
+
             // 可以使用Container获取其他依赖
             // var someService = Container.Resolve<ISomeService>();
         }

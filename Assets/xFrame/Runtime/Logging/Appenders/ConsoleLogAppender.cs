@@ -1,6 +1,6 @@
 using System;
 
-namespace xFrame.Core.Logging.Appenders
+namespace xFrame.Runtime.Logging.Appenders
 {
     /// <summary>
     /// 控制台日志输出器
@@ -9,7 +9,16 @@ namespace xFrame.Core.Logging.Appenders
     public class ConsoleLogAppender : ILogAppender
     {
         private readonly ILogFormatter _formatter;
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
+
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        /// <param name="formatter">日志格式化器</param>
+        public ConsoleLogAppender(ILogFormatter formatter = null)
+        {
+            _formatter = formatter ?? new DefaultLogFormatter();
+        }
 
         /// <summary>
         /// 输出器名称
@@ -27,15 +36,6 @@ namespace xFrame.Core.Logging.Appenders
         public LogLevel MinLevel { get; set; } = LogLevel.Debug;
 
         /// <summary>
-        /// 构造函数
-        /// </summary>
-        /// <param name="formatter">日志格式化器</param>
-        public ConsoleLogAppender(ILogFormatter formatter = null)
-        {
-            _formatter = formatter ?? new DefaultLogFormatter();
-        }
-
-        /// <summary>
         /// 写入日志条目
         /// </summary>
         /// <param name="entry">日志条目</param>
@@ -47,7 +47,7 @@ namespace xFrame.Core.Logging.Appenders
             lock (_lock)
             {
                 var formattedMessage = _formatter.Format(entry);
-                
+
                 // 根据日志等级设置控制台颜色
                 var originalColor = Console.ForegroundColor;
                 try

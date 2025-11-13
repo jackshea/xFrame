@@ -1,10 +1,7 @@
 using System;
 using UnityEngine;
-using VContainer;
-using VContainer.Unity;
-using xFrame.Core.Logging;
 
-namespace xFrame.Core
+namespace xFrame.Runtime
 {
     /// <summary>
     /// xFrame应用程序
@@ -12,6 +9,11 @@ namespace xFrame.Core
     /// </summary>
     public class xFrameApplication : MonoBehaviour
     {
+        /// <summary>
+        /// 单例实例
+        /// </summary>
+        private static xFrameApplication _instance;
+
         /// <summary>
         /// 框架启动器预制体
         /// 如果不指定，将自动创建默认的xFrameBootstrapper
@@ -33,17 +35,12 @@ namespace xFrame.Core
         /// <summary>
         /// 应用程序是否已初始化
         /// </summary>
-        private bool _initialized = false;
-
-        /// <summary>
-        /// 单例实例
-        /// </summary>
-        private static xFrameApplication _instance;
+        private bool _initialized;
 
         /// <summary>
         /// 获取单例实例
         /// </summary>
-        public static xFrameApplication Instance => _instance;
+        public static xFrameApplication Instance => Instance;
 
         /// <summary>
         /// 获取框架启动器
@@ -54,11 +51,6 @@ namespace xFrame.Core
         /// 获取应用程序配置
         /// </summary>
         public xFrameApplicationConfig Config => applicationConfig;
-
-        /// <summary>
-        /// 应用程序初始化完成事件
-        /// </summary>
-        public event Action OnApplicationInitialized;
 
         /// <summary>
         /// Unity Awake生命周期
@@ -87,6 +79,39 @@ namespace xFrame.Core
         }
 
         /// <summary>
+        /// Unity Start生命周期
+        /// </summary>
+        private void Start()
+        {
+            // 在这里可以添加应用程序启动后的逻辑
+            DemonstrateBasicLogging();
+        }
+
+        /// <summary>
+        /// Unity OnDestroy生命周期
+        /// </summary>
+        private void OnDestroy()
+        {
+            if (_instance == this) _instance = null;
+
+            Debug.Log("xFrame应用程序已销毁");
+        }
+
+        /// <summary>
+        /// Unity OnApplicationQuit生命周期
+        /// </summary>
+        private void OnApplicationQuit()
+        {
+            // 在应用程序退出时执行清理操作
+            Debug.Log("xFrame应用程序退出");
+        }
+
+        /// <summary>
+        /// 应用程序初始化完成事件
+        /// </summary>
+        public event Action OnApplicationInitialized;
+
+        /// <summary>
         /// 初始化应用程序
         /// </summary>
         private void Initialize()
@@ -107,7 +132,7 @@ namespace xFrame.Core
 
             _initialized = true;
             Debug.Log("xFrame应用程序初始化完成");
-            
+
             // 触发初始化完成事件
             OnApplicationInitialized?.Invoke();
         }
@@ -119,7 +144,7 @@ namespace xFrame.Core
         {
             // 检查是否已存在启动器
             _bootstrapper = FindObjectOfType<xFrameBootstrapper>();
-            
+
             if (_bootstrapper == null)
             {
                 if (bootstrapperPrefab != null)
@@ -153,54 +178,23 @@ namespace xFrame.Core
                 {
                     // 使用GlobalMinLevel属性替代SetGlobalLogLevel方法
                     logManager.GlobalMinLevel = applicationConfig.LogConfig.GlobalLogLevel;
-                    
+
                     // 应用其他日志配置...
                     Debug.Log($"已应用日志配置，全局日志级别：{applicationConfig.LogConfig.GlobalLogLevel}");
                 }
-                
+
                 // 应用其他配置...
             }
         }
 
         /// <summary>
-        /// Unity Start生命周期
-        /// </summary>
-        private void Start()
-        {
-            // 在这里可以添加应用程序启动后的逻辑
-            DemonstrateBasicLogging();
-        }
-
-        /// <summary>
-        /// Unity OnDestroy生命周期
-        /// </summary>
-        private void OnDestroy()
-        {
-            if (_instance == this)
-            {
-                _instance = null;
-            }
-
-            Debug.Log("xFrame应用程序已销毁");
-        }
-
-        /// <summary>
-        /// Unity OnApplicationQuit生命周期
-        /// </summary>
-        private void OnApplicationQuit()
-        {
-            // 在应用程序退出时执行清理操作
-            Debug.Log("xFrame应用程序退出");
-        }
-        
-        /// <summary>
         /// 演示基本日志功能
         /// </summary>
         private void DemonstrateBasicLogging()
         {
-            var logger= _bootstrapper.LogManager.GetLogger("LogTester");
+            var logger = _bootstrapper.LogManager.GetLogger("LogTester");
             logger.Info("=== 基本日志功能演示 ===");
-            
+
             // 不同等级的日志
             logger.Verbose("这是一条详细日志，通常用于最详细的调试信息");
             logger.Debug("这是一条调试日志，用于开发时的调试信息");

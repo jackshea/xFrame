@@ -5,7 +5,7 @@ using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
-namespace xFrame.Core
+namespace xFrame.Runtime
 {
     /// <summary>
     /// 模块管理器
@@ -13,10 +13,10 @@ namespace xFrame.Core
     /// </summary>
     public class ModuleManager : IStartable, IDisposable
     {
-        private readonly List<IModule> _modules = new List<IModule>();
         private readonly IObjectResolver _container;
-        private bool _initialized = false;
-        private bool _started = false;
+        private readonly List<IModule> _modules = new();
+        private bool _initialized;
+        private bool _started;
 
         /// <summary>
         /// 构造函数
@@ -26,6 +26,42 @@ namespace xFrame.Core
         public ModuleManager(IObjectResolver container)
         {
             _container = container;
+        }
+
+        /// <summary>
+        /// VContainer生命周期销毁方法
+        /// </summary>
+        public void Dispose()
+        {
+            // 按优先级反序销毁所有模块
+            var modulesToDispose = new List<IModule>(_modules);
+            modulesToDispose.Sort((a, b) => b.Priority.CompareTo(a.Priority));
+
+            foreach (var module in modulesToDispose)
+                try
+                {
+                    module.OnDestroy();
+                    Debug.Log($"模块 {module.ModuleName} 销毁成功");
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"模块 {module.ModuleName} 销毁失败: {e}");
+                }
+
+            _modules.Clear();
+            _initialized = false;
+            _started = false;
+            Debug.Log("所有模块已销毁");
+        }
+
+        /// <summary>
+        /// VContainer生命周期启动方法
+        /// </summary>
+        public void Start()
+        {
+            if (!_initialized) InitializeModules();
+
+            StartModules();
         }
 
         /// <summary>
@@ -39,8 +75,8 @@ namespace xFrame.Core
                 Debug.LogError("无法注册模块，模块管理器已经初始化");
                 return;
             }
-          
-            T module = _container.Resolve<T>();
+
+            var module = _container.Resolve<T>();
             RegisterModule(module);
         }
 
@@ -62,10 +98,7 @@ namespace xFrame.Core
                 return;
             }
 
-            if (module is BaseModule baseModule)
-            {
-                baseModule.SetContainer(_container);
-            }
+            if (module is BaseModule baseModule) baseModule.SetContainer(_container);
 
             _modules.Add(module);
             Debug.Log($"模块 {module.ModuleName} 已注册");
@@ -90,7 +123,6 @@ namespace xFrame.Core
 
             // 初始化所有模块
             foreach (var module in _modules)
-            {
                 try
                 {
                     module.OnInit();
@@ -100,7 +132,6 @@ namespace xFrame.Core
                 {
                     Debug.LogError($"模块 {module.ModuleName} 初始化失败: {e}");
                 }
-            }
 
             _initialized = true;
             Debug.Log("所有模块初始化完成");
@@ -128,7 +159,6 @@ namespace xFrame.Core
 
             // 启动所有模块
             foreach (var module in _modules)
-            {
                 try
                 {
                     module.OnStart();
@@ -138,7 +168,6 @@ namespace xFrame.Core
                 {
                     Debug.LogError($"模块 {module.ModuleName} 启动失败: {e}");
                 }
-            }
 
             _started = true;
             Debug.Log("所有模块启动完成");
@@ -162,47 +191,6 @@ namespace xFrame.Core
         public bool HasModule<T>() where T : IModule
         {
             return _modules.Any(m => m is T);
-        }
-
-        /// <summary>
-        /// VContainer生命周期启动方法
-        /// </summary>
-        public void Start()
-        {
-            if (!_initialized)
-            {
-                InitializeModules();
-            }
-            
-            StartModules();
-        }
-
-        /// <summary>
-        /// VContainer生命周期销毁方法
-        /// </summary>
-        public void Dispose()
-        {
-            // 按优先级反序销毁所有模块
-            List<IModule> modulesToDispose = new List<IModule>(_modules);
-            modulesToDispose.Sort((a, b) => b.Priority.CompareTo(a.Priority));
-
-            foreach (var module in modulesToDispose)
-            {
-                try
-                {
-                    module.OnDestroy();
-                    Debug.Log($"模块 {module.ModuleName} 销毁成功");
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError($"模块 {module.ModuleName} 销毁失败: {e}");
-                }
-            }
-
-            _modules.Clear();
-            _initialized = false;
-            _started = false;
-            Debug.Log("所有模块已销毁");
         }
     }
 }

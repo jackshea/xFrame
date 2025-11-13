@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
 
-namespace xFrame.Core.ObjectPool
+namespace xFrame.Runtime.ObjectPool
 {
     /// <summary>
     /// 通用对象池实现
@@ -11,53 +10,17 @@ namespace xFrame.Core.ObjectPool
     /// <typeparam name="T">池化对象的类型</typeparam>
     public class ObjectPool<T> : IObjectPool<T>, IDisposable where T : class
     {
-        private readonly Stack<T> _pool;
         private readonly Func<T> _createFunc;
+        private readonly object _lock;
+        private readonly int _maxSize;
+        private readonly Action<T> _onDestroy;
         private readonly Action<T> _onGet;
         private readonly Action<T> _onRelease;
-        private readonly Action<T> _onDestroy;
-        private readonly int _maxSize;
+        private readonly Stack<T> _pool;
         private readonly bool _threadSafe;
-        private readonly object _lock;
-        
+
         private int _countAll;
         private bool _disposed;
-
-        /// <summary>
-        /// 当前池中对象数量
-        /// </summary>
-        public int CountInPool
-        {
-            get
-            {
-                if (_threadSafe)
-                {
-                    lock (_lock)
-                    {
-                        return _pool.Count;
-                    }
-                }
-                return _pool.Count;
-            }
-        }
-
-        /// <summary>
-        /// 已创建的对象总数
-        /// </summary>
-        public int CountAll
-        {
-            get
-            {
-                if (_threadSafe)
-                {
-                    lock (_lock)
-                    {
-                        return _countAll;
-                    }
-                }
-                return _countAll;
-            }
-        }
 
         /// <summary>
         /// 构造函数
@@ -89,9 +52,40 @@ namespace xFrame.Core.ObjectPool
             _countAll = 0;
             _disposed = false;
 
-            if (_threadSafe)
+            if (_threadSafe) _lock = new object();
+        }
+
+        /// <summary>
+        /// 当前池中对象数量
+        /// </summary>
+        public int CountInPool
+        {
+            get
             {
-                _lock = new object();
+                if (_threadSafe)
+                    lock (_lock)
+                    {
+                        return _pool.Count;
+                    }
+
+                return _pool.Count;
+            }
+        }
+
+        /// <summary>
+        /// 已创建的对象总数
+        /// </summary>
+        public int CountAll
+        {
+            get
+            {
+                if (_threadSafe)
+                    lock (_lock)
+                    {
+                        return _countAll;
+                    }
+
+                return _countAll;
             }
         }
 
@@ -107,39 +101,14 @@ namespace xFrame.Core.ObjectPool
             T obj;
 
             if (_threadSafe)
-            {
                 lock (_lock)
                 {
                     obj = GetInternal();
                 }
-            }
             else
-            {
                 obj = GetInternal();
-            }
 
             _onGet?.Invoke(obj);
-            return obj;
-        }
-
-        /// <summary>
-        /// 内部获取对象的实现
-        /// </summary>
-        /// <returns>池化对象实例</returns>
-        private T GetInternal()
-        {
-            T obj;
-            
-            if (_pool.Count > 0)
-            {
-                obj = _pool.Pop();
-            }
-            else
-            {
-                obj = _createFunc();
-                _countAll++;
-            }
-
             return obj;
         }
 
@@ -155,16 +124,81 @@ namespace xFrame.Core.ObjectPool
             ThrowIfDisposed();
 
             if (_threadSafe)
-            {
                 lock (_lock)
                 {
                     ReleaseInternal(obj);
                 }
+            else
+                ReleaseInternal(obj);
+        }
+
+        /// <summary>
+        /// 预热对象池，预先创建指定数量的对象
+        /// </summary>
+        /// <param name="count">要预创建的对象数量</param>
+        public void WarmUp(int count)
+        {
+            if (count <= 0)
+                return;
+
+            ThrowIfDisposed();
+
+            if (_threadSafe)
+                lock (_lock)
+                {
+                    WarmUpInternal(count);
+                }
+            else
+                WarmUpInternal(count);
+        }
+
+        /// <summary>
+        /// 清空对象池，销毁所有池中的对象
+        /// </summary>
+        public void Clear()
+        {
+            ThrowIfDisposed();
+
+            if (_threadSafe)
+                lock (_lock)
+                {
+                    ClearInternal();
+                }
+            else
+                ClearInternal();
+        }
+
+        /// <summary>
+        /// 销毁对象池，释放所有资源
+        /// </summary>
+        public void Dispose()
+        {
+            if (_disposed)
+                return;
+
+            Clear();
+            _disposed = true;
+        }
+
+        /// <summary>
+        /// 内部获取对象的实现
+        /// </summary>
+        /// <returns>池化对象实例</returns>
+        private T GetInternal()
+        {
+            T obj;
+
+            if (_pool.Count > 0)
+            {
+                obj = _pool.Pop();
             }
             else
             {
-                ReleaseInternal(obj);
+                obj = _createFunc();
+                _countAll++;
             }
+
+            return obj;
         }
 
         /// <summary>
@@ -194,64 +228,20 @@ namespace xFrame.Core.ObjectPool
         }
 
         /// <summary>
-        /// 预热对象池，预先创建指定数量的对象
-        /// </summary>
-        /// <param name="count">要预创建的对象数量</param>
-        public void WarmUp(int count)
-        {
-            if (count <= 0)
-                return;
-
-            ThrowIfDisposed();
-
-            if (_threadSafe)
-            {
-                lock (_lock)
-                {
-                    WarmUpInternal(count);
-                }
-            }
-            else
-            {
-                WarmUpInternal(count);
-            }
-        }
-
-        /// <summary>
         /// 内部预热的实现
         /// </summary>
         /// <param name="count">要预创建的对象数量</param>
         private void WarmUpInternal(int count)
         {
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
                 // 检查是否超过最大容量
                 if (_maxSize > 0 && _pool.Count >= _maxSize)
                     break;
 
-                T obj = _createFunc();
+                var obj = _createFunc();
                 _countAll++;
                 _pool.Push(obj);
-            }
-        }
-
-        /// <summary>
-        /// 清空对象池，销毁所有池中的对象
-        /// </summary>
-        public void Clear()
-        {
-            ThrowIfDisposed();
-
-            if (_threadSafe)
-            {
-                lock (_lock)
-                {
-                    ClearInternal();
-                }
-            }
-            else
-            {
-                ClearInternal();
             }
         }
 
@@ -262,22 +252,10 @@ namespace xFrame.Core.ObjectPool
         {
             while (_pool.Count > 0)
             {
-                T obj = _pool.Pop();
+                var obj = _pool.Pop();
                 _onDestroy?.Invoke(obj);
                 _countAll--;
             }
-        }
-
-        /// <summary>
-        /// 销毁对象池，释放所有资源
-        /// </summary>
-        public void Dispose()
-        {
-            if (_disposed)
-                return;
-
-            Clear();
-            _disposed = true;
         }
 
         /// <summary>

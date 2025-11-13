@@ -1,6 +1,6 @@
 using System;
 
-namespace xFrame.Core.Logging
+namespace xFrame.Runtime.Logging
 {
     /// <summary>
     /// 静态日志访问接口
@@ -9,7 +9,7 @@ namespace xFrame.Core.Logging
     public static class XLog
     {
         private static IXLogManager _logManager;
-        private static readonly object _lock = new object();
+        private static readonly object _lock = new();
 
         /// <summary>
         /// 初始化静态日志系统
@@ -164,10 +164,7 @@ namespace xFrame.Core.Logging
         /// </summary>
         private static void EnsureInitialized()
         {
-            if (_logManager == null)
-            {
-                throw new InvalidOperationException("日志系统尚未初始化，请先调用 Log.Initialize() 方法");
-            }
+            if (_logManager == null) throw new InvalidOperationException("日志系统尚未初始化，请先调用 Log.Initialize() 方法");
         }
     }
 }

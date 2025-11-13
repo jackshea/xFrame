@@ -1,7 +1,6 @@
-using System;
 using System.Collections.Generic;
 
-namespace xFrame.Core.DataStructures
+namespace xFrame.Runtime.DataStructures
 {
     /// <summary>
     /// LRU缓存接口
@@ -20,6 +19,18 @@ namespace xFrame.Core.DataStructures
         /// 当前缓存中的元素数量
         /// </summary>
         int Count { get; }
+
+        /// <summary>
+        /// 获取所有键的集合（按最近使用顺序排列）
+        /// </summary>
+        /// <returns>键的集合</returns>
+        IEnumerable<TKey> Keys { get; }
+
+        /// <summary>
+        /// 获取所有值的集合（按最近使用顺序排列）
+        /// </summary>
+        /// <returns>值的集合</returns>
+        IEnumerable<TValue> Values { get; }
 
         /// <summary>
         /// 获取指定键对应的值
@@ -65,17 +76,5 @@ namespace xFrame.Core.DataStructures
         /// 清空缓存中的所有元素
         /// </summary>
         void Clear();
-
-        /// <summary>
-        /// 获取所有键的集合（按最近使用顺序排列）
-        /// </summary>
-        /// <returns>键的集合</returns>
-        IEnumerable<TKey> Keys { get; }
-
-        /// <summary>
-        /// 获取所有值的集合（按最近使用顺序排列）
-        /// </summary>
-        /// <returns>值的集合</returns>
-        IEnumerable<TValue> Values { get; }
     }
 }

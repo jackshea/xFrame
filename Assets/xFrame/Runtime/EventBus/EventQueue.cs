@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using xFrame.Core.ObjectPool;
+using xFrame.Runtime.ObjectPool;
 
-namespace xFrame.Core.EventBus
+namespace xFrame.Runtime.EventBus
 {
     /// <summary>
     /// 事件队列项
@@ -16,27 +16,27 @@ namespace xFrame.Core.EventBus
         /// 事件数据
         /// </summary>
         public IEvent Event { get; set; }
-        
+
         /// <summary>
         /// 事件类型
         /// </summary>
         public Type EventType { get; set; }
-        
+
         /// <summary>
         /// 入队时间
         /// </summary>
         public long EnqueueTime { get; set; }
-        
+
         /// <summary>
         /// 延迟执行时间（毫秒）
         /// </summary>
         public long DelayUntil { get; set; }
-        
+
         /// <summary>
         /// 是否异步处理
         /// </summary>
         public bool IsAsync { get; set; }
-        
+
         /// <summary>
         /// 对象池回调：获取时调用
         /// </summary>
@@ -49,7 +49,7 @@ namespace xFrame.Core.EventBus
             DelayUntil = 0;
             IsAsync = false;
         }
-        
+
         /// <summary>
         /// 对象池回调：释放时调用
         /// </summary>
@@ -59,7 +59,7 @@ namespace xFrame.Core.EventBus
             Event = null;
             EventType = null;
         }
-        
+
         /// <summary>
         /// 对象池回调：销毁时调用
         /// </summary>
@@ -72,7 +72,7 @@ namespace xFrame.Core.EventBus
             DelayUntil = 0;
             IsAsync = false;
         }
-        
+
         /// <summary>
         /// 判断是否可以执行
         /// </summary>
@@ -82,18 +82,30 @@ namespace xFrame.Core.EventBus
             return DelayUntil <= DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         }
     }
-    
+
     /// <summary>
     /// 事件队列
     /// 支持优先级排序和延迟执行
     /// </summary>
     public class EventQueue
     {
-        private readonly object _lock = new object();
-        private readonly List<EventQueueItem> _queue = new List<EventQueueItem>();
         private readonly IObjectPool<EventQueueItem> _itemPool;
-        private volatile bool _isProcessing = false;
-        
+        private readonly object _lock = new();
+        private readonly List<EventQueueItem> _queue = new();
+        private volatile bool _isProcessing;
+
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        public EventQueue()
+        {
+            _itemPool = ObjectPoolFactory.Create(
+                () => new EventQueueItem(),
+                1000,
+                true
+            );
+        }
+
         /// <summary>
         /// 队列中的事件数量
         /// </summary>
@@ -107,24 +119,12 @@ namespace xFrame.Core.EventBus
                 }
             }
         }
-        
+
         /// <summary>
         /// 是否正在处理事件
         /// </summary>
         public bool IsProcessing => _isProcessing;
-        
-        /// <summary>
-        /// 构造函数
-        /// </summary>
-        public EventQueue()
-        {
-            _itemPool = ObjectPoolFactory.Create<EventQueueItem>(
-                createFunc: () => new EventQueueItem(),
-                maxSize: 1000,
-                threadSafe: true
-            );
-        }
-        
+
         /// <summary>
         /// 入队事件
         /// </summary>
@@ -138,14 +138,14 @@ namespace xFrame.Core.EventBus
                 throw new ArgumentNullException(nameof(eventData));
             if (eventType == null)
                 throw new ArgumentNullException(nameof(eventType));
-            
+
             var item = _itemPool.Get();
             item.Event = eventData;
             item.EventType = eventType;
             item.EnqueueTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             item.DelayUntil = item.EnqueueTime + delay;
             item.IsAsync = isAsync;
-            
+
             lock (_lock)
             {
                 _queue.Add(item);
@@ -157,7 +157,7 @@ namespace xFrame.Core.EventBus
                 });
             }
         }
-        
+
         /// <summary>
         /// 出队事件
         /// </summary>
@@ -168,9 +168,9 @@ namespace xFrame.Core.EventBus
             {
                 if (_queue.Count == 0)
                     return null;
-                
+
                 // 查找第一个可以执行的事件
-                for (int i = 0; i < _queue.Count; i++)
+                for (var i = 0; i < _queue.Count; i++)
                 {
                     var item = _queue[i];
                     if (item.CanExecute())
@@ -179,11 +179,11 @@ namespace xFrame.Core.EventBus
                         return item;
                     }
                 }
-                
+
                 return null; // 没有可执行的事件
             }
         }
-        
+
         /// <summary>
         /// 批量出队事件
         /// </summary>
@@ -192,12 +192,12 @@ namespace xFrame.Core.EventBus
         public List<EventQueueItem> DequeueBatch(int maxCount = 10)
         {
             var result = new List<EventQueueItem>();
-            
+
             lock (_lock)
             {
                 var currentTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                
-                for (int i = _queue.Count - 1; i >= 0 && result.Count < maxCount; i--)
+
+                for (var i = _queue.Count - 1; i >= 0 && result.Count < maxCount; i--)
                 {
                     var item = _queue[i];
                     if (item.DelayUntil <= currentTime)
@@ -206,7 +206,7 @@ namespace xFrame.Core.EventBus
                         result.Add(item);
                     }
                 }
-                
+
                 // 按优先级排序结果
                 result.Sort((a, b) =>
                 {
@@ -214,10 +214,10 @@ namespace xFrame.Core.EventBus
                     return priorityCompare != 0 ? priorityCompare : a.EnqueueTime.CompareTo(b.EnqueueTime);
                 });
             }
-            
+
             return result;
         }
-        
+
         /// <summary>
         /// 查看队列中的下一个事件（不出队）
         /// </summary>
@@ -229,7 +229,7 @@ namespace xFrame.Core.EventBus
                 return _queue.FirstOrDefault(item => item.CanExecute());
             }
         }
-        
+
         /// <summary>
         /// 清空队列
         /// </summary>
@@ -238,26 +238,20 @@ namespace xFrame.Core.EventBus
             lock (_lock)
             {
                 // 将所有项目返回到对象池
-                foreach (var item in _queue)
-                {
-                    _itemPool.Release(item);
-                }
+                foreach (var item in _queue) _itemPool.Release(item);
                 _queue.Clear();
             }
         }
-        
+
         /// <summary>
         /// 释放队列项到对象池
         /// </summary>
         /// <param name="item">队列项</param>
         public void ReleaseItem(EventQueueItem item)
         {
-            if (item != null)
-            {
-                _itemPool.Release(item);
-            }
+            if (item != null) _itemPool.Release(item);
         }
-        
+
         /// <summary>
         /// 设置处理状态
         /// </summary>
@@ -266,7 +260,7 @@ namespace xFrame.Core.EventBus
         {
             _isProcessing = isProcessing;
         }
-        
+
         /// <summary>
         /// 获取队列统计信息
         /// </summary>
@@ -279,27 +273,27 @@ namespace xFrame.Core.EventBus
                 var readyCount = _queue.Count(item => item.CanExecute());
                 var delayedCount = totalCount - readyCount;
                 var asyncCount = _queue.Count(item => item.IsAsync);
-                
+
                 return $"Total: {totalCount}, Ready: {readyCount}, Delayed: {delayedCount}, Async: {asyncCount}";
             }
         }
     }
-    
+
     /// <summary>
     /// 线程安全的事件队列
     /// 使用读写锁优化并发性能
     /// </summary>
     public class ThreadSafeEventQueue : EventQueue
     {
-        private readonly ReaderWriterLockSlim _rwLock = new ReaderWriterLockSlim();
-        
+        private readonly ReaderWriterLockSlim _rwLock = new();
+
         /// <summary>
         /// 构造函数
         /// </summary>
-        public ThreadSafeEventQueue() : base()
+        public ThreadSafeEventQueue()
         {
         }
-        
+
         /// <summary>
         /// 释放资源
         /// </summary>

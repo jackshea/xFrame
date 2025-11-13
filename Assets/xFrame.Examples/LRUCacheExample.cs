@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using xFrame.Core.DataStructures;
+using xFrame.Runtime.DataStructures;
+using Random = UnityEngine.Random;
 
 namespace xFrame.Examples
 {
@@ -12,93 +12,17 @@ namespace xFrame.Examples
     /// </summary>
     public class LRUCacheExample : MonoBehaviour
     {
-        /// <summary>
-        /// 示例数据类
-        /// </summary>
-        [System.Serializable]
-        public class PlayerData
-        {
-            public int playerId;
-            public string playerName;
-            public int level;
-            public float experience;
-            public Vector3 position;
-
-            public PlayerData(int id, string name, int lvl, float exp, Vector3 pos)
-            {
-                playerId = id;
-                playerName = name;
-                level = lvl;
-                experience = exp;
-                position = pos;
-            }
-
-            public override string ToString()
-            {
-                return $"Player[{playerId}]: {playerName} (Lv.{level}, Exp:{experience:F1})";
-            }
-        }
-
-        /// <summary>
-        /// 示例纹理缓存类
-        /// </summary>
-        public class TextureCache
-        {
-            private readonly ILRUCache<string, Texture2D> _cache;
-
-            public TextureCache(int capacity)
-            {
-                _cache = LRUCacheFactory.CreateStringCache<Texture2D>(capacity);
-            }
-
-            public Texture2D GetTexture(string path)
-            {
-                if (_cache.TryGet(path, out Texture2D texture))
-                {
-                    Debug.Log($"缓存命中: {path}");
-                    return texture;
-                }
-
-                // 模拟从磁盘加载纹理
-                texture = LoadTextureFromDisk(path);
-                if (texture != null)
-                {
-                    _cache.Put(path, texture);
-                    Debug.Log($"纹理已缓存: {path}");
-                }
-
-                return texture;
-            }
-
-            private Texture2D LoadTextureFromDisk(string path)
-            {
-                // 这里应该是实际的纹理加载逻辑
-                Debug.Log($"从磁盘加载纹理: {path}");
-                return new Texture2D(256, 256);
-            }
-
-            public void ClearCache()
-            {
-                _cache.Clear();
-                Debug.Log("纹理缓存已清空");
-            }
-
-            public string GetCacheStatus()
-            {
-                return $"纹理缓存: {_cache.Count}/{_cache.Capacity}";
-            }
-        }
+        private ILRUCache<string, string> _configCache;
 
         // 缓存实例
         private ILRUCache<int, PlayerData> _playerCache;
-        private ILRUCache<string, string> _configCache;
-        private ThreadSafeLRUCache<string, object> _threadSafeCache;
         private TextureCache _textureCache;
+        private ThreadSafeLRUCache<string, object> _threadSafeCache;
 
         /// <summary>
         /// 初始化各种缓存示例
         /// </summary>
-        void Start()
+        private void Start()
         {
             Debug.Log("=== LRU缓存系统示例开始 ===");
 
@@ -119,6 +43,78 @@ namespace xFrame.Examples
         }
 
         /// <summary>
+        /// 清理资源
+        /// </summary>
+        private void OnDestroy()
+        {
+            Debug.Log("\n=== 清理LRU缓存资源 ===");
+
+            _playerCache?.Clear();
+            _configCache?.Clear();
+            _threadSafeCache?.Dispose();
+
+            Debug.Log("LRU缓存系统示例结束");
+        }
+
+        /// <summary>
+        /// 在Inspector中显示缓存状态
+        /// </summary>
+        private void OnGUI()
+        {
+            if (_playerCache == null) return;
+
+            GUILayout.BeginArea(new Rect(10, 10, 400, 300));
+            GUILayout.Label("=== LRU缓存状态 ===");
+
+            GUILayout.Label($"玩家缓存: {_playerCache.Count}/{_playerCache.Capacity}");
+            GUILayout.Label($"配置缓存: {_configCache.Count}/{_configCache.Capacity}");
+            GUILayout.Label($"线程安全缓存: {_threadSafeCache.Count}/{_threadSafeCache.Capacity}");
+            GUILayout.Label(_textureCache.GetCacheStatus());
+
+            GUILayout.Space(10);
+
+            if (GUILayout.Button("获取随机玩家"))
+            {
+                var randomId = Random.Range(1, 11);
+                if (_playerCache.TryGet(randomId, out var player))
+                    Debug.Log($"获取玩家 {randomId}: {player}");
+                else
+                    Debug.Log($"玩家 {randomId} 不在缓存中");
+            }
+
+            if (GUILayout.Button("添加新玩家"))
+            {
+                var newId = Random.Range(100, 200);
+                var newPlayer = new PlayerData(
+                    newId,
+                    $"NewPlayer_{newId}",
+                    Random.Range(1, 100),
+                    Random.Range(0f, 5000f),
+                    Vector3.zero
+                );
+                _playerCache.Put(newId, newPlayer);
+                Debug.Log($"添加新玩家: {newPlayer}");
+            }
+
+            if (GUILayout.Button("清空玩家缓存"))
+            {
+                _playerCache.Clear();
+                Debug.Log("玩家缓存已清空");
+            }
+
+            if (GUILayout.Button("加载随机纹理"))
+            {
+                string[] paths = { "tex1.png", "tex2.png", "tex3.png", "tex4.png", "tex5.png" };
+                var randomPath = paths[Random.Range(0, paths.Length)];
+                _textureCache.GetTexture(randomPath);
+            }
+
+            if (GUILayout.Button("清空纹理缓存")) _textureCache.ClearCache();
+
+            GUILayout.EndArea();
+        }
+
+        /// <summary>
         /// 创建玩家数据缓存
         /// </summary>
         private void CreatePlayerDataCache()
@@ -129,14 +125,14 @@ namespace xFrame.Examples
             _playerCache = LRUCacheFactory.CreateIntCache<PlayerData>(100);
 
             // 模拟添加玩家数据
-            for (int i = 1; i <= 10; i++)
+            for (var i = 1; i <= 10; i++)
             {
                 var player = new PlayerData(
-                    i, 
-                    $"Player_{i}", 
-                    UnityEngine.Random.Range(1, 50),
-                    UnityEngine.Random.Range(0f, 1000f),
-                    new Vector3(UnityEngine.Random.Range(-100f, 100f), 0, UnityEngine.Random.Range(-100f, 100f))
+                    i,
+                    $"Player_{i}",
+                    Random.Range(1, 50),
+                    Random.Range(0f, 1000f),
+                    new Vector3(Random.Range(-100f, 100f), 0, Random.Range(-100f, 100f))
                 );
                 _playerCache.Put(i, player);
             }
@@ -228,15 +224,9 @@ namespace xFrame.Examples
             Debug.Log("\n-- 玩家数据缓存演示 --");
 
             // 获取玩家数据
-            if (_playerCache.TryGet(1, out PlayerData player1))
-            {
-                Debug.Log($"获取玩家1: {player1}");
-            }
+            if (_playerCache.TryGet(1, out var player1)) Debug.Log($"获取玩家1: {player1}");
 
-            if (_playerCache.TryGet(5, out PlayerData player5))
-            {
-                Debug.Log($"获取玩家5: {player5}");
-            }
+            if (_playerCache.TryGet(5, out var player5)) Debug.Log($"获取玩家5: {player5}");
 
             // 更新玩家数据
             var updatedPlayer = new PlayerData(1, "UpdatedPlayer_1", 25, 500f, Vector3.zero);
@@ -256,8 +246,8 @@ namespace xFrame.Examples
             Debug.Log("\n-- 配置缓存演示 --");
 
             // 获取配置值
-            string version = _configCache.Get("game.version");
-            string maxHealth = _configCache.Get("player.max_health");
+            var version = _configCache.Get("game.version");
+            var maxHealth = _configCache.Get("player.max_health");
             Debug.Log($"游戏版本: {version}");
             Debug.Log($"玩家最大血量: {maxHealth}");
 
@@ -287,7 +277,7 @@ namespace xFrame.Examples
             Debug.Log($"添加3个元素后: Count={smallCache.Count}");
 
             // 访问第一个元素，使其成为最近使用的
-            string first = smallCache.Get(1);
+            var first = smallCache.Get(1);
             Debug.Log($"访问第一个元素: {first}");
 
             // 添加第四个元素，应该淘汰最久未使用的（元素2）
@@ -313,7 +303,8 @@ namespace xFrame.Examples
             Debug.Log("\n-- 纹理缓存演示 --");
 
             // 模拟加载纹理
-            string[] texturePaths = {
+            string[] texturePaths =
+            {
                 "textures/player.png",
                 "textures/enemy.png",
                 "textures/background.png",
@@ -322,7 +313,7 @@ namespace xFrame.Examples
             };
 
             // 第一次加载（从磁盘）
-            foreach (string path in texturePaths)
+            foreach (var path in texturePaths)
             {
                 var texture = _textureCache.GetTexture(path);
                 Debug.Log($"加载纹理: {path}");
@@ -332,7 +323,7 @@ namespace xFrame.Examples
 
             // 第二次加载（从缓存）
             Debug.Log("\n重新加载相同纹理:");
-            for (int i = 0; i < Math.Min(3, texturePaths.Length); i++)
+            for (var i = 0; i < Math.Min(3, texturePaths.Length); i++)
             {
                 var texture = _textureCache.GetTexture(texturePaths[i]);
             }
@@ -360,82 +351,80 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 在Inspector中显示缓存状态
+        /// 示例数据类
         /// </summary>
-        void OnGUI()
+        [Serializable]
+        public class PlayerData
         {
-            if (_playerCache == null) return;
+            public int playerId;
+            public string playerName;
+            public int level;
+            public float experience;
+            public Vector3 position;
 
-            GUILayout.BeginArea(new Rect(10, 10, 400, 300));
-            GUILayout.Label("=== LRU缓存状态 ===");
-            
-            GUILayout.Label($"玩家缓存: {_playerCache.Count}/{_playerCache.Capacity}");
-            GUILayout.Label($"配置缓存: {_configCache.Count}/{_configCache.Capacity}");
-            GUILayout.Label($"线程安全缓存: {_threadSafeCache.Count}/{_threadSafeCache.Capacity}");
-            GUILayout.Label(_textureCache.GetCacheStatus());
-
-            GUILayout.Space(10);
-
-            if (GUILayout.Button("获取随机玩家"))
+            public PlayerData(int id, string name, int lvl, float exp, Vector3 pos)
             {
-                int randomId = UnityEngine.Random.Range(1, 11);
-                if (_playerCache.TryGet(randomId, out PlayerData player))
-                {
-                    Debug.Log($"获取玩家 {randomId}: {player}");
-                }
-                else
-                {
-                    Debug.Log($"玩家 {randomId} 不在缓存中");
-                }
+                playerId = id;
+                playerName = name;
+                level = lvl;
+                experience = exp;
+                position = pos;
             }
 
-            if (GUILayout.Button("添加新玩家"))
+            public override string ToString()
             {
-                int newId = UnityEngine.Random.Range(100, 200);
-                var newPlayer = new PlayerData(
-                    newId, 
-                    $"NewPlayer_{newId}", 
-                    UnityEngine.Random.Range(1, 100),
-                    UnityEngine.Random.Range(0f, 5000f),
-                    Vector3.zero
-                );
-                _playerCache.Put(newId, newPlayer);
-                Debug.Log($"添加新玩家: {newPlayer}");
+                return $"Player[{playerId}]: {playerName} (Lv.{level}, Exp:{experience:F1})";
             }
-
-            if (GUILayout.Button("清空玩家缓存"))
-            {
-                _playerCache.Clear();
-                Debug.Log("玩家缓存已清空");
-            }
-
-            if (GUILayout.Button("加载随机纹理"))
-            {
-                string[] paths = { "tex1.png", "tex2.png", "tex3.png", "tex4.png", "tex5.png" };
-                string randomPath = paths[UnityEngine.Random.Range(0, paths.Length)];
-                _textureCache.GetTexture(randomPath);
-            }
-
-            if (GUILayout.Button("清空纹理缓存"))
-            {
-                _textureCache.ClearCache();
-            }
-
-            GUILayout.EndArea();
         }
 
         /// <summary>
-        /// 清理资源
+        /// 示例纹理缓存类
         /// </summary>
-        void OnDestroy()
+        public class TextureCache
         {
-            Debug.Log("\n=== 清理LRU缓存资源 ===");
+            private readonly ILRUCache<string, Texture2D> _cache;
 
-            _playerCache?.Clear();
-            _configCache?.Clear();
-            _threadSafeCache?.Dispose();
+            public TextureCache(int capacity)
+            {
+                _cache = LRUCacheFactory.CreateStringCache<Texture2D>(capacity);
+            }
 
-            Debug.Log("LRU缓存系统示例结束");
+            public Texture2D GetTexture(string path)
+            {
+                if (_cache.TryGet(path, out var texture))
+                {
+                    Debug.Log($"缓存命中: {path}");
+                    return texture;
+                }
+
+                // 模拟从磁盘加载纹理
+                texture = LoadTextureFromDisk(path);
+                if (texture != null)
+                {
+                    _cache.Put(path, texture);
+                    Debug.Log($"纹理已缓存: {path}");
+                }
+
+                return texture;
+            }
+
+            private Texture2D LoadTextureFromDisk(string path)
+            {
+                // 这里应该是实际的纹理加载逻辑
+                Debug.Log($"从磁盘加载纹理: {path}");
+                return new Texture2D(256, 256);
+            }
+
+            public void ClearCache()
+            {
+                _cache.Clear();
+                Debug.Log("纹理缓存已清空");
+            }
+
+            public string GetCacheStatus()
+            {
+                return $"纹理缓存: {_cache.Count}/{_cache.Capacity}";
+            }
         }
     }
 }

@@ -1,6 +1,4 @@
-using System;
-
-namespace xFrame.Core.DataStructures
+namespace xFrame.Runtime.DataStructures
 {
     /// <summary>
     /// LRU缓存工厂类

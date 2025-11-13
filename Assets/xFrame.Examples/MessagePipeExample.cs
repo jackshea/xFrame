@@ -1,12 +1,12 @@
-using UnityEngine;
-using VContainer;
-using VContainer.Unity;
-using MessagePipe;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using xFrame.Core.MessagePipe;
+using MessagePipe;
+using UnityEngine;
+using VContainer;
+using VContainer.Unity;
+using Random = UnityEngine.Random;
 
 namespace xFrame.Examples
 {
@@ -16,55 +16,94 @@ namespace xFrame.Examples
     /// </summary>
     public class MessagePipeExample : MonoBehaviour, IStartable, IDisposable
     {
-        /// <summary>
-        /// 游戏事件数据结构
-        /// </summary>
-        [Serializable]
-        public struct GameEvent
-        {
-            public string eventName;
-            public int value;
-            public DateTime timestamp;
+        [Header("示例控制")]
+        [SerializeField]
+        private bool enableAutoTest = true;
 
-            public override string ToString()
-            {
-                return $"GameEvent: {eventName}, Value: {value}, Time: {timestamp:HH:mm:ss}";
-            }
-        }
+        [SerializeField]
+        private float testInterval = 2f;
 
-        /// <summary>
-        /// 玩家生命值变化事件
-        /// </summary>
-        [Serializable]
-        public struct HealthChangedEvent
-        {
-            public int currentHealth;
-            public int maxHealth;
-            public float healthPercentage;
+        private readonly List<IDisposable> subscriptions = new();
 
-            public override string ToString()
-            {
-                return $"Health: {currentHealth}/{maxHealth} ({healthPercentage:P1})";
-            }
-        }
+        [Inject]
+        private IAsyncPublisher<GameEvent> asyncGameEventPublisher;
 
-        // 依赖注入的服务
-        [Inject] private IPublisher<GameEvent> gameEventPublisher;
-        [Inject] private ISubscriber<GameEvent> gameEventSubscriber;
-        [Inject] private IPublisher<string, HealthChangedEvent> healthEventPublisher;
-        [Inject] private ISubscriber<string, HealthChangedEvent> healthEventSubscriber;
-        [Inject] private IAsyncPublisher<GameEvent> asyncGameEventPublisher;
-        [Inject] private IAsyncSubscriber<GameEvent> asyncGameEventSubscriber;
+        [Inject]
+        private IAsyncSubscriber<GameEvent> asyncGameEventSubscriber;
 
         // 订阅管理
         private IDisposable bag;
-        private readonly List<IDisposable> subscriptions = new List<IDisposable>();
 
-        [Header("示例控制")]
-        [SerializeField] private bool enableAutoTest = true;
-        [SerializeField] private float testInterval = 2f;
+        // 依赖注入的服务
+        [Inject]
+        private IPublisher<GameEvent> gameEventPublisher;
+
+        [Inject]
+        private ISubscriber<GameEvent> gameEventSubscriber;
+
+        [Inject]
+        private IPublisher<string, HealthChangedEvent> healthEventPublisher;
+
+        [Inject]
+        private ISubscriber<string, HealthChangedEvent> healthEventSubscriber;
 
         private float nextTestTime;
+
+        /// <summary>
+        /// Update方法中执行自动测试
+        /// </summary>
+        private void Update()
+        {
+            if (enableAutoTest && Time.time >= nextTestTime)
+            {
+                RunEventTest();
+                nextTestTime = Time.time + testInterval;
+            }
+        }
+
+        /// <summary>
+        /// OnDestroy时清理资源
+        /// </summary>
+        private void OnDestroy()
+        {
+            Dispose();
+        }
+
+        /// <summary>
+        /// 在Inspector中显示当前状态
+        /// </summary>
+        private void OnGUI()
+        {
+            GUILayout.BeginArea(new Rect(10, 10, 300, 200));
+            GUILayout.Label("MessagePipe示例控制",
+                new GUIStyle(GUI.skin.label) { fontSize = 16, fontStyle = FontStyle.Bold });
+
+            GUILayout.Space(10);
+
+            if (GUILayout.Button("运行事件测试")) RunEventTest();
+
+            if (GUILayout.Button("测试请求/响应")) TestRequestResponse();
+
+            GUILayout.Space(10);
+            GUILayout.Label($"自动测试: {(enableAutoTest ? "开启" : "关闭")}");
+            GUILayout.Label($"测试间隔: {testInterval}秒");
+
+            GUILayout.EndArea();
+        }
+
+        /// <summary>
+        /// 清理资源
+        /// </summary>
+        public void Dispose()
+        {
+            Debug.Log("[MessagePipeExample] 清理MessagePipe示例资源");
+
+            bag?.Dispose();
+            bag = null;
+
+            foreach (var subscription in subscriptions) subscription?.Dispose();
+            subscriptions.Clear();
+        }
 
         /// <summary>
         /// VContainer初始化后调用
@@ -72,13 +111,10 @@ namespace xFrame.Examples
         public void Start()
         {
             Debug.Log("[MessagePipeExample] 开始初始化MessagePipe示例");
-            
+
             SetupEventSubscriptions();
-            
-            if (enableAutoTest)
-            {
-                nextTestTime = Time.time + testInterval;
-            }
+
+            if (enableAutoTest) nextTestTime = Time.time + testInterval;
         }
 
         /// <summary>
@@ -90,9 +126,9 @@ namespace xFrame.Examples
 
             // 订阅普通游戏事件
             gameEventSubscriber.Subscribe(OnGameEvent).AddTo(bagBuilder);
-            
+
             // 订阅带过滤器的游戏事件（只处理特定事件）
-            gameEventSubscriber.Subscribe(OnSpecialGameEvent, 
+            gameEventSubscriber.Subscribe(OnSpecialGameEvent,
                 x => x.eventName.Contains("Special")).AddTo(bagBuilder);
 
             // 订阅异步游戏事件
@@ -133,10 +169,10 @@ namespace xFrame.Examples
         private async UniTask OnAsyncGameEvent(GameEvent gameEvent, CancellationToken cancellationToken)
         {
             Debug.Log($"[MessagePipeExample] 开始处理异步游戏事件: {gameEvent}");
-            
+
             // 模拟异步处理
             await UniTask.Delay(TimeSpan.FromSeconds(0.5f), cancellationToken: cancellationToken);
-            
+
             Debug.Log($"[MessagePipeExample] 异步游戏事件处理完成: {gameEvent}");
         }
 
@@ -151,18 +187,6 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// Update方法中执行自动测试
-        /// </summary>
-        private void Update()
-        {
-            if (enableAutoTest && Time.time >= nextTestTime)
-            {
-                RunEventTest();
-                nextTestTime = Time.time + testInterval;
-            }
-        }
-
-        /// <summary>
         /// 运行事件测试
         /// </summary>
         [ContextMenu("运行事件测试")]
@@ -174,7 +198,7 @@ namespace xFrame.Examples
             var normalEvent = new GameEvent
             {
                 eventName = "NormalEvent",
-                value = UnityEngine.Random.Range(1, 100),
+                value = Random.Range(1, 100),
                 timestamp = DateTime.Now
             };
             gameEventPublisher.Publish(normalEvent);
@@ -183,7 +207,7 @@ namespace xFrame.Examples
             var specialEvent = new GameEvent
             {
                 eventName = "SpecialEvent_Bonus",
-                value = UnityEngine.Random.Range(100, 200),
+                value = Random.Range(100, 200),
                 timestamp = DateTime.Now
             };
             gameEventPublisher.Publish(specialEvent);
@@ -192,7 +216,7 @@ namespace xFrame.Examples
             var asyncEvent = new GameEvent
             {
                 eventName = "AsyncEvent",
-                value = UnityEngine.Random.Range(200, 300),
+                value = Random.Range(200, 300),
                 timestamp = DateTime.Now
             };
             asyncGameEventPublisher.Publish(asyncEvent);
@@ -200,18 +224,18 @@ namespace xFrame.Examples
             // 发布玩家生命值事件
             var healthEvent = new HealthChangedEvent
             {
-                currentHealth = UnityEngine.Random.Range(50, 100),
+                currentHealth = Random.Range(50, 100),
                 maxHealth = 100,
-                healthPercentage = UnityEngine.Random.Range(0.5f, 1f)
+                healthPercentage = Random.Range(0.5f, 1f)
             };
-            
+
             healthEventPublisher.Publish("Player1", healthEvent);
-            
+
             healthEvent = new HealthChangedEvent
             {
-                currentHealth = UnityEngine.Random.Range(30, 80),
+                currentHealth = Random.Range(30, 80),
                 maxHealth = 100,
-                healthPercentage = UnityEngine.Random.Range(0.3f, 0.8f)
+                healthPercentage = Random.Range(0.3f, 0.8f)
             };
             healthEventPublisher.Publish("Player2", healthEvent);
 
@@ -225,62 +249,42 @@ namespace xFrame.Examples
         public void TestRequestResponse()
         {
             Debug.Log("[MessagePipeExample] === 测试请求/响应模式 ===");
-            
+
             // 这里需要实现IRequestHandler来演示
             // 由于篇幅限制，这里只是示例代码结构
             Debug.Log("[MessagePipeExample] 请求/响应模式需要额外的Handler实现");
         }
 
         /// <summary>
-        /// 清理资源
+        /// 游戏事件数据结构
         /// </summary>
-        public void Dispose()
+        [Serializable]
+        public struct GameEvent
         {
-            Debug.Log("[MessagePipeExample] 清理MessagePipe示例资源");
-            
-            bag?.Dispose();
-            bag = null;
-            
-            foreach (var subscription in subscriptions)
+            public string eventName;
+            public int value;
+            public DateTime timestamp;
+
+            public override string ToString()
             {
-                subscription?.Dispose();
+                return $"GameEvent: {eventName}, Value: {value}, Time: {timestamp:HH:mm:ss}";
             }
-            subscriptions.Clear();
         }
 
         /// <summary>
-        /// OnDestroy时清理资源
+        /// 玩家生命值变化事件
         /// </summary>
-        private void OnDestroy()
+        [Serializable]
+        public struct HealthChangedEvent
         {
-            Dispose();
-        }
+            public int currentHealth;
+            public int maxHealth;
+            public float healthPercentage;
 
-        /// <summary>
-        /// 在Inspector中显示当前状态
-        /// </summary>
-        private void OnGUI()
-        {
-            GUILayout.BeginArea(new Rect(10, 10, 300, 200));
-            GUILayout.Label("MessagePipe示例控制", new GUIStyle(GUI.skin.label) { fontSize = 16, fontStyle = FontStyle.Bold });
-            
-            GUILayout.Space(10);
-            
-            if (GUILayout.Button("运行事件测试"))
+            public override string ToString()
             {
-                RunEventTest();
+                return $"Health: {currentHealth}/{maxHealth} ({healthPercentage:P1})";
             }
-            
-            if (GUILayout.Button("测试请求/响应"))
-            {
-                TestRequestResponse();
-            }
-            
-            GUILayout.Space(10);
-            GUILayout.Label($"自动测试: {(enableAutoTest ? "开启" : "关闭")}");
-            GUILayout.Label($"测试间隔: {testInterval}秒");
-            
-            GUILayout.EndArea();
         }
     }
 }

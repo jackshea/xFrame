@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace xFrame.Core.Logging
+namespace xFrame.Runtime.Logging
 {
     /// <summary>
     /// 日志管理器实现
@@ -11,9 +11,21 @@ namespace xFrame.Core.Logging
     /// </summary>
     public class XLogManager : IXLogManager
     {
-        private readonly ConcurrentDictionary<string, IXLogger> _loggers;
         private readonly List<ILogAppender> _globalAppenders;
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
+        private readonly ConcurrentDictionary<string, IXLogger> _loggers;
+
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        public XLogManager()
+        {
+            _loggers = new ConcurrentDictionary<string, IXLogger>();
+            _globalAppenders = new List<ILogAppender>();
+
+            // 注册Unity异常处理
+            RegisterUnityExceptionHandler();
+        }
 
         /// <summary>
         /// 全局日志等级
@@ -24,18 +36,6 @@ namespace xFrame.Core.Logging
         /// 是否启用全局日志
         /// </summary>
         public bool IsGlobalEnabled { get; set; } = true;
-
-        /// <summary>
-        /// 构造函数
-        /// </summary>
-        public XLogManager()
-        {
-            _loggers = new ConcurrentDictionary<string, IXLogger>();
-            _globalAppenders = new List<ILogAppender>();
-            
-            // 注册Unity异常处理
-            RegisterUnityExceptionHandler();
-        }
 
         /// <summary>
         /// 获取指定模块的日志记录器
@@ -58,10 +58,7 @@ namespace xFrame.Core.Logging
                 // 添加全局输出器
                 lock (_lock)
                 {
-                    foreach (var appender in _globalAppenders)
-                    {
-                        logger.AddAppender(appender);
-                    }
+                    foreach (var appender in _globalAppenders) logger.AddAppender(appender);
                 }
 
                 return logger;
@@ -106,12 +103,8 @@ namespace xFrame.Core.Logging
 
                 // 为所有现有的Logger添加此输出器
                 foreach (var logger in _loggers.Values)
-                {
                     if (logger is XLogger concreteLogger)
-                    {
                         concreteLogger.AddAppender(appender);
-                    }
-                }
             }
         }
 
@@ -130,12 +123,8 @@ namespace xFrame.Core.Logging
 
                 // 从所有现有的Logger中移除此输出器
                 foreach (var logger in _loggers.Values)
-                {
                     if (logger is XLogger concreteLogger)
-                    {
                         concreteLogger.RemoveAppender(appender);
-                    }
-                }
             }
         }
 
@@ -145,12 +134,8 @@ namespace xFrame.Core.Logging
         public void FlushAll()
         {
             foreach (var logger in _loggers.Values)
-            {
                 if (logger is XLogger concreteLogger)
-                {
                     concreteLogger.Flush();
-                }
-            }
         }
 
         /// <summary>
@@ -162,20 +147,14 @@ namespace xFrame.Core.Logging
 
             lock (_lock)
             {
-                foreach (var appender in _globalAppenders)
-                {
-                    appender.Dispose();
-                }
+                foreach (var appender in _globalAppenders) appender.Dispose();
                 _globalAppenders.Clear();
             }
 
             foreach (var logger in _loggers.Values)
-            {
                 if (logger is XLogger concreteLogger)
-                {
                     concreteLogger.Dispose();
-                }
-            }
+
             _loggers.Clear();
         }
 
@@ -201,11 +180,8 @@ namespace xFrame.Core.Logging
 
             var logger = GetLogger("Unity");
             var message = $"[Unity] {logString}";
-            
-            if (!string.IsNullOrEmpty(stackTrace))
-            {
-                message += $"\n堆栈跟踪:\n{stackTrace}";
-            }
+
+            if (!string.IsNullOrEmpty(stackTrace)) message += $"\n堆栈跟踪:\n{stackTrace}";
 
             switch (type)
             {

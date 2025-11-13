@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using xFrame.Core.DataStructures;
+using xFrame.Runtime.DataStructures;
 
 namespace xFrame.Tests
 {
@@ -47,11 +47,11 @@ namespace xFrame.Tests
             cache.Put("key2", 200);
 
             // 测试存在的键
-            Assert.IsTrue(cache.TryGet("key1", out int value1));
+            Assert.IsTrue(cache.TryGet("key1", out var value1));
             Assert.AreEqual(100, value1);
 
             // 测试不存在的键
-            Assert.IsFalse(cache.TryGet("key3", out int value2));
+            Assert.IsFalse(cache.TryGet("key3", out var value2));
             Assert.AreEqual(0, value2); // 默认值
         }
 
@@ -257,26 +257,20 @@ namespace xFrame.Tests
             var cache = new LRUCache<int, string>(1000);
 
             // 添加大量数据
-            for (int i = 0; i < 2000; i++)
-            {
-                cache.Put(i, $"value_{i}");
-            }
+            for (var i = 0; i < 2000; i++) cache.Put(i, $"value_{i}");
 
             // 缓存应该只保留最后1000个元素
             Assert.AreEqual(1000, cache.Count);
 
             // 检查最新的元素是否存在
-            for (int i = 1000; i < 2000; i++)
+            for (var i = 1000; i < 2000; i++)
             {
                 Assert.IsTrue(cache.ContainsKey(i));
                 Assert.AreEqual($"value_{i}", cache.Get(i));
             }
 
             // 检查最旧的元素是否被淘汰
-            for (int i = 0; i < 1000; i++)
-            {
-                Assert.IsFalse(cache.ContainsKey(i));
-            }
+            for (var i = 0; i < 1000; i++) Assert.IsFalse(cache.ContainsKey(i));
         }
 
         /// <summary>
@@ -296,7 +290,7 @@ namespace xFrame.Tests
             Assert.AreEqual("value2", cache.Get("key2"));
 
             // 测试TryGet with null值
-            Assert.IsTrue(cache.TryGet("key1", out string value));
+            Assert.IsTrue(cache.TryGet("key1", out var value));
             Assert.IsNull(value);
         }
 

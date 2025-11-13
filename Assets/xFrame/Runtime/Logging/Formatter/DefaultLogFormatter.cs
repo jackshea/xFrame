@@ -1,7 +1,6 @@
-using System;
 using System.Text;
 
-namespace xFrame.Core.Logging
+namespace xFrame.Runtime.Logging
 {
     /// <summary>
     /// 默认日志格式化器
@@ -10,8 +9,8 @@ namespace xFrame.Core.Logging
     public class DefaultLogFormatter : ILogFormatter
     {
         private readonly string _dateTimeFormat;
-        private readonly bool _includeThreadId;
         private readonly bool _includeModuleName;
+        private readonly bool _includeThreadId;
 
         /// <summary>
         /// 构造函数
@@ -19,9 +18,9 @@ namespace xFrame.Core.Logging
         /// <param name="dateTimeFormat">时间格式</param>
         /// <param name="includeThreadId">是否包含线程ID</param>
         /// <param name="includeModuleName">是否包含模块名</param>
-        public DefaultLogFormatter(string dateTimeFormat = "yyyy-MM-dd HH:mm:ss.fff", 
-                                 bool includeThreadId = true, 
-                                 bool includeModuleName = true)
+        public DefaultLogFormatter(string dateTimeFormat = "yyyy-MM-dd HH:mm:ss.fff",
+            bool includeThreadId = true,
+            bool includeModuleName = true)
         {
             _dateTimeFormat = dateTimeFormat;
             _includeThreadId = includeThreadId;
@@ -36,18 +35,18 @@ namespace xFrame.Core.Logging
         public virtual string Format(LogEntry entry)
         {
             var sb = new StringBuilder();
-            
+
             // 时间戳
             sb.Append('[');
             sb.Append(entry.Timestamp.ToString(_dateTimeFormat));
             sb.Append(']');
-            
+
             // 日志等级
             sb.Append(' ');
             sb.Append('[');
             sb.Append(GetLevelString(entry.Level));
             sb.Append(']');
-            
+
             // 线程ID
             if (_includeThreadId)
             {
@@ -57,7 +56,7 @@ namespace xFrame.Core.Logging
                 sb.Append(entry.ThreadId.ToString("D2"));
                 sb.Append(']');
             }
-            
+
             // 模块名
             if (_includeModuleName && !string.IsNullOrEmpty(entry.ModuleName))
             {
@@ -66,19 +65,19 @@ namespace xFrame.Core.Logging
                 sb.Append(entry.ModuleName);
                 sb.Append(']');
             }
-            
+
             // 消息内容
             sb.Append(' ');
             sb.Append(entry.Message);
-            
+
             // 异常信息
             if (entry.Exception != null)
             {
                 sb.AppendLine();
                 sb.Append("异常信息: ");
-                sb.Append(entry.Exception.ToString());
+                sb.Append(entry.Exception);
             }
-            
+
             return sb.ToString();
         }
 

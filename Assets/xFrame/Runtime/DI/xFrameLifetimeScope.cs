@@ -1,14 +1,13 @@
+using System;
+using MessagePipe;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
-using xFrame.Core;
-using xFrame.Core.Logging;
-using xFrame.Core.ResourceManager;
-using xFrame.Core.MessagePipe;
-using MessagePipe;
-using MessagePipe.VContainer;
+using xFrame.Runtime.Logging;
+using xFrame.Runtime.MessagePipe;
+using xFrame.Runtime.ResourceManager;
 
-namespace xFrame.Core.DI
+namespace xFrame.Runtime.DI
 {
     /// <summary>
     /// xFrame框架的生命周期容器
@@ -21,15 +20,14 @@ namespace xFrame.Core.DI
         /// </summary>
         [SerializeField]
         private ModuleUpdater moduleUpdater;
-        
+
         /// <summary>
         /// 资源管理器缓存容量
         /// </summary>
         [SerializeField]
         private int assetManagerCacheCapacity = 100;
-        
-        
-        
+
+
         /// <summary>
         /// 配置容器
         /// </summary>
@@ -53,24 +51,18 @@ namespace xFrame.Core.DI
             builder.Register<ModuleManager>(Lifetime.Singleton)
                 .AsImplementedInterfaces()
                 .AsSelf();
-                
+
             // 注册模块更新器
-            if (moduleUpdater != null)
-            {
-                builder.RegisterComponent(moduleUpdater);
-            }
-            
+            if (moduleUpdater != null) builder.RegisterComponent(moduleUpdater);
+
             // 构建完成后初始化模块更新器
-            builder.RegisterBuildCallback(container => 
+            builder.RegisterBuildCallback(container =>
             {
-                xFrame.Core.ModuleRegistry.SetupInContainer(container);
-                if (moduleUpdater != null)
-                {
-                    moduleUpdater.Initialize(container);
-                }
+                ModuleRegistry.SetupInContainer(container);
+                if (moduleUpdater != null) moduleUpdater.Initialize(container);
             });
         }
-        
+
         /// <summary>
         /// 注册日志系统到VContainer
         /// </summary>
@@ -89,14 +81,14 @@ namespace xFrame.Core.DI
             builder.RegisterFactory<string, IXLogger>(container =>
             {
                 var logManager = container.Resolve<IXLogManager>();
-                return (moduleName) => logManager.GetLogger(moduleName);
+                return moduleName => logManager.GetLogger(moduleName);
             }, Lifetime.Singleton);
 
             // 注册泛型日志工厂方法
-            builder.RegisterFactory<System.Type, IXLogger>(container =>
+            builder.RegisterFactory<Type, IXLogger>(container =>
             {
                 var logManager = container.Resolve<IXLogManager>();
-                return (type) => logManager.GetLogger(type);
+                return type => logManager.GetLogger(type);
             }, Lifetime.Singleton);
         }
 
@@ -108,7 +100,7 @@ namespace xFrame.Core.DI
         {
             // 注册缓存容量参数
             builder.RegisterInstance(assetManagerCacheCapacity);
-            
+
             // 注册资源管理器实现为单例
             builder.Register<IAssetManager, AddressableAssetManager>(Lifetime.Singleton);
 
@@ -129,16 +121,16 @@ namespace xFrame.Core.DI
             {
                 // 启用堆栈跟踪捕获以帮助调试订阅泄漏
                 options.EnableCaptureStackTrace = true;
-                
+
                 // 设置实例生命周期为单例
-                options.InstanceLifetime = global::MessagePipe.InstanceLifetime.Singleton;
-                
+                options.InstanceLifetime = InstanceLifetime.Singleton;
+
                 // 配置异步发布策略
-                options.DefaultAsyncPublishStrategy = global::MessagePipe.AsyncPublishStrategy.Parallel;
+                options.DefaultAsyncPublishStrategy = AsyncPublishStrategy.Parallel;
             });
 
             // 注册MessagePipe模块为单例，并标记为可初始化
-            builder.Register<xFrame.Core.MessagePipe.MessagePipeModule>(Lifetime.Singleton)
+            builder.Register<MessagePipeModule>(Lifetime.Singleton)
                 .AsImplementedInterfaces()
                 .AsSelf();
         }

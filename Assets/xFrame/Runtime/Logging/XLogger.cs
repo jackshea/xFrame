@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace xFrame.Core.Logging
+namespace xFrame.Runtime.Logging
 {
     /// <summary>
     /// 日志记录器实现
@@ -10,7 +10,17 @@ namespace xFrame.Core.Logging
     public class XLogger : IXLogger
     {
         private readonly List<ILogAppender> _appenders;
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
+
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        /// <param name="moduleName">模块名称</param>
+        public XLogger(string moduleName)
+        {
+            ModuleName = moduleName ?? "Unknown";
+            _appenders = new List<ILogAppender>();
+        }
 
         /// <summary>
         /// 模块名称
@@ -26,61 +36,6 @@ namespace xFrame.Core.Logging
         /// 最小日志等级
         /// </summary>
         public LogLevel MinLevel { get; set; } = LogLevel.Debug;
-
-        /// <summary>
-        /// 构造函数
-        /// </summary>
-        /// <param name="moduleName">模块名称</param>
-        public XLogger(string moduleName)
-        {
-            ModuleName = moduleName ?? "Unknown";
-            _appenders = new List<ILogAppender>();
-        }
-
-        /// <summary>
-        /// 添加日志输出器
-        /// </summary>
-        /// <param name="appender">日志输出器</param>
-        public void AddAppender(ILogAppender appender)
-        {
-            if (appender == null)
-                throw new ArgumentNullException(nameof(appender));
-
-            lock (_lock)
-            {
-                _appenders.Add(appender);
-            }
-        }
-
-        /// <summary>
-        /// 移除日志输出器
-        /// </summary>
-        /// <param name="appender">日志输出器</param>
-        public void RemoveAppender(ILogAppender appender)
-        {
-            if (appender == null)
-                return;
-
-            lock (_lock)
-            {
-                _appenders.Remove(appender);
-            }
-        }
-
-        /// <summary>
-        /// 清空所有日志输出器
-        /// </summary>
-        public void ClearAppenders()
-        {
-            lock (_lock)
-            {
-                foreach (var appender in _appenders)
-                {
-                    appender.Dispose();
-                }
-                _appenders.Clear();
-            }
-        }
 
         /// <summary>
         /// 记录详细日志
@@ -172,7 +127,6 @@ namespace xFrame.Core.Logging
             lock (_lock)
             {
                 foreach (var appender in _appenders)
-                {
                     try
                     {
                         appender.WriteLog(entry);
@@ -182,7 +136,6 @@ namespace xFrame.Core.Logging
                         // 避免日志输出器异常影响主程序
                         UnityEngine.Debug.LogError($"日志输出器 {appender.Name} 写入失败: {ex.Message}");
                     }
-                }
             }
         }
 
@@ -197,6 +150,48 @@ namespace xFrame.Core.Logging
         }
 
         /// <summary>
+        /// 添加日志输出器
+        /// </summary>
+        /// <param name="appender">日志输出器</param>
+        public void AddAppender(ILogAppender appender)
+        {
+            if (appender == null)
+                throw new ArgumentNullException(nameof(appender));
+
+            lock (_lock)
+            {
+                _appenders.Add(appender);
+            }
+        }
+
+        /// <summary>
+        /// 移除日志输出器
+        /// </summary>
+        /// <param name="appender">日志输出器</param>
+        public void RemoveAppender(ILogAppender appender)
+        {
+            if (appender == null)
+                return;
+
+            lock (_lock)
+            {
+                _appenders.Remove(appender);
+            }
+        }
+
+        /// <summary>
+        /// 清空所有日志输出器
+        /// </summary>
+        public void ClearAppenders()
+        {
+            lock (_lock)
+            {
+                foreach (var appender in _appenders) appender.Dispose();
+                _appenders.Clear();
+            }
+        }
+
+        /// <summary>
         /// 刷新所有输出器的缓冲区
         /// </summary>
         public void Flush()
@@ -204,7 +199,6 @@ namespace xFrame.Core.Logging
             lock (_lock)
             {
                 foreach (var appender in _appenders)
-                {
                     try
                     {
                         appender.Flush();
@@ -213,7 +207,6 @@ namespace xFrame.Core.Logging
                     {
                         UnityEngine.Debug.LogError($"刷新日志输出器 {appender.Name} 缓冲区失败: {ex.Message}");
                     }
-                }
             }
         }
 

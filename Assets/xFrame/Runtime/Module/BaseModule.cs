@@ -1,7 +1,7 @@
 using UnityEngine;
 using VContainer;
 
-namespace xFrame.Core
+namespace xFrame.Runtime
 {
     /// <summary>
     /// 模块基类
@@ -25,19 +25,10 @@ namespace xFrame.Core
         public virtual int Priority => 100;
 
         /// <summary>
-        /// 设置依赖注入容器
-        /// </summary>
-        /// <param name="container">VContainer依赖注入容器</param>
-        public void SetContainer(IObjectResolver container)
-        {
-            Container = container;
-        }
-
-        /// <summary>
         /// 模块初始化
         /// 在模块被加载时调用，用于初始化模块的基本设置
         /// </summary>
-        public virtual void OnInit() 
+        public virtual void OnInit()
         {
             Debug.Log($"[{ModuleName}] 模块初始化");
         }
@@ -46,7 +37,7 @@ namespace xFrame.Core
         /// 模块启动
         /// 在所有模块初始化完成后调用，可以依赖其他模块进行操作
         /// </summary>
-        public virtual void OnStart() 
+        public virtual void OnStart()
         {
             Debug.Log($"[{ModuleName}] 模块启动");
         }
@@ -55,9 +46,18 @@ namespace xFrame.Core
         /// 模块销毁
         /// 在模块被卸载或程序退出时调用，用于清理资源
         /// </summary>
-        public virtual void OnDestroy() 
+        public virtual void OnDestroy()
         {
             Debug.Log($"[{ModuleName}] 模块销毁");
+        }
+
+        /// <summary>
+        /// 设置依赖注入容器
+        /// </summary>
+        /// <param name="container">VContainer依赖注入容器</param>
+        public void SetContainer(IObjectResolver container)
+        {
+            Container = container;
         }
     }
 }

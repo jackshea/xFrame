@@ -1,7 +1,9 @@
 using System;
+using System.Threading;
 using UnityEngine;
 using VContainer;
-using xFrame.Core.Logging;
+using xFrame.Runtime.Logging;
+using Random = UnityEngine.Random;
 
 namespace xFrame.Examples.Logging
 {
@@ -11,8 +13,10 @@ namespace xFrame.Examples.Logging
     /// </summary>
     public class LoggingExample : MonoBehaviour
     {
-        [Inject] private IXLogManager _logManager;
         private IXLogger _logger;
+
+        [Inject]
+        private IXLogManager _logManager;
 
         /// <summary>
         /// Unity Start生命周期方法
@@ -21,10 +25,10 @@ namespace xFrame.Examples.Logging
         {
             // 获取当前类的日志记录器
             _logger = _logManager.GetLogger<LoggingExample>();
-            
+
             // 初始化静态日志访问接口
             XLog.Initialize(_logManager);
-            
+
             // 演示各种日志功能
             DemonstrateBasicLogging();
             DemonstrateStaticLogging();
@@ -38,7 +42,7 @@ namespace xFrame.Examples.Logging
         private void DemonstrateBasicLogging()
         {
             _logger.Info("=== 基本日志功能演示 ===");
-            
+
             // 不同等级的日志
             _logger.Verbose("这是一条详细日志，通常用于最详细的调试信息");
             _logger.Debug("这是一条调试日志，用于开发时的调试信息");
@@ -54,12 +58,12 @@ namespace xFrame.Examples.Logging
         private void DemonstrateStaticLogging()
         {
             XLog.Info("=== 静态日志访问演示 ===", "StaticExample");
-            
+
             // 使用静态方法记录日志
             XLog.Debug("使用静态方法记录调试日志", "StaticExample");
             XLog.Info("使用静态方法记录信息日志", "StaticExample");
             XLog.Warning("使用静态方法记录警告日志", "StaticExample");
-            
+
             // 获取特定类型的Logger
             var specificLogger = XLog.GetLogger<LoggingExample>();
             specificLogger.Info("通过静态接口获取的特定类型Logger");
@@ -71,7 +75,7 @@ namespace xFrame.Examples.Logging
         private void DemonstrateExceptionLogging()
         {
             _logger.Info("=== 异常日志记录演示 ===");
-            
+
             try
             {
                 // 故意制造一个异常
@@ -91,19 +95,19 @@ namespace xFrame.Examples.Logging
         private void DemonstrateConditionalLogging()
         {
             _logger.Info("=== 条件日志记录演示 ===");
-            
+
             // 检查日志等级是否启用，避免不必要的字符串构造
             if (_logger.IsLevelEnabled(LogLevel.Debug))
             {
                 var expensiveDebugInfo = GenerateExpensiveDebugInfo();
                 _logger.Debug($"调试信息: {expensiveDebugInfo}");
             }
-            
+
             // 演示日志等级过滤
             _logger.MinLevel = LogLevel.Warning;
             _logger.Debug("这条调试日志不会被输出，因为最小等级设置为Warning");
             _logger.Warning("这条警告日志会被输出");
-            
+
             // 恢复日志等级
             _logger.MinLevel = LogLevel.Debug;
         }
@@ -115,8 +119,8 @@ namespace xFrame.Examples.Logging
         private string GenerateExpensiveDebugInfo()
         {
             // 模拟一个计算成本较高的操作
-            System.Threading.Thread.Sleep(10);
-            return $"当前时间: {DateTime.Now}, 随机数: {UnityEngine.Random.Range(1, 1000)}";
+            Thread.Sleep(10);
+            return $"当前时间: {DateTime.Now}, 随机数: {Random.Range(1, 1000)}";
         }
 
         /// <summary>
@@ -141,7 +145,7 @@ namespace xFrame.Examples.Logging
         {
             try
             {
-                int z = 0;
+                var z = 0;
                 var result = 10 / z; // 故意制造除零异常
             }
             catch (Exception ex)

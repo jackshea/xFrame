@@ -1,6 +1,8 @@
+using System.Collections;
+using System.Reflection;
 using UnityEngine;
-using xFrame.Core;
-using xFrame.Core.Logging;
+using xFrame.Runtime;
+using xFrame.Runtime.Logging;
 
 namespace xFrame.Examples.Core
 {
@@ -48,19 +50,21 @@ namespace xFrame.Examples.Core
             }
 
             // 获取日志记录器
-            _logger = (xFrameApplication.Instance.Bootstrapper.LifetimeScope.Container.Resolve(typeof(IXLogManager)) as IXLogManager)?.GetLogger(GetType());
-            
+            _logger =
+                (xFrameApplication.Instance.Bootstrapper.LifetimeScope.Container.Resolve(typeof(IXLogManager)) as
+                    IXLogManager)?.GetLogger(GetType());
+
             // 输出日志
             _logger.Info("BootstrapperExample已启动");
             _logger.Info($"应用程序名称: {xFrameApplication.Instance.Config.ApplicationName}");
             _logger.Info($"应用程序版本: {xFrameApplication.Instance.Config.ApplicationVersion}");
-            
+
             // 获取模块管理器
             var moduleManager = xFrameApplication.Instance.Bootstrapper.ModuleManager;
             if (moduleManager != null)
             {
                 _logger.Info($"已注册的模块数量: {GetModuleCount(moduleManager)}");
-                
+
                 // 显示所有已注册模块
                 DisplayRegisteredModules(moduleManager);
             }
@@ -69,7 +73,7 @@ namespace xFrame.Examples.Core
                 _logger.Error("无法获取ModuleManager");
             }
         }
-        
+
         /// <summary>
         /// 获取已注册的模块数量
         /// </summary>
@@ -78,18 +82,18 @@ namespace xFrame.Examples.Core
         private int GetModuleCount(ModuleManager moduleManager)
         {
             // 使用反射获取私有字段_modules
-            var modulesField = typeof(ModuleManager).GetField("_modules", 
-                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-                
+            var modulesField = typeof(ModuleManager).GetField("_modules",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+
             if (modulesField != null)
             {
-                var modules = modulesField.GetValue(moduleManager) as System.Collections.ICollection;
+                var modules = modulesField.GetValue(moduleManager) as ICollection;
                 return modules?.Count ?? 0;
             }
-            
+
             return 0;
         }
-        
+
         /// <summary>
         /// 显示所有已注册的模块
         /// </summary>
@@ -97,16 +101,16 @@ namespace xFrame.Examples.Core
         private void DisplayRegisteredModules(ModuleManager moduleManager)
         {
             // 使用反射获取私有字段_modules
-            var modulesField = typeof(ModuleManager).GetField("_modules", 
-                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-                
+            var modulesField = typeof(ModuleManager).GetField("_modules",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+
             if (modulesField != null)
             {
-                var modules = modulesField.GetValue(moduleManager) as System.Collections.IList;
+                var modules = modulesField.GetValue(moduleManager) as IList;
                 if (modules != null && modules.Count > 0)
                 {
                     _logger.Info("已注册的模块列表:");
-                    for (int i = 0; i < modules.Count; i++)
+                    for (var i = 0; i < modules.Count; i++)
                     {
                         var module = modules[i];
                         _logger.Info($"  [{i}] {module.GetType().Name} (优先级: {GetModulePriority(module)})");
@@ -118,7 +122,7 @@ namespace xFrame.Examples.Core
                 }
             }
         }
-        
+
         /// <summary>
         /// 获取模块优先级
         /// </summary>
@@ -128,11 +132,8 @@ namespace xFrame.Examples.Core
         {
             // 获取IModule接口的Priority属性
             var priorityProperty = module.GetType().GetProperty("Priority");
-            if (priorityProperty != null)
-            {
-                return (int)priorityProperty.GetValue(module);
-            }
-            
+            if (priorityProperty != null) return (int)priorityProperty.GetValue(module);
+
             return 0;
         }
     }

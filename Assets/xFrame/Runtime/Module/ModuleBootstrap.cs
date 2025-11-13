@@ -1,8 +1,8 @@
 using UnityEngine;
 using VContainer.Unity;
-using xFrame.Core.DI;
+using xFrame.Runtime.DI;
 
-namespace xFrame.Core
+namespace xFrame.Runtime
 {
     /// <summary>
     /// 模块系统启动器
@@ -13,7 +13,7 @@ namespace xFrame.Core
         /// <summary>
         /// 生命周期容器预制体
         /// </summary>
-        [SerializeField] 
+        [SerializeField]
         private LifetimeScope lifetimeScopePrefab;
 
         /// <summary>
@@ -22,7 +22,7 @@ namespace xFrame.Core
         private void Awake()
         {
             Debug.Log("模块系统启动器初始化中...");
-            
+
             // 如果没有指定预制体，尝试查找场景中的LifetimeScope
             if (lifetimeScopePrefab == null)
             {
@@ -44,7 +44,7 @@ namespace xFrame.Core
                 var instance = Instantiate(lifetimeScopePrefab);
                 Debug.Log($"已实例化模块生命周期容器预制体: {instance.name}");
             }
-            
+
             Debug.Log("模块系统启动器初始化完成");
         }
     }

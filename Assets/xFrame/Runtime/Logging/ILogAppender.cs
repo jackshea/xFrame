@@ -1,4 +1,4 @@
-namespace xFrame.Core.Logging
+namespace xFrame.Runtime.Logging
 {
     /// <summary>
     /// 日志输出器接口
@@ -10,28 +10,28 @@ namespace xFrame.Core.Logging
         /// 输出器名称
         /// </summary>
         string Name { get; }
-        
+
         /// <summary>
         /// 是否启用该输出器
         /// </summary>
         bool IsEnabled { get; set; }
-        
+
         /// <summary>
         /// 最小日志等级过滤
         /// </summary>
         LogLevel MinLevel { get; set; }
-        
+
         /// <summary>
         /// 写入日志条目
         /// </summary>
         /// <param name="entry">日志条目</param>
         void WriteLog(LogEntry entry);
-        
+
         /// <summary>
         /// 刷新缓冲区（如果有）
         /// </summary>
         void Flush();
-        
+
         /// <summary>
         /// 释放资源
         /// </summary>

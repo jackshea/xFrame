@@ -1,6 +1,6 @@
 using System;
 using NUnit.Framework;
-using xFrame.Core.ObjectPool;
+using xFrame.Runtime.ObjectPool;
 
 namespace xFrame.Tests
 {
@@ -88,15 +88,15 @@ namespace xFrame.Tests
         [Test]
         public void TestMaxSizeLimit()
         {
-            int destroyCount = 0;
-            
+            var destroyCount = 0;
+
             // 创建最大容量为2的对象池
             var pool = ObjectPoolFactory.Create(
                 () => new TestObject(),
                 null,
                 null,
                 obj => destroyCount++,
-                maxSize: 2);
+                2);
 
             // 创建3个对象
             var obj1 = pool.Get();
@@ -142,7 +142,7 @@ namespace xFrame.Tests
         [Test]
         public void TestWarmUpWithMaxSize()
         {
-            var pool = ObjectPoolFactory.Create(() => new TestObject(), maxSize: 3);
+            var pool = ObjectPoolFactory.Create(() => new TestObject(), 3);
 
             // 尝试预热5个对象，但最大容量为3
             pool.WarmUp(5);
@@ -156,7 +156,7 @@ namespace xFrame.Tests
         [Test]
         public void TestClear()
         {
-            int destroyCount = 0;
+            var destroyCount = 0;
             var pool = ObjectPoolFactory.Create(
                 () => new TestObject(),
                 null,
@@ -181,16 +181,16 @@ namespace xFrame.Tests
         [Test]
         public void TestCallbacks()
         {
-            int getCount = 0;
-            int releaseCount = 0;
-            int destroyCount = 0;
+            var getCount = 0;
+            var releaseCount = 0;
+            var destroyCount = 0;
 
             var pool = ObjectPoolFactory.Create(
                 () => new TestObject(),
                 obj => getCount++,
                 obj => releaseCount++,
                 obj => destroyCount++,
-                maxSize: 1);
+                1);
 
             // 获取对象
             var obj1 = pool.Get();
@@ -294,7 +294,7 @@ namespace xFrame.Tests
         public void TestPoolDispose()
         {
             var pool = ObjectPoolFactory.Create(() => new TestObject()) as ObjectPool<TestObject>;
-            
+
             pool.WarmUp(3);
             Assert.AreEqual(3, pool.CountInPool);
 

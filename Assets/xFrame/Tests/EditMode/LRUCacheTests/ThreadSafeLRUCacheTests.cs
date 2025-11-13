@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using xFrame.Core.DataStructures;
+using xFrame.Runtime.DataStructures;
 
 namespace xFrame.Tests
 {
@@ -62,24 +62,21 @@ namespace xFrame.Tests
             using (var cache = new ThreadSafeLRUCache<int, string>(100))
             {
                 // 预填充缓存
-                for (int i = 0; i < 50; i++)
-                {
-                    cache.Put(i, $"value_{i}");
-                }
+                for (var i = 0; i < 50; i++) cache.Put(i, $"value_{i}");
 
                 var tasks = new List<Task>();
                 var results = new List<bool>[10];
-                
-                for (int t = 0; t < 10; t++)
+
+                for (var t = 0; t < 10; t++)
                 {
                     results[t] = new List<bool>();
-                    int taskIndex = t;
-                    
+                    var taskIndex = t;
+
                     tasks.Add(Task.Run(() =>
                     {
-                        for (int i = 0; i < 50; i++)
+                        for (var i = 0; i < 50; i++)
                         {
-                            bool found = cache.TryGet(i % 25, out string value);
+                            var found = cache.TryGet(i % 25, out var value);
                             results[taskIndex].Add(found);
                         }
                     }));
@@ -88,10 +85,7 @@ namespace xFrame.Tests
                 Task.WaitAll(tasks.ToArray());
 
                 // 验证所有读操作都成功
-                foreach (var result in results)
-                {
-                    Assert.IsTrue(result.All(r => r));
-                }
+                foreach (var result in results) Assert.IsTrue(result.All(r => r));
             }
         }
 
@@ -104,15 +98,15 @@ namespace xFrame.Tests
             using (var cache = new ThreadSafeLRUCache<int, string>(1000))
             {
                 var tasks = new List<Task>();
-                
-                for (int t = 0; t < 10; t++)
+
+                for (var t = 0; t < 10; t++)
                 {
-                    int taskIndex = t;
+                    var taskIndex = t;
                     tasks.Add(Task.Run(() =>
                     {
-                        for (int i = 0; i < 100; i++)
+                        for (var i = 0; i < 100; i++)
                         {
-                            int key = taskIndex * 100 + i;
+                            var key = taskIndex * 100 + i;
                             cache.Put(key, $"value_{key}");
                         }
                     }));
@@ -122,8 +116,8 @@ namespace xFrame.Tests
 
                 // 验证所有数据都被正确写入
                 Assert.AreEqual(1000, cache.Count);
-                
-                for (int i = 0; i < 1000; i++)
+
+                for (var i = 0; i < 1000; i++)
                 {
                     Assert.IsTrue(cache.ContainsKey(i));
                     Assert.AreEqual($"value_{i}", cache.Get(i));
@@ -141,41 +135,35 @@ namespace xFrame.Tests
             {
                 var tasks = new List<Task>();
                 var readResults = new List<string>[5];
-                
+
                 // 预填充一些数据
-                for (int i = 0; i < 100; i++)
-                {
-                    cache.Put(i, $"initial_{i}");
-                }
+                for (var i = 0; i < 100; i++) cache.Put(i, $"initial_{i}");
 
                 // 启动读任务
-                for (int t = 0; t < 5; t++)
+                for (var t = 0; t < 5; t++)
                 {
                     readResults[t] = new List<string>();
-                    int taskIndex = t;
-                    
+                    var taskIndex = t;
+
                     tasks.Add(Task.Run(() =>
                     {
-                        for (int i = 0; i < 200; i++)
+                        for (var i = 0; i < 200; i++)
                         {
-                            if (cache.TryGet(i % 100, out string value))
-                            {
-                                readResults[taskIndex].Add(value);
-                            }
+                            if (cache.TryGet(i % 100, out var value)) readResults[taskIndex].Add(value);
                             Thread.Sleep(1); // 小延迟以增加并发冲突概率
                         }
                     }));
                 }
 
                 // 启动写任务
-                for (int t = 0; t < 5; t++)
+                for (var t = 0; t < 5; t++)
                 {
-                    int taskIndex = t;
+                    var taskIndex = t;
                     tasks.Add(Task.Run(() =>
                     {
-                        for (int i = 0; i < 100; i++)
+                        for (var i = 0; i < 100; i++)
                         {
-                            int key = 100 + taskIndex * 100 + i;
+                            var key = 100 + taskIndex * 100 + i;
                             cache.Put(key, $"new_{key}");
                             Thread.Sleep(1); // 小延迟以增加并发冲突概率
                         }
@@ -186,15 +174,11 @@ namespace xFrame.Tests
 
                 // 验证缓存状态一致性
                 Assert.LessOrEqual(cache.Count, 500);
-                
+
                 // 验证读取的数据格式正确
                 foreach (var results in readResults)
-                {
-                    foreach (var value in results)
-                    {
-                        Assert.IsTrue(value.StartsWith("initial_") || value.StartsWith("new_"));
-                    }
-                }
+                foreach (var value in results)
+                    Assert.IsTrue(value.StartsWith("initial_") || value.StartsWith("new_"));
             }
         }
 
@@ -207,25 +191,22 @@ namespace xFrame.Tests
             using (var cache = new ThreadSafeLRUCache<int, string>(1000))
             {
                 // 预填充数据
-                for (int i = 0; i < 1000; i++)
-                {
-                    cache.Put(i, $"value_{i}");
-                }
+                for (var i = 0; i < 1000; i++) cache.Put(i, $"value_{i}");
 
                 var tasks = new List<Task>();
                 var removeResults = new List<bool>[10];
-                
-                for (int t = 0; t < 10; t++)
+
+                for (var t = 0; t < 10; t++)
                 {
                     removeResults[t] = new List<bool>();
-                    int taskIndex = t;
-                    
+                    var taskIndex = t;
+
                     tasks.Add(Task.Run(() =>
                     {
-                        for (int i = 0; i < 100; i++)
+                        for (var i = 0; i < 100; i++)
                         {
-                            int key = taskIndex * 100 + i;
-                            bool removed = cache.Remove(key);
+                            var key = taskIndex * 100 + i;
+                            var removed = cache.Remove(key);
                             removeResults[taskIndex].Add(removed);
                         }
                     }));
@@ -234,10 +215,7 @@ namespace xFrame.Tests
                 Task.WaitAll(tasks.ToArray());
 
                 // 验证所有remove操作都成功
-                foreach (var results in removeResults)
-                {
-                    Assert.IsTrue(results.All(r => r));
-                }
+                foreach (var results in removeResults) Assert.IsTrue(results.All(r => r));
 
                 // 验证缓存为空
                 Assert.AreEqual(0, cache.Count);
@@ -253,11 +231,11 @@ namespace xFrame.Tests
             using (var cache = new ThreadSafeLRUCache<int, string>(100))
             {
                 var tasks = new List<Task>();
-                
+
                 // 一个任务持续添加数据
                 tasks.Add(Task.Run(() =>
                 {
-                    for (int i = 0; i < 1000; i++)
+                    for (var i = 0; i < 1000; i++)
                     {
                         cache.Put(i, $"value_{i}");
                         Thread.Sleep(1);
@@ -267,7 +245,7 @@ namespace xFrame.Tests
                 // 另一个任务定期清空缓存
                 tasks.Add(Task.Run(() =>
                 {
-                    for (int i = 0; i < 10; i++)
+                    for (var i = 0; i < 10; i++)
                     {
                         Thread.Sleep(50);
                         cache.Clear();
@@ -291,39 +269,35 @@ namespace xFrame.Tests
             using (var cache = new ThreadSafeLRUCache<int, string>(100))
             {
                 // 预填充数据
-                for (int i = 0; i < 50; i++)
-                {
-                    cache.Put(i, $"value_{i}");
-                }
+                for (var i = 0; i < 50; i++) cache.Put(i, $"value_{i}");
 
                 var tasks = new List<Task>();
                 var exceptions = new List<Exception>();
-                
+
                 // 多个任务同时访问Keys和Values
-                for (int t = 0; t < 5; t++)
-                {
+                for (var t = 0; t < 5; t++)
                     tasks.Add(Task.Run(() =>
                     {
                         try
                         {
-                            for (int i = 0; i < 100; i++)
+                            for (var i = 0; i < 100; i++)
                             {
                                 // 注意：在并发环境下，单独获取Keys和Values可能会不一致
                                 // 这是正常现象，因为它们是分别获取读锁的
                                 var keys = cache.Keys.ToList();
                                 var values = cache.Values.ToList();
-                                
+
                                 // 允许一定的差异，因为在高并发下可能会有时序问题
                                 var countDiff = Math.Abs(keys.Count - values.Count);
-                                Assert.IsTrue(countDiff <= 2, 
+                                Assert.IsTrue(countDiff <= 2,
                                     $"Keys和Values数量差异过大: Keys={keys.Count}, Values={values.Count}, 差异={countDiff}");
-                                
+
                                 // 使用GetKeyValueSnapshot方法获取一致的键值对
                                 var snapshot = cache.GetKeyValueSnapshot();
                                 var snapshotKeys = snapshot.Key.ToList();
                                 var snapshotValues = snapshot.Value.ToList();
                                 Assert.AreEqual(snapshotKeys.Count, snapshotValues.Count, "快照中的Keys和Values数量不一致");
-                                
+
                                 Thread.Sleep(1);
                             }
                         }
@@ -335,14 +309,13 @@ namespace xFrame.Tests
                             }
                         }
                     }));
-                }
 
                 // 同时进行写操作
                 tasks.Add(Task.Run(() =>
                 {
                     try
                     {
-                        for (int i = 50; i < 150; i++)
+                        for (var i = 50; i < 150; i++)
                         {
                             cache.Put(i, $"value_{i}");
                             Thread.Sleep(2);
@@ -360,7 +333,7 @@ namespace xFrame.Tests
                 Task.WaitAll(tasks.ToArray());
 
                 // 验证没有异常发生
-                Assert.AreEqual(0, exceptions.Count, 
+                Assert.AreEqual(0, exceptions.Count,
                     $"发生了 {exceptions.Count} 个异常: {string.Join(", ", exceptions.Select(e => e.Message))}");
             }
         }
@@ -372,21 +345,21 @@ namespace xFrame.Tests
         public void TestDispose()
         {
             var cache = new ThreadSafeLRUCache<int, string>(10);
-            
+
             cache.Put(1, "one");
             cache.Put(2, "two");
-            
+
             Assert.AreEqual(2, cache.Count);
-            
+
             cache.Dispose();
-            
+
             // 调用Dispose后的操作应该抛出异常
             Assert.Throws<ObjectDisposedException>(() => cache.Get(1));
             Assert.Throws<ObjectDisposedException>(() => cache.Put(3, "three"));
             Assert.Throws<ObjectDisposedException>(() => cache.Remove(1));
             Assert.Throws<ObjectDisposedException>(() => cache.Clear());
             Assert.Throws<ObjectDisposedException>(() => cache.ContainsKey(1));
-            Assert.Throws<ObjectDisposedException>(() => cache.TryGet(1, out string value));
+            Assert.Throws<ObjectDisposedException>(() => cache.TryGet(1, out var value));
         }
 
         /// <summary>
@@ -398,11 +371,11 @@ namespace xFrame.Tests
             using (var cache = new ThreadSafeLRUCache<int, string>(50))
             {
                 var tasks = new List<Task>();
-                
+
                 // 一个任务持续修改缓存
                 tasks.Add(Task.Run(() =>
                 {
-                    for (int i = 0; i < 100; i++)
+                    for (var i = 0; i < 100; i++)
                     {
                         cache.Put(i, $"value_{i}");
                         Thread.Sleep(1);
@@ -410,11 +383,10 @@ namespace xFrame.Tests
                 }));
 
                 // 多个任务调用ToString
-                for (int t = 0; t < 5; t++)
-                {
+                for (var t = 0; t < 5; t++)
                     tasks.Add(Task.Run(() =>
                     {
-                        for (int i = 0; i < 50; i++)
+                        for (var i = 0; i < 50; i++)
                         {
                             var str = cache.ToString();
                             Assert.IsNotNull(str);
@@ -422,7 +394,6 @@ namespace xFrame.Tests
                             Thread.Sleep(2);
                         }
                     }));
-                }
 
                 Task.WaitAll(tasks.ToArray());
             }
@@ -438,27 +409,27 @@ namespace xFrame.Tests
             {
                 var tasks = new List<Task>();
                 var random = new Random();
-                
+
                 // 启动多个并发任务
-                for (int t = 0; t < 20; t++)
+                for (var t = 0; t < 20; t++)
                 {
-                    int taskId = t;
+                    var taskId = t;
                     tasks.Add(Task.Run(() =>
                     {
                         var localRandom = new Random(taskId);
-                        
-                        for (int i = 0; i < 500; i++)
+
+                        for (var i = 0; i < 500; i++)
                         {
-                            int operation = localRandom.Next(4);
-                            int key = localRandom.Next(2000);
-                            
+                            var operation = localRandom.Next(4);
+                            var key = localRandom.Next(2000);
+
                             switch (operation)
                             {
                                 case 0: // Put
                                     cache.Put(key, $"value_{key}_{taskId}");
                                     break;
                                 case 1: // Get
-                                    cache.TryGet(key, out string value);
+                                    cache.TryGet(key, out var value);
                                     break;
                                 case 2: // Remove
                                     cache.Remove(key);
@@ -475,7 +446,7 @@ namespace xFrame.Tests
 
                 // 验证缓存状态一致性
                 Assert.LessOrEqual(cache.Count, 1000);
-                
+
                 // 验证缓存仍然可以正常工作
                 cache.Put(9999, "test");
                 Assert.IsTrue(cache.ContainsKey(9999));

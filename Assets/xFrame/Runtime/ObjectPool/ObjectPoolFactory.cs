@@ -1,6 +1,6 @@
 using System;
 
-namespace xFrame.Core.ObjectPool
+namespace xFrame.Runtime.ObjectPool
 {
     /// <summary>
     /// 对象池工厂类

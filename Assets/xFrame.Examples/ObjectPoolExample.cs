@@ -1,6 +1,5 @@
-using System;
 using UnityEngine;
-using xFrame.Core.ObjectPool;
+using xFrame.Runtime.ObjectPool;
 
 namespace xFrame.Examples
 {
@@ -10,89 +9,6 @@ namespace xFrame.Examples
     /// </summary>
     public class ObjectPoolExample : MonoBehaviour
     {
-        /// <summary>
-        /// 示例子弹类
-        /// 实现IPoolable接口以支持对象池生命周期管理
-        /// </summary>
-        public class Bullet : IPoolable
-        {
-            public Vector3 Position { get; set; }
-            public Vector3 Velocity { get; set; }
-            public float Damage { get; set; }
-            public bool IsActive { get; private set; }
-
-            /// <summary>
-            /// 当从对象池获取时调用
-            /// </summary>
-            public void OnGet()
-            {
-                IsActive = true;
-                Debug.Log($"子弹被激活: {GetHashCode()}");
-            }
-
-            /// <summary>
-            /// 当释放回对象池时调用
-            /// </summary>
-            public void OnRelease()
-            {
-                IsActive = false;
-                Position = Vector3.zero;
-                Velocity = Vector3.zero;
-                Damage = 0f;
-                Debug.Log($"子弹被回收: {GetHashCode()}");
-            }
-
-            /// <summary>
-            /// 当对象被销毁时调用
-            /// </summary>
-            public void OnDestroy()
-            {
-                Debug.Log($"子弹被销毁: {GetHashCode()}");
-            }
-
-            /// <summary>
-            /// 更新子弹位置
-            /// </summary>
-            public void Update(float deltaTime)
-            {
-                if (IsActive)
-                {
-                    Position += Velocity * deltaTime;
-                }
-            }
-        }
-
-        /// <summary>
-        /// 示例敌人类
-        /// 普通类，不实现IPoolable接口
-        /// </summary>
-        public class Enemy
-        {
-            public Vector3 Position { get; set; }
-            public float Health { get; set; }
-            public bool IsAlive => Health > 0;
-
-            public Enemy()
-            {
-                Health = 100f;
-            }
-
-            public void TakeDamage(float damage)
-            {
-                Health -= damage;
-                if (Health <= 0)
-                {
-                    Health = 0;
-                }
-            }
-
-            public void Reset()
-            {
-                Health = 100f;
-                Position = Vector3.zero;
-            }
-        }
-
         // 对象池实例
         private IObjectPool<Bullet> _bulletPool;
         private IObjectPool<Enemy> _enemyPool;
@@ -101,7 +17,7 @@ namespace xFrame.Examples
         /// <summary>
         /// 初始化对象池
         /// </summary>
-        void Start()
+        private void Start()
         {
             Debug.Log("=== 对象池系统示例开始 ===");
 
@@ -119,6 +35,48 @@ namespace xFrame.Examples
         }
 
         /// <summary>
+        /// 清理资源
+        /// </summary>
+        private void OnDestroy()
+        {
+            Debug.Log("\n=== 清理对象池资源 ===");
+
+            _bulletPool?.Dispose();
+            _enemyPool?.Dispose();
+            _poolManager?.Dispose();
+
+            Debug.Log("对象池系统示例结束");
+        }
+
+        /// <summary>
+        /// 在Inspector中显示对象池状态信息
+        /// </summary>
+        private void OnGUI()
+        {
+            if (_bulletPool == null || _enemyPool == null)
+                return;
+
+            GUILayout.BeginArea(new Rect(10, 10, 300, 200));
+            GUILayout.Label("=== 对象池状态 ===");
+            GUILayout.Label($"子弹池: {_bulletPool.CountInPool}/{_bulletPool.CountAll}");
+            GUILayout.Label($"敌人池: {_enemyPool.CountInPool}/{_enemyPool.CountAll}");
+
+            if (GUILayout.Button("获取子弹"))
+            {
+                var bullet = _bulletPool.Get();
+                Debug.Log($"手动获取子弹: {bullet.GetHashCode()}");
+            }
+
+            if (GUILayout.Button("清空子弹池"))
+            {
+                _bulletPool.Clear();
+                Debug.Log("手动清空子弹池");
+            }
+
+            GUILayout.EndArea();
+        }
+
+        /// <summary>
         /// 创建支持IPoolable接口的对象池
         /// </summary>
         private void CreatePoolableObjectPool()
@@ -126,10 +84,9 @@ namespace xFrame.Examples
             Debug.Log("--- 示例1: 创建支持IPoolable接口的对象池 ---");
 
             // 创建子弹对象池，最大容量为10，支持线程安全
-            _bulletPool = ObjectPoolFactory.CreateForPoolable<Bullet>(
-                createFunc: () => new Bullet(),
-                maxSize: 10,
-                threadSafe: false
+            _bulletPool = ObjectPoolFactory.CreateForPoolable(
+                () => new Bullet(),
+                10
             );
 
             // 预热对象池，预先创建5个子弹对象
@@ -145,15 +102,16 @@ namespace xFrame.Examples
             Debug.Log("--- 示例2: 创建普通对象池 ---");
 
             // 创建敌人对象池，带有自定义回调
-            _enemyPool = ObjectPoolFactory.Create<Enemy>(
-                createFunc: () => new Enemy(),
-                onGet: enemy => Debug.Log($"获取敌人: {enemy.GetHashCode()}"),
-                onRelease: enemy => {
+            _enemyPool = ObjectPoolFactory.Create(
+                () => new Enemy(),
+                enemy => Debug.Log($"获取敌人: {enemy.GetHashCode()}"),
+                enemy =>
+                {
                     enemy.Reset(); // 重置敌人状态
                     Debug.Log($"释放敌人: {enemy.GetHashCode()}");
                 },
-                onDestroy: enemy => Debug.Log($"销毁敌人: {enemy.GetHashCode()}"),
-                maxSize: 5
+                enemy => Debug.Log($"销毁敌人: {enemy.GetHashCode()}"),
+                5
             );
 
             // 预热敌人对象池
@@ -297,16 +255,20 @@ namespace xFrame.Examples
             Debug.Log("\n-- 容量限制演示 --");
 
             // 创建一个容量限制为2的对象池
-            var limitedPool = ObjectPoolFactory.Create<Enemy>(
+            var limitedPool = ObjectPoolFactory.Create(
                 () => new Enemy(),
-                onGet: enemy => { /* 对象获取时的处理 */ },
-                onRelease: enemy => {
+                enemy =>
+                {
+                    /* 对象获取时的处理 */
+                },
+                enemy =>
+                {
                     // 对象释放时的处理
                     Debug.Log($"敌人因容量限制被释放: {enemy.GetHashCode()}");
                     enemy.Reset(); // 重置敌人状态
                 },
-                onDestroy: enemy => Debug.Log($"敌人因容量限制被销毁: {enemy.GetHashCode()}"),
-                maxSize: 2
+                enemy => Debug.Log($"敌人因容量限制被销毁: {enemy.GetHashCode()}"),
+                2
             );
 
             // 获取3个对象
@@ -327,45 +289,80 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 清理资源
+        /// 示例子弹类
+        /// 实现IPoolable接口以支持对象池生命周期管理
         /// </summary>
-        void OnDestroy()
+        public class Bullet : IPoolable
         {
-            Debug.Log("\n=== 清理对象池资源 ===");
+            public Vector3 Position { get; set; }
+            public Vector3 Velocity { get; set; }
+            public float Damage { get; set; }
+            public bool IsActive { get; private set; }
 
-            _bulletPool?.Dispose();
-            _enemyPool?.Dispose();
-            _poolManager?.Dispose();
+            /// <summary>
+            /// 当从对象池获取时调用
+            /// </summary>
+            public void OnGet()
+            {
+                IsActive = true;
+                Debug.Log($"子弹被激活: {GetHashCode()}");
+            }
 
-            Debug.Log("对象池系统示例结束");
+            /// <summary>
+            /// 当释放回对象池时调用
+            /// </summary>
+            public void OnRelease()
+            {
+                IsActive = false;
+                Position = Vector3.zero;
+                Velocity = Vector3.zero;
+                Damage = 0f;
+                Debug.Log($"子弹被回收: {GetHashCode()}");
+            }
+
+            /// <summary>
+            /// 当对象被销毁时调用
+            /// </summary>
+            public void OnDestroy()
+            {
+                Debug.Log($"子弹被销毁: {GetHashCode()}");
+            }
+
+            /// <summary>
+            /// 更新子弹位置
+            /// </summary>
+            public void Update(float deltaTime)
+            {
+                if (IsActive) Position += Velocity * deltaTime;
+            }
         }
 
         /// <summary>
-        /// 在Inspector中显示对象池状态信息
+        /// 示例敌人类
+        /// 普通类，不实现IPoolable接口
         /// </summary>
-        void OnGUI()
+        public class Enemy
         {
-            if (_bulletPool == null || _enemyPool == null)
-                return;
-
-            GUILayout.BeginArea(new Rect(10, 10, 300, 200));
-            GUILayout.Label("=== 对象池状态 ===");
-            GUILayout.Label($"子弹池: {_bulletPool.CountInPool}/{_bulletPool.CountAll}");
-            GUILayout.Label($"敌人池: {_enemyPool.CountInPool}/{_enemyPool.CountAll}");
-
-            if (GUILayout.Button("获取子弹"))
+            public Enemy()
             {
-                var bullet = _bulletPool.Get();
-                Debug.Log($"手动获取子弹: {bullet.GetHashCode()}");
+                Health = 100f;
             }
 
-            if (GUILayout.Button("清空子弹池"))
+            public Vector3 Position { get; set; }
+            public float Health { get; set; }
+            public bool IsAlive => Health > 0;
+
+            public void TakeDamage(float damage)
             {
-                _bulletPool.Clear();
-                Debug.Log("手动清空子弹池");
+                Health -= damage;
+                if (Health <= 0) Health = 0;
             }
 
-            GUILayout.EndArea();
+            public void Reset()
+            {
+                Health = 100f;
+                Position = Vector3.zero;
+            }
         }
     }
 }

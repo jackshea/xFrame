@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 
-namespace xFrame.Core.Logging
+namespace xFrame.Runtime.Logging
 {
     /// <summary>
     /// 日志条目数据结构
@@ -13,27 +13,27 @@ namespace xFrame.Core.Logging
         /// 日志等级
         /// </summary>
         public LogLevel Level { get; }
-        
+
         /// <summary>
         /// 日志消息内容
         /// </summary>
         public string Message { get; }
-        
+
         /// <summary>
         /// 模块名称
         /// </summary>
         public string ModuleName { get; }
-        
+
         /// <summary>
         /// 时间戳
         /// </summary>
         public DateTime Timestamp { get; }
-        
+
         /// <summary>
         /// 线程ID
         /// </summary>
         public int ThreadId { get; }
-        
+
         /// <summary>
         /// 异常信息（可选）
         /// </summary>

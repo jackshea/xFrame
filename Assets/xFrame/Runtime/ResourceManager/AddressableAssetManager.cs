@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using xFrame.Runtime.DataStructures;
+using Object = UnityEngine.Object;
 #if UNITY_ADDRESSABLES
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 #endif
-using xFrame.Core.DataStructures;
 
-namespace xFrame.Core.ResourceManager
+namespace xFrame.Runtime.ResourceManager
 {
     /// <summary>
     /// 基于Addressable的资源管理器实现
@@ -16,14 +17,14 @@ namespace xFrame.Core.ResourceManager
     /// </summary>
     public class AddressableAssetManager : IAssetManager, IDisposable
     {
-        private readonly ILRUCache<string, UnityEngine.Object> _assetCache;
+        private readonly ILRUCache<string, Object> _assetCache;
 #if UNITY_ADDRESSABLES
         private readonly Dictionary<string, AsyncOperationHandle> _loadingOperations;
 #else
         private readonly Dictionary<string, ResourceRequest> _loadingOperations;
 #endif
-        private readonly Dictionary<UnityEngine.Object, string> _assetToAddressMap;
-        private readonly object _lockObject = new object();
+        private readonly Dictionary<Object, string> _assetToAddressMap;
+        private readonly object _lockObject = new();
 
         // 缓存统计信息
         private int _cacheHitCount;
@@ -36,13 +37,13 @@ namespace xFrame.Core.ResourceManager
         public AddressableAssetManager(int cacheCapacity = 100)
         {
             // 直接实例化ThreadSafeLRUCache
-            _assetCache = new ThreadSafeLRUCache<string, UnityEngine.Object>(cacheCapacity);
+            _assetCache = new ThreadSafeLRUCache<string, Object>(cacheCapacity);
 #if UNITY_ADDRESSABLES
             _loadingOperations = new Dictionary<string, AsyncOperationHandle>();
 #else
             _loadingOperations = new Dictionary<string, ResourceRequest>();
 #endif
-            _assetToAddressMap = new Dictionary<UnityEngine.Object, string>();
+            _assetToAddressMap = new Dictionary<Object, string>();
         }
 
         /// <summary>
@@ -51,11 +52,11 @@ namespace xFrame.Core.ResourceManager
         /// <typeparam name="T">资源类型</typeparam>
         /// <param name="address">资源地址</param>
         /// <returns>加载的资源对象，失败时返回null</returns>
-        public T LoadAsset<T>(string address) where T : UnityEngine.Object
+        public T LoadAsset<T>(string address) where T : Object
         {
             if (string.IsNullOrEmpty(address))
             {
-                Debug.LogError($"[AddressableAssetManager] 资源地址不能为空");
+                Debug.LogError("[AddressableAssetManager] 资源地址不能为空");
                 return null;
             }
 
@@ -66,6 +67,7 @@ namespace xFrame.Core.ResourceManager
                 {
                     _cacheHitCount++;
                 }
+
                 return cachedAsset as T;
             }
 
@@ -119,11 +121,11 @@ namespace xFrame.Core.ResourceManager
         /// <typeparam name="T">资源类型</typeparam>
         /// <param name="address">资源地址</param>
         /// <returns>异步任务，包含加载的资源对象</returns>
-        public async Task<T> LoadAssetAsync<T>(string address) where T : UnityEngine.Object
+        public async Task<T> LoadAssetAsync<T>(string address) where T : Object
         {
             if (string.IsNullOrEmpty(address))
             {
-                Debug.LogError($"[AddressableAssetManager] 资源地址不能为空");
+                Debug.LogError("[AddressableAssetManager] 资源地址不能为空");
                 return null;
             }
 
@@ -134,6 +136,7 @@ namespace xFrame.Core.ResourceManager
                 {
                     _cacheHitCount++;
                 }
+
                 return cachedAsset as T;
             }
 
@@ -151,12 +154,9 @@ namespace xFrame.Core.ResourceManager
 #else
                 // 没有Addressable时使用Resources.LoadAsync
                 var request = Resources.LoadAsync<T>(address);
-                
-                while (!request.isDone)
-                {
-                    await Task.Yield();
-                }
-                
+
+                while (!request.isDone) await Task.Yield();
+
                 var asset = request.asset as T;
 #endif
 
@@ -196,17 +196,17 @@ namespace xFrame.Core.ResourceManager
         /// <param name="address">资源地址</param>
         /// <param name="type">资源类型</param>
         /// <returns>加载的资源对象，失败时返回null</returns>
-        public UnityEngine.Object LoadAsset(string address, Type type)
+        public Object LoadAsset(string address, Type type)
         {
             if (string.IsNullOrEmpty(address))
             {
-                Debug.LogError($"[AddressableAssetManager] 资源地址不能为空");
+                Debug.LogError("[AddressableAssetManager] 资源地址不能为空");
                 return null;
             }
 
             if (type == null)
             {
-                Debug.LogError($"[AddressableAssetManager] 资源类型不能为空");
+                Debug.LogError("[AddressableAssetManager] 资源类型不能为空");
                 return null;
             }
 
@@ -217,6 +217,7 @@ namespace xFrame.Core.ResourceManager
                 {
                     _cacheHitCount++;
                 }
+
                 return cachedAsset;
             }
 
@@ -270,17 +271,17 @@ namespace xFrame.Core.ResourceManager
         /// <param name="address">资源地址</param>
         /// <param name="type">资源类型</param>
         /// <returns>异步任务，包含加载的资源对象</returns>
-        public async Task<UnityEngine.Object> LoadAssetAsync(string address, Type type)
+        public async Task<Object> LoadAssetAsync(string address, Type type)
         {
             if (string.IsNullOrEmpty(address))
             {
-                Debug.LogError($"[AddressableAssetManager] 资源地址不能为空");
+                Debug.LogError("[AddressableAssetManager] 资源地址不能为空");
                 return null;
             }
 
             if (type == null)
             {
-                Debug.LogError($"[AddressableAssetManager] 资源类型不能为空");
+                Debug.LogError("[AddressableAssetManager] 资源类型不能为空");
                 return null;
             }
 
@@ -291,6 +292,7 @@ namespace xFrame.Core.ResourceManager
                 {
                     _cacheHitCount++;
                 }
+
                 return cachedAsset;
             }
 
@@ -308,12 +310,9 @@ namespace xFrame.Core.ResourceManager
 #else
                 // 没有Addressable时使用Resources.LoadAsync
                 var request = Resources.LoadAsync(address, type);
-                
-                while (!request.isDone)
-                {
-                    await Task.Yield();
-                }
-                
+
+                while (!request.isDone) await Task.Yield();
+
                 var asset = request.asset;
 #endif
 
@@ -351,23 +350,19 @@ namespace xFrame.Core.ResourceManager
         /// 释放资源
         /// </summary>
         /// <param name="asset">要释放的资源对象</param>
-        public void ReleaseAsset(UnityEngine.Object asset)
+        public void ReleaseAsset(Object asset)
         {
             if (asset == null)
             {
-                Debug.LogWarning($"[AddressableAssetManager] 尝试释放空资源");
+                Debug.LogWarning("[AddressableAssetManager] 尝试释放空资源");
                 return;
             }
 
             // 查找资源对应的地址
             if (_assetToAddressMap.TryGetValue(asset, out var address))
-            {
                 ReleaseAsset(address);
-            }
             else
-            {
                 Debug.LogWarning($"[AddressableAssetManager] 未找到资源对应的地址: {asset.name}");
-            }
         }
 
         /// <summary>
@@ -378,7 +373,7 @@ namespace xFrame.Core.ResourceManager
         {
             if (string.IsNullOrEmpty(address))
             {
-                Debug.LogWarning($"[AddressableAssetManager] 资源地址不能为空");
+                Debug.LogWarning("[AddressableAssetManager] 资源地址不能为空");
                 return;
             }
 
@@ -414,15 +409,12 @@ namespace xFrame.Core.ResourceManager
         {
             if (string.IsNullOrEmpty(address))
             {
-                Debug.LogError($"[AddressableAssetManager] 资源地址不能为空");
+                Debug.LogError("[AddressableAssetManager] 资源地址不能为空");
                 return;
             }
 
             // 如果已经缓存，直接返回
-            if (_assetCache.ContainsKey(address))
-            {
-                return;
-            }
+            if (_assetCache.ContainsKey(address)) return;
 
             try
             {
@@ -432,13 +424,10 @@ namespace xFrame.Core.ResourceManager
                 var asset = await handle.Task;
 #else
                 // 没有Addressable时使用Resources.LoadAsync
-                var request = Resources.LoadAsync<UnityEngine.Object>(address);
-                
-                while (!request.isDone)
-                {
-                    await Task.Yield();
-                }
-                
+                var request = Resources.LoadAsync<Object>(address);
+
+                while (!request.isDone) await Task.Yield();
+
                 var asset = request.asset;
 #endif
 
@@ -474,10 +463,7 @@ namespace xFrame.Core.ResourceManager
         /// <returns>如果资源已缓存返回true，否则返回false</returns>
         public bool IsAssetCached(string address)
         {
-            if (string.IsNullOrEmpty(address))
-            {
-                return false;
-            }
+            if (string.IsNullOrEmpty(address)) return false;
 
             return _assetCache.ContainsKey(address);
         }

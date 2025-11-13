@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
-namespace xFrame.Core.DataStructures
+namespace xFrame.Runtime.DataStructures
 {
     /// <summary>
     /// 线程安全的LRU缓存实现
@@ -16,6 +16,29 @@ namespace xFrame.Core.DataStructures
         private readonly LRUCache<TKey, TValue> _innerCache;
         private readonly ReaderWriterLockSlim _lock;
         private bool _disposed;
+
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        /// <param name="capacity">缓存的最大容量</param>
+        public ThreadSafeLRUCache(int capacity)
+        {
+            _innerCache = new LRUCache<TKey, TValue>(capacity);
+            _lock = new ReaderWriterLockSlim();
+            _disposed = false;
+        }
+
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _lock?.Dispose();
+                _disposed = true;
+            }
+        }
 
         /// <summary>
         /// 缓存的最大容量
@@ -79,36 +102,6 @@ namespace xFrame.Core.DataStructures
                     _lock.ExitReadLock();
                 }
             }
-        }
-
-        /// <summary>
-        /// 获取键值对集合的快照
-        /// </summary>
-        /// <returns>键值对的列表</returns>
-        public KeyValuePair<IEnumerable<TKey>, IEnumerable<TValue>> GetKeyValueSnapshot()
-        {
-            _lock.EnterReadLock();
-            try
-            {
-                var keys = _innerCache.Keys.ToList();
-                var values = _innerCache.Values.ToList();
-                return new KeyValuePair<IEnumerable<TKey>, IEnumerable<TValue>>(keys, values);
-            }
-            finally
-            {
-                _lock.ExitReadLock();
-            }
-        }
-
-        /// <summary>
-        /// 构造函数
-        /// </summary>
-        /// <param name="capacity">缓存的最大容量</param>
-        public ThreadSafeLRUCache(int capacity)
-        {
-            _innerCache = new LRUCache<TKey, TValue>(capacity);
-            _lock = new ReaderWriterLockSlim();
-            _disposed = false;
         }
 
         /// <summary>
@@ -231,14 +224,21 @@ namespace xFrame.Core.DataStructures
         }
 
         /// <summary>
-        /// 释放资源
+        /// 获取键值对集合的快照
         /// </summary>
-        public void Dispose()
+        /// <returns>键值对的列表</returns>
+        public KeyValuePair<IEnumerable<TKey>, IEnumerable<TValue>> GetKeyValueSnapshot()
         {
-            if (!_disposed)
+            _lock.EnterReadLock();
+            try
             {
-                _lock?.Dispose();
-                _disposed = true;
+                var keys = _innerCache.Keys.ToList();
+                var values = _innerCache.Values.ToList();
+                return new KeyValuePair<IEnumerable<TKey>, IEnumerable<TValue>>(keys, values);
+            }
+            finally
+            {
+                _lock.ExitReadLock();
             }
         }
 

@@ -1,4 +1,4 @@
-namespace xFrame.Core.Logging
+namespace xFrame.Runtime.Logging
 {
     /// <summary>
     /// 日志格式化器接口

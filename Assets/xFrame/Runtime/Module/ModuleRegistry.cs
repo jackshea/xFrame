@@ -1,10 +1,10 @@
 using System;
-using System.Collections.Generic;
+using UnityEngine;
 using VContainer;
-using xFrame.Core.Logging;
-using xFrame.Core.ResourceManager;
+using xFrame.Runtime.Logging;
+using xFrame.Runtime.ResourceManager;
 
-namespace xFrame.Core
+namespace xFrame.Runtime
 {
     /// <summary>
     /// 模块注册管理器
@@ -20,11 +20,11 @@ namespace xFrame.Core
         {
             if (moduleManager == null)
                 throw new ArgumentNullException(nameof(moduleManager));
-                
+
             moduleManager.RegisterModule<XLoggingModule>();
             moduleManager.RegisterModule<AssetManagerModule>();
         }
-        
+
         /// <summary>
         /// 注册所有功能模块
         /// </summary>
@@ -33,10 +33,10 @@ namespace xFrame.Core
         {
             if (moduleManager == null)
                 throw new ArgumentNullException(nameof(moduleManager));
-                
+
             // 显式注册功能模块
         }
-        
+
         /// <summary>
         /// 注册所有模块（核心和功能）
         /// </summary>
@@ -46,7 +46,7 @@ namespace xFrame.Core
             RegisterCoreModules(moduleManager);
             RegisterFeatureModules(moduleManager);
         }
-        
+
         /// <summary>
         /// 自动注册模块到容器
         /// 在xFrameLifetimeScope中使用
@@ -58,13 +58,9 @@ namespace xFrame.Core
             {
                 var moduleManager = container.Resolve<ModuleManager>();
                 if (moduleManager != null)
-                {
                     RegisterAllModules(moduleManager);
-                }
                 else
-                {
-                    UnityEngine.Debug.LogError("ModuleRegistry: ModuleManager未在容器中注册");
-                }
+                    Debug.LogError("ModuleRegistry: ModuleManager未在容器中注册");
             }
             catch (Exception ex)
             {
@@ -77,7 +73,7 @@ namespace xFrame.Core
                 catch
                 {
                     // 日志系统可能未初始化，使用Unity日志
-                    UnityEngine.Debug.LogError($"注册模块失败，错误: {ex.Message}");
+                    Debug.LogError($"注册模块失败，错误: {ex.Message}");
                 }
             }
         }

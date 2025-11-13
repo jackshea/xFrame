@@ -1,10 +1,11 @@
+using System.Reflection;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
-using xFrame.Core.DI;
-using xFrame.Core.Logging;
+using xFrame.Runtime.DI;
+using xFrame.Runtime.Logging;
 
-namespace xFrame.Core
+namespace xFrame.Runtime
 {
     /// <summary>
     /// xFrame框架启动器
@@ -12,6 +13,11 @@ namespace xFrame.Core
     /// </summary>
     public class xFrameBootstrapper : MonoBehaviour
     {
+        /// <summary>
+        /// 单例实例
+        /// </summary>
+        private static xFrameBootstrapper _instance;
+
         /// <summary>
         /// 生命周期容器预制体
         /// 如果不指定，将自动创建默认的xFrameLifetimeScope
@@ -32,14 +38,14 @@ namespace xFrame.Core
         private bool dontDestroyOnLoad = true;
 
         /// <summary>
+        /// 框架是否已初始化
+        /// </summary>
+        private bool _initialized;
+
+        /// <summary>
         /// 框架生命周期容器实例
         /// </summary>
         private LifetimeScope _lifetimeScope;
-
-        /// <summary>
-        /// 模块管理器实例
-        /// </summary>
-        private ModuleManager _moduleManager;
 
         /// <summary>
         /// 日志管理器实例
@@ -47,19 +53,14 @@ namespace xFrame.Core
         private IXLogManager _logManager;
 
         /// <summary>
-        /// 框架是否已初始化
+        /// 模块管理器实例
         /// </summary>
-        private bool _initialized = false;
-
-        /// <summary>
-        /// 单例实例
-        /// </summary>
-        private static xFrameBootstrapper _instance;
+        private ModuleManager _moduleManager;
 
         /// <summary>
         /// 获取单例实例
         /// </summary>
-        public static xFrameBootstrapper Instance => _instance;
+        public static xFrameBootstrapper Instance => Instance;
 
         /// <summary>
         /// 获取生命周期容器
@@ -91,15 +92,24 @@ namespace xFrame.Core
             _instance = this;
 
             // 设置DontDestroyOnLoad
-            if (dontDestroyOnLoad)
-            {
-                DontDestroyOnLoad(gameObject);
-            }
+            if (dontDestroyOnLoad) DontDestroyOnLoad(gameObject);
 
             // 自动初始化
-            if (autoInitialize)
+            if (autoInitialize) Initialize();
+        }
+
+        /// <summary>
+        /// Unity OnDestroy生命周期
+        /// </summary>
+        private void OnDestroy()
+        {
+            if (_instance == this) _instance = null;
+
+            if (_initialized && _moduleManager != null)
             {
-                Initialize();
+                _moduleManager.Dispose();
+                _initialized = false;
+                Debug.Log("xFrame框架已销毁");
             }
         }
 
@@ -147,49 +157,24 @@ namespace xFrame.Core
                 // 创建默认的xFrameLifetimeScope
                 var scopeObj = new GameObject("xFrameLifetimeScope");
                 _lifetimeScope = scopeObj.AddComponent<xFrameLifetimeScope>();
-                
+
                 // 创建模块更新器
                 var updaterObj = new GameObject("ModuleUpdater");
                 updaterObj.transform.SetParent(scopeObj.transform);
                 var updater = updaterObj.AddComponent<ModuleUpdater>();
-                
+
                 // 设置引用
-                var field = _lifetimeScope.GetType().GetField("moduleUpdater", 
-                    System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-                
+                var field = _lifetimeScope.GetType().GetField("moduleUpdater",
+                    BindingFlags.Instance | BindingFlags.NonPublic);
+
                 if (field != null)
-                {
                     field.SetValue(_lifetimeScope, updater);
-                }
                 else
-                {
                     Debug.LogError("无法找到moduleUpdater字段，请检查xFrameLifetimeScope类中的字段名称");
-                }
             }
 
             // 如果使用DontDestroyOnLoad，则对生命周期容器也应用
-            if (dontDestroyOnLoad)
-            {
-                DontDestroyOnLoad(_lifetimeScope.gameObject);
-            }
-        }
-
-        /// <summary>
-        /// Unity OnDestroy生命周期
-        /// </summary>
-        private void OnDestroy()
-        {
-            if (_instance == this)
-            {
-                _instance = null;
-            }
-
-            if (_initialized && _moduleManager != null)
-            {
-                _moduleManager.Dispose();
-                _initialized = false;
-                Debug.Log("xFrame框架已销毁");
-            }
+            if (dontDestroyOnLoad) DontDestroyOnLoad(_lifetimeScope.gameObject);
         }
     }
 }

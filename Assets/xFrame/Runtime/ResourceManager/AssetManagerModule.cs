@@ -1,9 +1,7 @@
 using System;
-using UnityEngine;
-using VContainer;
-using xFrame.Core.Logging;
+using xFrame.Runtime.Logging;
 
-namespace xFrame.Core.ResourceManager
+namespace xFrame.Runtime.ResourceManager
 {
     /// <summary>
     /// 资源管理模块
@@ -22,11 +20,20 @@ namespace xFrame.Core.ResourceManager
         public AssetManagerModule(IAssetManager assetManager, IXLogManager logManager)
         {
             _assetManager = assetManager ?? throw new ArgumentNullException(nameof(assetManager));
-            _moduleLogger = logManager?.GetLogger<AssetManagerModule>() ?? throw new ArgumentNullException(nameof(logManager));
+            _moduleLogger = logManager?.GetLogger<AssetManagerModule>() ??
+                            throw new ArgumentNullException(nameof(logManager));
         }
 
         public override string ModuleName { get; } = nameof(AssetManagerModule);
         public override int Priority { get; } = 50; // 资源管理模块优先级设为50，在日志模块之后初始化
+
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        public void Dispose()
+        {
+            OnDestroy();
+        }
 
         /// <summary>
         /// 初始化资源管理模块
@@ -83,10 +90,7 @@ namespace xFrame.Core.ResourceManager
                 _assetManager.ClearCache();
 
                 // 如果资源管理器实现了IDisposable，则释放它
-                if (_assetManager is IDisposable disposableManager)
-                {
-                    disposableManager.Dispose();
-                }
+                if (_assetManager is IDisposable disposableManager) disposableManager.Dispose();
 
                 _moduleLogger.Info("资源管理模块销毁完成");
             }
@@ -101,22 +105,11 @@ namespace xFrame.Core.ResourceManager
         /// </summary>
         private void ValidateAssetManager()
         {
-            if (_assetManager == null)
-            {
-                throw new InvalidOperationException("资源管理器不能为空");
-            }
+            if (_assetManager == null) throw new InvalidOperationException("资源管理器不能为空");
 
             // 检查缓存统计功能是否正常
             var stats = _assetManager.GetCacheStats();
             _moduleLogger.Debug($"资源管理器验证通过，初始缓存统计: {stats.CachedAssetCount} 个资源");
-        }
-
-        /// <summary>
-        /// 释放资源
-        /// </summary>
-        public void Dispose()
-        {
-            OnDestroy();
         }
     }
 }

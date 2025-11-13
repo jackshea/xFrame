@@ -3,8 +3,8 @@ using MessagePipe;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
-using xFrame.Core.Logging;
-using xFrame.Core.MessagePipe;
+using xFrame.Runtime.Logging;
+using Random = UnityEngine.Random;
 
 namespace xFrame.Examples
 {
@@ -14,6 +14,120 @@ namespace xFrame.Examples
     /// </summary>
     public class MessagePipeRequestResponseExample : MonoBehaviour, IStartable, IDisposable
     {
+        [Inject]
+        private IRequestAllHandler<DamageRequest, DamageResponse> allDamageHandlers;
+
+        // 依赖注入的服务
+        [Inject]
+        private IRequestHandler<DamageRequest, DamageResponse> damageHandler;
+
+        [Inject]
+        private IXLogger logger;
+
+        private void OnDestroy()
+        {
+            Dispose();
+        }
+
+        /// <summary>
+        /// 在Inspector中显示控制界面
+        /// </summary>
+        private void OnGUI()
+        {
+            GUILayout.BeginArea(new Rect(10, 220, 300, 150));
+            GUILayout.Label("请求/响应示例控制", new GUIStyle(GUI.skin.label) { fontSize = 14, fontStyle = FontStyle.Bold });
+
+            GUILayout.Space(5);
+
+            if (GUILayout.Button("测试单个伤害处理器")) TestSingleDamageHandler();
+
+            if (GUILayout.Button("测试所有伤害处理器")) TestAllDamageHandlers();
+
+            if (GUILayout.Button("批量测试伤害类型")) TestBatchDamageTypes();
+
+            GUILayout.EndArea();
+        }
+
+        public void Dispose()
+        {
+            logger.Info("[MessagePipeRequestResponseExample] 清理请求/响应示例资源");
+        }
+
+        public void Start()
+        {
+            logger.Info("[MessagePipeRequestResponseExample] 请求/响应示例初始化完成");
+        }
+
+        /// <summary>
+        /// 测试单个处理器
+        /// </summary>
+        [ContextMenu("测试单个伤害处理器")]
+        public void TestSingleDamageHandler()
+        {
+            var request = new DamageRequest
+            {
+                damage = 100,
+                targetId = "Monster_001",
+                damageType = DamageRequest.DamageType.Physical
+            };
+
+            logger.Info("[MessagePipeRequestResponseExample] === 测试单个伤害处理器 ===");
+
+            var response = damageHandler.Invoke(request);
+            logger.Info($"[MessagePipeRequestResponseExample] 处理结果: {response}");
+        }
+
+        /// <summary>
+        /// 测试所有处理器
+        /// </summary>
+        [ContextMenu("测试所有伤害处理器")]
+        public void TestAllDamageHandlers()
+        {
+            var request = new DamageRequest
+            {
+                damage = 150,
+                targetId = "Boss_001",
+                damageType = DamageRequest.DamageType.Magical
+            };
+
+            logger.Info("[MessagePipeRequestResponseExample] === 测试所有伤害处理器 ===");
+
+            var responses = allDamageHandlers.InvokeAll(request);
+            logger.Info($"[MessagePipeRequestResponseExample] 收到 {responses.Length} 个响应:");
+
+            for (var i = 0; i < responses.Length; i++)
+                logger.Info($"[MessagePipeRequestResponseExample] 响应 {i + 1}: {responses[i]}");
+        }
+
+        /// <summary>
+        /// 批量测试不同类型的伤害
+        /// </summary>
+        [ContextMenu("批量测试伤害类型")]
+        public void TestBatchDamageTypes()
+        {
+            logger.Info("[MessagePipeRequestResponseExample] === 批量测试伤害类型 ===");
+
+            var damageTypes = new[]
+            {
+                DamageRequest.DamageType.Physical,
+                DamageRequest.DamageType.Magical,
+                DamageRequest.DamageType.True
+            };
+
+            foreach (var damageType in damageTypes)
+            {
+                var request = new DamageRequest
+                {
+                    damage = Random.Range(50, 200),
+                    targetId = $"Target_{damageType}",
+                    damageType = damageType
+                };
+
+                var response = damageHandler.Invoke(request);
+                logger.Info($"[MessagePipeRequestResponseExample] {damageType} 伤害测试: {response}");
+            }
+        }
+
         /// <summary>
         /// 请求数据结构
         /// </summary>
@@ -61,14 +175,15 @@ namespace xFrame.Examples
 
             public DamageResponse Invoke(DamageRequest request)
             {
-                logger.Info($"[DamageCalculationHandler] 处理伤害请求: {request.damage} {request.damageType} -> {request.targetId}");
+                logger.Info(
+                    $"[DamageCalculationHandler] 处理伤害请求: {request.damage} {request.damageType} -> {request.targetId}");
 
                 var response = new DamageResponse
                 {
                     actualDamage = request.damage,
-                    isCritical = UnityEngine.Random.value < 0.2f, // 20%暴击率
-                    isBlocked = UnityEngine.Random.value < 0.1f, // 10%格挡率
-                    remainingHealth = UnityEngine.Random.Range(0f, 100f)
+                    isCritical = Random.value < 0.2f, // 20%暴击率
+                    isBlocked = Random.value < 0.1f, // 10%格挡率
+                    remainingHealth = Random.Range(0f, 100f)
                 };
 
                 // 应用伤害类型修正
@@ -85,15 +200,9 @@ namespace xFrame.Examples
                         break;
                 }
 
-                if (response.isBlocked)
-                {
-                    response.actualDamage = Mathf.RoundToInt(response.actualDamage * 0.5f);
-                }
+                if (response.isBlocked) response.actualDamage = Mathf.RoundToInt(response.actualDamage * 0.5f);
 
-                if (response.isCritical)
-                {
-                    response.actualDamage = Mathf.RoundToInt(response.actualDamage * 2f);
-                }
+                if (response.isCritical) response.actualDamage = Mathf.RoundToInt(response.actualDamage * 2f);
 
                 logger.Info($"[DamageCalculationHandler] 伤害计算完成: {response}");
                 return response;
@@ -114,7 +223,7 @@ namespace xFrame.Examples
 
             public DamageResponse Invoke(DamageRequest request)
             {
-                logger.Info($"[BonusDamageHandler] 应用额外伤害加成");
+                logger.Info("[BonusDamageHandler] 应用额外伤害加成");
 
                 var response = new DamageResponse
                 {
@@ -142,7 +251,8 @@ namespace xFrame.Examples
 
             public DamageResponse Invoke(DamageRequest request)
             {
-                logger.Info($"[DamageLogHandler] 记录伤害事件: 目标={request.targetId}, 伤害={request.damage}, 类型={request.damageType}");
+                logger.Info(
+                    $"[DamageLogHandler] 记录伤害事件: 目标={request.targetId}, 伤害={request.damage}, 类型={request.damageType}");
 
                 // 这个处理器只记录日志，返回空响应
                 return new DamageResponse
@@ -153,126 +263,6 @@ namespace xFrame.Examples
                     remainingHealth = 0f
                 };
             }
-        }
-
-        // 依赖注入的服务
-        [Inject] private IRequestHandler<DamageRequest, DamageResponse> damageHandler;
-        [Inject] private IRequestAllHandler<DamageRequest, DamageResponse> allDamageHandlers;
-        [Inject] private IXLogger logger;
-
-        public void Start()
-        {
-            logger.Info("[MessagePipeRequestResponseExample] 请求/响应示例初始化完成");
-        }
-
-        /// <summary>
-        /// 测试单个处理器
-        /// </summary>
-        [ContextMenu("测试单个伤害处理器")]
-        public void TestSingleDamageHandler()
-        {
-            var request = new DamageRequest
-            {
-                damage = 100,
-                targetId = "Monster_001",
-                damageType = DamageRequest.DamageType.Physical
-            };
-
-            logger.Info("[MessagePipeRequestResponseExample] === 测试单个伤害处理器 ===");
-            
-            var response = damageHandler.Invoke(request);
-            logger.Info($"[MessagePipeRequestResponseExample] 处理结果: {response}");
-        }
-
-        /// <summary>
-        /// 测试所有处理器
-        /// </summary>
-        [ContextMenu("测试所有伤害处理器")]
-        public void TestAllDamageHandlers()
-        {
-            var request = new DamageRequest
-            {
-                damage = 150,
-                targetId = "Boss_001",
-                damageType = DamageRequest.DamageType.Magical
-            };
-
-            logger.Info("[MessagePipeRequestResponseExample] === 测试所有伤害处理器 ===");
-            
-            var responses = allDamageHandlers.InvokeAll(request);
-            logger.Info($"[MessagePipeRequestResponseExample] 收到 {responses.Length} 个响应:");
-            
-            for (int i = 0; i < responses.Length; i++)
-            {
-                logger.Info($"[MessagePipeRequestResponseExample] 响应 {i + 1}: {responses[i]}");
-            }
-        }
-
-        /// <summary>
-        /// 批量测试不同类型的伤害
-        /// </summary>
-        [ContextMenu("批量测试伤害类型")]
-        public void TestBatchDamageTypes()
-        {
-            logger.Info("[MessagePipeRequestResponseExample] === 批量测试伤害类型 ===");
-
-            var damageTypes = new[]
-            {
-                DamageRequest.DamageType.Physical,
-                DamageRequest.DamageType.Magical,
-                DamageRequest.DamageType.True
-            };
-
-            foreach (var damageType in damageTypes)
-            {
-                var request = new DamageRequest
-                {
-                    damage = UnityEngine.Random.Range(50, 200),
-                    targetId = $"Target_{damageType}",
-                    damageType = damageType
-                };
-
-                var response = damageHandler.Invoke(request);
-                logger.Info($"[MessagePipeRequestResponseExample] {damageType} 伤害测试: {response}");
-            }
-        }
-
-        /// <summary>
-        /// 在Inspector中显示控制界面
-        /// </summary>
-        private void OnGUI()
-        {
-            GUILayout.BeginArea(new Rect(10, 220, 300, 150));
-            GUILayout.Label("请求/响应示例控制", new GUIStyle(GUI.skin.label) { fontSize = 14, fontStyle = FontStyle.Bold });
-            
-            GUILayout.Space(5);
-            
-            if (GUILayout.Button("测试单个伤害处理器"))
-            {
-                TestSingleDamageHandler();
-            }
-            
-            if (GUILayout.Button("测试所有伤害处理器"))
-            {
-                TestAllDamageHandlers();
-            }
-            
-            if (GUILayout.Button("批量测试伤害类型"))
-            {
-                TestBatchDamageTypes();
-            }
-            
-            GUILayout.EndArea();
-        }
-
-        public void Dispose()
-        {
-            logger.Info("[MessagePipeRequestResponseExample] 清理请求/响应示例资源");
-        }
-
-        private void OnDestroy()
-        {
-            Dispose();
         }
     }
 }

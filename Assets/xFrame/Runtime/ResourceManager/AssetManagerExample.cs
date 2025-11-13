@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using VContainer;
 
-namespace xFrame.Core.ResourceManager
+namespace xFrame.Runtime.ResourceManager
 {
     /// <summary>
     /// AssetManager使用示例
@@ -14,6 +14,43 @@ namespace xFrame.Core.ResourceManager
         private IAssetManager _assetManager;
 
         /// <summary>
+        /// Unity Start方法 - 演示各种用法
+        /// </summary>
+        private async void Start()
+        {
+            // 等待依赖注入完成
+            await Task.Delay(100);
+
+            if (_assetManager == null)
+            {
+                Debug.LogError("AssetManager未正确注入，请检查VContainer配置");
+                return;
+            }
+
+            Debug.Log("=== AssetManager使用示例开始 ===");
+
+            // 演示预加载
+            await ExamplePreload();
+
+            // 演示同步加载
+            ExampleSyncLoad();
+
+            // 演示异步加载
+            await ExampleAsyncLoad();
+
+            // 演示非泛型加载
+            ExampleNonGenericLoad();
+
+            // 检查缓存状态
+            ExampleCheckCache();
+
+            // 演示批量释放
+            ExampleBatchRelease();
+
+            Debug.Log("=== AssetManager使用示例结束 ===");
+        }
+
+        /// <summary>
         /// 示例：同步加载资源
         /// </summary>
         public void ExampleSyncLoad()
@@ -23,10 +60,10 @@ namespace xFrame.Core.ResourceManager
             if (prefab != null)
             {
                 Debug.Log($"成功加载预制体: {prefab.name}");
-                
+
                 // 实例化对象
                 var instance = Instantiate(prefab);
-                
+
                 // 使用完毕后释放资源
                 _assetManager.ReleaseAsset(prefab);
             }
@@ -46,9 +83,9 @@ namespace xFrame.Core.ResourceManager
             if (texture != null)
             {
                 Debug.Log($"成功异步加载纹理: {texture.name}, 尺寸: {texture.width}x{texture.height}");
-                
+
                 // 使用纹理...
-                
+
                 // 使用完毕后释放资源
                 _assetManager.ReleaseAsset(texture);
             }
@@ -67,9 +104,9 @@ namespace xFrame.Core.ResourceManager
             await _assetManager.PreloadAssetAsync("MyPrefab");
             await _assetManager.PreloadAssetAsync("MyTexture");
             await _assetManager.PreloadAssetAsync("MyAudioClip");
-            
+
             Debug.Log("预加载完成");
-            
+
             // 检查缓存状态
             var stats = _assetManager.GetCacheStats();
             Debug.Log($"缓存统计 - 资源数: {stats.CachedAssetCount}, 命中率: {stats.CacheHitRate:P2}");
@@ -81,10 +118,10 @@ namespace xFrame.Core.ResourceManager
         public void ExampleCheckCache()
         {
             string[] assetAddresses = { "MyPrefab", "MyTexture", "MyAudioClip" };
-            
+
             foreach (var address in assetAddresses)
             {
-                bool isCached = _assetManager.IsAssetCached(address);
+                var isCached = _assetManager.IsAssetCached(address);
                 Debug.Log($"资源 {address} 缓存状态: {(isCached ? "已缓存" : "未缓存")}");
             }
         }
@@ -97,10 +134,10 @@ namespace xFrame.Core.ResourceManager
             // 获取释放前的统计信息
             var statsBefore = _assetManager.GetCacheStats();
             Debug.Log($"释放前缓存统计 - 资源数: {statsBefore.CachedAssetCount}");
-            
+
             // 清理所有缓存
             _assetManager.ClearCache();
-            
+
             // 获取释放后的统计信息
             var statsAfter = _assetManager.GetCacheStats();
             Debug.Log($"释放后缓存统计 - 资源数: {statsAfter.CachedAssetCount}");
@@ -116,9 +153,9 @@ namespace xFrame.Core.ResourceManager
             if (audioClip != null)
             {
                 Debug.Log($"成功加载音频: {audioClip.name}, 时长: {audioClip.length}秒");
-                
+
                 // 使用音频...
-                
+
                 // 释放资源
                 _assetManager.ReleaseAsset("MyAudioClip");
             }
@@ -126,43 +163,6 @@ namespace xFrame.Core.ResourceManager
             {
                 Debug.LogError("加载音频失败");
             }
-        }
-
-        /// <summary>
-        /// Unity Start方法 - 演示各种用法
-        /// </summary>
-        private async void Start()
-        {
-            // 等待依赖注入完成
-            await Task.Delay(100);
-            
-            if (_assetManager == null)
-            {
-                Debug.LogError("AssetManager未正确注入，请检查VContainer配置");
-                return;
-            }
-            
-            Debug.Log("=== AssetManager使用示例开始 ===");
-            
-            // 演示预加载
-            await ExamplePreload();
-            
-            // 演示同步加载
-            ExampleSyncLoad();
-            
-            // 演示异步加载
-            await ExampleAsyncLoad();
-            
-            // 演示非泛型加载
-            ExampleNonGenericLoad();
-            
-            // 检查缓存状态
-            ExampleCheckCache();
-            
-            // 演示批量释放
-            ExampleBatchRelease();
-            
-            Debug.Log("=== AssetManager使用示例结束 ===");
         }
     }
 }

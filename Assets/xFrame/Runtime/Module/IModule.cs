@@ -1,8 +1,4 @@
-using System;
-using UnityEngine;
-using VContainer.Unity;
-
-namespace xFrame.Core
+namespace xFrame.Runtime
 {
     /// <summary>
     /// 模块接口

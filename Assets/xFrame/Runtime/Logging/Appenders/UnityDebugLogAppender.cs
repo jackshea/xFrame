@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace xFrame.Core.Logging.Appenders
+namespace xFrame.Runtime.Logging.Appenders
 {
     /// <summary>
     /// Unity调试日志输出器
@@ -9,7 +9,16 @@ namespace xFrame.Core.Logging.Appenders
     public class UnityDebugLogAppender : ILogAppender
     {
         private readonly ILogFormatter _formatter;
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
+
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        /// <param name="formatter">日志格式化器</param>
+        public UnityDebugLogAppender(ILogFormatter formatter = null)
+        {
+            _formatter = formatter ?? new SimpleLogFormatter();
+        }
 
         /// <summary>
         /// 输出器名称
@@ -27,15 +36,6 @@ namespace xFrame.Core.Logging.Appenders
         public LogLevel MinLevel { get; set; } = LogLevel.Debug;
 
         /// <summary>
-        /// 构造函数
-        /// </summary>
-        /// <param name="formatter">日志格式化器</param>
-        public UnityDebugLogAppender(ILogFormatter formatter = null)
-        {
-            _formatter = formatter ?? new SimpleLogFormatter();
-        }
-
-        /// <summary>
         /// 写入日志条目
         /// </summary>
         /// <param name="entry">日志条目</param>
@@ -47,7 +47,7 @@ namespace xFrame.Core.Logging.Appenders
             lock (_lock)
             {
                 var formattedMessage = _formatter.Format(entry);
-                
+
                 // 根据日志等级选择Unity的不同日志方法
                 switch (entry.Level)
                 {
@@ -56,11 +56,11 @@ namespace xFrame.Core.Logging.Appenders
                     case LogLevel.Info:
                         Debug.Log(formattedMessage);
                         break;
-                    
+
                     case LogLevel.Warning:
                         Debug.LogWarning(formattedMessage);
                         break;
-                    
+
                     case LogLevel.Error:
                     case LogLevel.Fatal:
                         if (entry.Exception != null)
@@ -72,6 +72,7 @@ namespace xFrame.Core.Logging.Appenders
                         {
                             Debug.LogError(formattedMessage);
                         }
+
                         break;
                 }
             }

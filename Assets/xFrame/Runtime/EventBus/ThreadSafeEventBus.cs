@@ -1,10 +1,10 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Concurrent;
 
-namespace xFrame.Core.EventBus
+namespace xFrame.Runtime.EventBus
 {
     /// <summary>
     /// 线程安全的事件总线
@@ -12,31 +12,16 @@ namespace xFrame.Core.EventBus
     /// </summary>
     public class ThreadSafeEventBus : IEventBus
     {
-        private readonly EventBus _innerEventBus;
-        private readonly ReaderWriterLockSlim _publishLock;
-        private readonly ReaderWriterLockSlim _subscribeLock;
         private readonly SemaphoreSlim _asyncSemaphore;
-        
+        private readonly EventBus _innerEventBus;
+        private readonly ConcurrentQueue<Action> _mainThreadActions;
+
         // 线程调度器，用于将事件调度到特定线程
         private readonly TaskScheduler _mainThreadScheduler;
-        private readonly ConcurrentQueue<Action> _mainThreadActions;
+        private readonly ReaderWriterLockSlim _publishLock;
+        private readonly ReaderWriterLockSlim _subscribeLock;
         private volatile bool _isMainThreadProcessing;
-        
-        /// <summary>
-        /// 已发布事件数量
-        /// </summary>
-        public long PublishedEventCount => _innerEventBus.PublishedEventCount;
-        
-        /// <summary>
-        /// 已处理事件数量
-        /// </summary>
-        public long ProcessedEventCount => _innerEventBus.ProcessedEventCount;
-        
-        /// <summary>
-        /// 失败事件数量
-        /// </summary>
-        public long FailedEventCount => _innerEventBus.FailedEventCount;
-        
+
         /// <summary>
         /// 构造函数
         /// </summary>
@@ -49,7 +34,7 @@ namespace xFrame.Core.EventBus
             _publishLock = new ReaderWriterLockSlim();
             _subscribeLock = new ReaderWriterLockSlim();
             _asyncSemaphore = new SemaphoreSlim(maxConcurrentAsync, maxConcurrentAsync);
-            
+
             // 尝试获取主线程调度器（Unity环境下）
             try
             {
@@ -59,10 +44,25 @@ namespace xFrame.Core.EventBus
             {
                 _mainThreadScheduler = TaskScheduler.Default;
             }
-            
+
             _mainThreadActions = new ConcurrentQueue<Action>();
         }
-        
+
+        /// <summary>
+        /// 已发布事件数量
+        /// </summary>
+        public long PublishedEventCount => _innerEventBus.PublishedEventCount;
+
+        /// <summary>
+        /// 已处理事件数量
+        /// </summary>
+        public long ProcessedEventCount => _innerEventBus.ProcessedEventCount;
+
+        /// <summary>
+        /// 失败事件数量
+        /// </summary>
+        public long FailedEventCount => _innerEventBus.FailedEventCount;
+
         /// <summary>
         /// 订阅事件（线程安全）
         /// </summary>
@@ -80,7 +80,7 @@ namespace xFrame.Core.EventBus
                 _subscribeLock.ExitWriteLock();
             }
         }
-        
+
         /// <summary>
         /// 订阅事件（使用委托，线程安全）
         /// </summary>
@@ -100,7 +100,7 @@ namespace xFrame.Core.EventBus
                 _subscribeLock.ExitWriteLock();
             }
         }
-        
+
         /// <summary>
         /// 订阅异步事件（线程安全）
         /// </summary>
@@ -118,7 +118,7 @@ namespace xFrame.Core.EventBus
                 _subscribeLock.ExitWriteLock();
             }
         }
-        
+
         /// <summary>
         /// 订阅异步事件（使用委托，线程安全）
         /// </summary>
@@ -138,26 +138,7 @@ namespace xFrame.Core.EventBus
                 _subscribeLock.ExitWriteLock();
             }
         }
-        
-        /// <summary>
-        /// 订阅事件并调度到主线程执行
-        /// </summary>
-        /// <typeparam name="T">事件类型</typeparam>
-        /// <param name="handler">事件处理委托</param>
-        /// <param name="priority">处理优先级</param>
-        /// <returns>订阅标识</returns>
-        public string SubscribeOnMainThread<T>(Action<T> handler, int priority = 0) where T : IEvent
-        {
-            if (handler == null)
-                throw new ArgumentNullException(nameof(handler));
-            
-            return Subscribe<T>(eventData =>
-            {
-                // 将处理器调度到主线程执行
-                ScheduleOnMainThread(() => handler(eventData));
-            }, priority);
-        }
-        
+
         /// <summary>
         /// 取消订阅事件（线程安全）
         /// </summary>
@@ -175,7 +156,7 @@ namespace xFrame.Core.EventBus
                 _subscribeLock.ExitWriteLock();
             }
         }
-        
+
         /// <summary>
         /// 取消订阅事件（使用订阅标识，线程安全）
         /// </summary>
@@ -192,7 +173,7 @@ namespace xFrame.Core.EventBus
                 _subscribeLock.ExitWriteLock();
             }
         }
-        
+
         /// <summary>
         /// 取消所有订阅（线程安全）
         /// </summary>
@@ -209,7 +190,7 @@ namespace xFrame.Core.EventBus
                 _subscribeLock.ExitWriteLock();
             }
         }
-        
+
         /// <summary>
         /// 发布事件（同步，线程安全）
         /// </summary>
@@ -227,7 +208,7 @@ namespace xFrame.Core.EventBus
                 _publishLock.ExitReadLock();
             }
         }
-        
+
         /// <summary>
         /// 发布事件（异步，线程安全）
         /// </summary>
@@ -237,7 +218,7 @@ namespace xFrame.Core.EventBus
         public async Task PublishAsync<T>(T eventData) where T : IEvent
         {
             await _asyncSemaphore.WaitAsync();
-            
+
             try
             {
                 _publishLock.EnterReadLock();
@@ -255,33 +236,7 @@ namespace xFrame.Core.EventBus
                 _asyncSemaphore.Release();
             }
         }
-        
-        /// <summary>
-        /// 发布事件到主线程
-        /// </summary>
-        /// <typeparam name="T">事件类型</typeparam>
-        /// <param name="eventData">事件数据</param>
-        /// <returns>发布任务</returns>
-        public Task PublishOnMainThread<T>(T eventData) where T : IEvent
-        {
-            var tcs = new TaskCompletionSource<bool>();
-            
-            ScheduleOnMainThread(() =>
-            {
-                try
-                {
-                    Publish(eventData);
-                    tcs.SetResult(true);
-                }
-                catch (Exception)
-                {
-                    tcs.SetException(new Exception());
-                }
-            });
-            
-            return tcs.Task;
-        }
-        
+
         /// <summary>
         /// 批量发布事件（线程安全）
         /// </summary>
@@ -299,7 +254,7 @@ namespace xFrame.Core.EventBus
                 _publishLock.ExitReadLock();
             }
         }
-        
+
         /// <summary>
         /// 延迟发布事件（线程安全）
         /// </summary>
@@ -318,7 +273,7 @@ namespace xFrame.Core.EventBus
                 _publishLock.ExitReadLock();
             }
         }
-        
+
         /// <summary>
         /// 添加事件过滤器（线程安全）
         /// </summary>
@@ -336,7 +291,7 @@ namespace xFrame.Core.EventBus
                 _subscribeLock.ExitWriteLock();
             }
         }
-        
+
         /// <summary>
         /// 移除事件过滤器（线程安全）
         /// </summary>
@@ -354,7 +309,7 @@ namespace xFrame.Core.EventBus
                 _subscribeLock.ExitWriteLock();
             }
         }
-        
+
         /// <summary>
         /// 添加事件拦截器（线程安全）
         /// </summary>
@@ -372,7 +327,7 @@ namespace xFrame.Core.EventBus
                 _subscribeLock.ExitWriteLock();
             }
         }
-        
+
         /// <summary>
         /// 移除事件拦截器（线程安全）
         /// </summary>
@@ -390,7 +345,7 @@ namespace xFrame.Core.EventBus
                 _subscribeLock.ExitWriteLock();
             }
         }
-        
+
         /// <summary>
         /// 获取订阅者数量（线程安全）
         /// </summary>
@@ -408,7 +363,7 @@ namespace xFrame.Core.EventBus
                 _subscribeLock.ExitReadLock();
             }
         }
-        
+
         /// <summary>
         /// 检查是否有订阅者（线程安全）
         /// </summary>
@@ -426,7 +381,7 @@ namespace xFrame.Core.EventBus
                 _subscribeLock.ExitReadLock();
             }
         }
-        
+
         /// <summary>
         /// 清空所有订阅（线程安全）
         /// </summary>
@@ -434,11 +389,11 @@ namespace xFrame.Core.EventBus
         {
             _publishLock.EnterWriteLock();
             _subscribeLock.EnterWriteLock();
-            
+
             try
             {
                 _innerEventBus.Clear();
-                
+
                 // 清空主线程队列
                 while (_mainThreadActions.TryDequeue(out _))
                 {
@@ -451,7 +406,7 @@ namespace xFrame.Core.EventBus
                 _publishLock.ExitWriteLock();
             }
         }
-        
+
         /// <summary>
         /// 获取事件历史记录（线程安全）
         /// </summary>
@@ -470,7 +425,7 @@ namespace xFrame.Core.EventBus
                 _publishLock.ExitReadLock();
             }
         }
-        
+
         /// <summary>
         /// 启用或禁用事件历史记录（线程安全）
         /// </summary>
@@ -487,7 +442,52 @@ namespace xFrame.Core.EventBus
                 _publishLock.ExitWriteLock();
             }
         }
-        
+
+        /// <summary>
+        /// 订阅事件并调度到主线程执行
+        /// </summary>
+        /// <typeparam name="T">事件类型</typeparam>
+        /// <param name="handler">事件处理委托</param>
+        /// <param name="priority">处理优先级</param>
+        /// <returns>订阅标识</returns>
+        public string SubscribeOnMainThread<T>(Action<T> handler, int priority = 0) where T : IEvent
+        {
+            if (handler == null)
+                throw new ArgumentNullException(nameof(handler));
+
+            return Subscribe<T>(eventData =>
+            {
+                // 将处理器调度到主线程执行
+                ScheduleOnMainThread(() => handler(eventData));
+            }, priority);
+        }
+
+        /// <summary>
+        /// 发布事件到主线程
+        /// </summary>
+        /// <typeparam name="T">事件类型</typeparam>
+        /// <param name="eventData">事件数据</param>
+        /// <returns>发布任务</returns>
+        public Task PublishOnMainThread<T>(T eventData) where T : IEvent
+        {
+            var tcs = new TaskCompletionSource<bool>();
+
+            ScheduleOnMainThread(() =>
+            {
+                try
+                {
+                    Publish(eventData);
+                    tcs.SetResult(true);
+                }
+                catch (Exception)
+                {
+                    tcs.SetException(new Exception());
+                }
+            });
+
+            return tcs.Task;
+        }
+
         /// <summary>
         /// 将操作调度到主线程执行
         /// </summary>
@@ -496,24 +496,20 @@ namespace xFrame.Core.EventBus
         {
             if (action == null)
                 return;
-            
+
             _mainThreadActions.Enqueue(action);
-            
+
             // 如果当前就在主线程，直接处理
             if (SynchronizationContext.Current != null)
-            {
                 ProcessMainThreadActions();
-            }
             else
-            {
                 // 调度到主线程处理
-                Task.Factory.StartNew(ProcessMainThreadActions, 
-                    CancellationToken.None, 
-                    TaskCreationOptions.None, 
+                Task.Factory.StartNew(ProcessMainThreadActions,
+                    CancellationToken.None,
+                    TaskCreationOptions.None,
                     _mainThreadScheduler);
-            }
         }
-        
+
         /// <summary>
         /// 处理主线程队列中的操作
         /// </summary>
@@ -521,13 +517,12 @@ namespace xFrame.Core.EventBus
         {
             if (_isMainThreadProcessing)
                 return;
-            
+
             _isMainThreadProcessing = true;
-            
+
             try
             {
                 while (_mainThreadActions.TryDequeue(out var action))
-                {
                     try
                     {
                         action();
@@ -537,14 +532,13 @@ namespace xFrame.Core.EventBus
                         // 记录异常但不影响其他操作
                         // 可以在这里添加日志记录
                     }
-                }
             }
             finally
             {
                 _isMainThreadProcessing = false;
             }
         }
-        
+
         /// <summary>
         /// 手动处理主线程队列（在Unity的Update中调用）
         /// </summary>
@@ -552,7 +546,7 @@ namespace xFrame.Core.EventBus
         {
             ProcessMainThreadActions();
         }
-        
+
         /// <summary>
         /// 获取线程安全事件总线统计信息
         /// </summary>
@@ -562,19 +556,19 @@ namespace xFrame.Core.EventBus
             var innerStats = _innerEventBus.GetStatistics();
             var mainThreadQueueCount = _mainThreadActions.Count;
             var availableAsyncSlots = _asyncSemaphore.CurrentCount;
-            
+
             return $"ThreadSafeEventBus - {innerStats}, " +
                    $"MainThreadQueue: {mainThreadQueueCount}, " +
                    $"AvailableAsyncSlots: {availableAsyncSlots}";
         }
-        
+
         /// <summary>
         /// 释放资源
         /// </summary>
         public void Dispose()
         {
             Clear();
-            
+
             _innerEventBus?.Dispose();
             _publishLock?.Dispose();
             _subscribeLock?.Dispose();

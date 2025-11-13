@@ -1,7 +1,6 @@
 using System;
 using NUnit.Framework;
-using UnityEditor.VersionControl;
-using xFrame.Core.ObjectPool;
+using xFrame.Runtime.ObjectPool;
 
 namespace xFrame.Tests
 {
@@ -12,24 +11,6 @@ namespace xFrame.Tests
     [TestFixture]
     public class ObjectPoolManagerTests
     {
-        /// <summary>
-        /// 测试用的简单类
-        /// </summary>
-        private class TestObjectA
-        {
-            public int Value { get; set; }
-        }
-
-        /// <summary>
-        /// 测试用的另一个类
-        /// </summary>
-        private class TestObjectB
-        {
-            public string Name { get; set; }
-        }
-
-        private ObjectPoolManager _manager;
-
         /// <summary>
         /// 测试前的初始化
         /// </summary>
@@ -47,6 +28,24 @@ namespace xFrame.Tests
         {
             _manager?.Dispose();
         }
+
+        /// <summary>
+        /// 测试用的简单类
+        /// </summary>
+        private class TestObjectA
+        {
+            public int Value { get; set; }
+        }
+
+        /// <summary>
+        /// 测试用的另一个类
+        /// </summary>
+        private class TestObjectB
+        {
+            public string Name { get; set; }
+        }
+
+        private ObjectPoolManager _manager;
 
         /// <summary>
         /// 测试注册和获取对象池
@@ -263,8 +262,8 @@ namespace xFrame.Tests
             var retrievedPool = _manager.GetPool<TestObjectA>();
             Assert.IsNull(retrievedPool);
 
-            Assert.IsNull( _manager.GetPool<TestObjectA>());
-            Assert.IsNull( _manager.Get<TestObjectA>());
+            Assert.IsNull(_manager.GetPool<TestObjectA>());
+            Assert.IsNull(_manager.Get<TestObjectA>());
             // 销毁后的操作应该抛出异常
             Assert.Throws<ObjectDisposedException>(() => _manager.RegisterPool(pool));
         }
@@ -275,7 +274,7 @@ namespace xFrame.Tests
         [Test]
         public void TestThreadSafeManager()
         {
-            using (var threadSafeManager = new ObjectPoolManager(threadSafe: true))
+            using (var threadSafeManager = new ObjectPoolManager(true))
             {
                 var pool = ObjectPoolFactory.Create(() => new TestObjectA(), threadSafe: true);
                 threadSafeManager.RegisterPool(pool);

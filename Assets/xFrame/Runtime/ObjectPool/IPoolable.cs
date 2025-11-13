@@ -1,4 +1,4 @@
-namespace xFrame.Core.ObjectPool
+namespace xFrame.Runtime.ObjectPool
 {
     /// <summary>
     /// 池化对象接口

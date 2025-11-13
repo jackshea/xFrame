@@ -1,12 +1,12 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Concurrent;
-using xFrame.Core.ObjectPool;
-using xFrame.Core.DataStructures;
+using xFrame.Runtime.ObjectPool;
 
-namespace xFrame.Core.EventBus
+namespace xFrame.Runtime.EventBus
 {
     /// <summary>
     /// 事件总线核心实现
@@ -14,35 +14,19 @@ namespace xFrame.Core.EventBus
     /// </summary>
     public class EventBus : IEventBus
     {
-        private readonly EventHandlerRegistry _registry;
-        private readonly EventQueue _eventQueue;
-        private readonly IObjectPool<BaseEvent> _eventPool;
-        
         // 事件历史记录
         private readonly ConcurrentDictionary<Type, Queue<IEvent>> _eventHistory;
+        private readonly IObjectPool<BaseEvent> _eventPool;
+        private readonly EventQueue _eventQueue;
         private readonly int _maxHistorySize;
+        private readonly EventHandlerRegistry _registry;
+        private long _failedEventCount;
         private bool _historyEnabled;
-        
+        private long _processedEventCount;
+
         // 性能统计
         private long _publishedEventCount;
-        private long _processedEventCount;
-        private long _failedEventCount;
-        
-        /// <summary>
-        /// 已发布事件数量
-        /// </summary>
-        public long PublishedEventCount => _publishedEventCount;
-        
-        /// <summary>
-        /// 已处理事件数量
-        /// </summary>
-        public long ProcessedEventCount => _processedEventCount;
-        
-        /// <summary>
-        /// 失败事件数量
-        /// </summary>
-        public long FailedEventCount => _failedEventCount;
-        
+
         /// <summary>
         /// 构造函数
         /// </summary>
@@ -53,16 +37,31 @@ namespace xFrame.Core.EventBus
             _registry = new EventHandlerRegistry();
             _eventQueue = new EventQueue();
             _eventPool = ObjectPoolFactory.Create<BaseEvent>(
-                createFunc: () => new BaseEvent<object>(),
-                maxSize: 1000,
-                threadSafe: false
+                () => new BaseEvent<object>(),
+                1000,
+                false
             );
-            
+
             _eventHistory = new ConcurrentDictionary<Type, Queue<IEvent>>();
             _maxHistorySize = maxHistorySize;
             _historyEnabled = historyEnabled;
         }
-        
+
+        /// <summary>
+        /// 已发布事件数量
+        /// </summary>
+        public long PublishedEventCount => _publishedEventCount;
+
+        /// <summary>
+        /// 已处理事件数量
+        /// </summary>
+        public long ProcessedEventCount => _processedEventCount;
+
+        /// <summary>
+        /// 失败事件数量
+        /// </summary>
+        public long FailedEventCount => _failedEventCount;
+
         /// <summary>
         /// 订阅事件
         /// </summary>
@@ -72,10 +71,10 @@ namespace xFrame.Core.EventBus
         {
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
-            
+
             _registry.RegisterSyncHandler(handler);
         }
-        
+
         /// <summary>
         /// 订阅事件（使用委托）
         /// </summary>
@@ -87,11 +86,11 @@ namespace xFrame.Core.EventBus
         {
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
-            
+
             var delegateHandler = new DelegateEventHandler<T>(handler, priority);
             return _registry.RegisterSyncHandler(delegateHandler);
         }
-        
+
         /// <summary>
         /// 订阅异步事件
         /// </summary>
@@ -101,10 +100,10 @@ namespace xFrame.Core.EventBus
         {
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
-            
+
             _registry.RegisterAsyncHandler(handler);
         }
-        
+
         /// <summary>
         /// 订阅异步事件（使用委托）
         /// </summary>
@@ -116,11 +115,11 @@ namespace xFrame.Core.EventBus
         {
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
-            
+
             var delegateHandler = new DelegateAsyncEventHandler<T>(handler, priority);
             return _registry.RegisterAsyncHandler(delegateHandler);
         }
-        
+
         /// <summary>
         /// 取消订阅事件
         /// </summary>
@@ -130,10 +129,10 @@ namespace xFrame.Core.EventBus
         {
             if (handler == null)
                 return;
-            
+
             _registry.UnregisterSyncHandler(handler);
         }
-        
+
         /// <summary>
         /// 取消订阅事件（使用订阅标识）
         /// </summary>
@@ -142,10 +141,10 @@ namespace xFrame.Core.EventBus
         {
             if (string.IsNullOrEmpty(subscriptionId))
                 return;
-            
+
             _registry.UnregisterBySubscriptionId(subscriptionId);
         }
-        
+
         /// <summary>
         /// 取消所有订阅
         /// </summary>
@@ -154,18 +153,12 @@ namespace xFrame.Core.EventBus
         {
             // 获取所有处理器并逐一取消订阅
             var syncHandlers = _registry.GetSyncHandlers<T>();
-            foreach (var handler in syncHandlers)
-            {
-                _registry.UnregisterSyncHandler(handler);
-            }
-            
+            foreach (var handler in syncHandlers) _registry.UnregisterSyncHandler(handler);
+
             var asyncHandlers = _registry.GetAsyncHandlers<T>();
-            foreach (var handler in asyncHandlers)
-            {
-                _registry.UnregisterAsyncHandler(handler);
-            }
+            foreach (var handler in asyncHandlers) _registry.UnregisterAsyncHandler(handler);
         }
-        
+
         /// <summary>
         /// 发布事件（同步）
         /// </summary>
@@ -175,98 +168,75 @@ namespace xFrame.Core.EventBus
         {
             if (eventData == null)
                 throw new ArgumentNullException(nameof(eventData));
-            
-            System.Threading.Interlocked.Increment(ref _publishedEventCount);
-            
+
+            Interlocked.Increment(ref _publishedEventCount);
+
             try
             {
                 // 记录事件历史
                 RecordEventHistory(eventData);
-                
+
                 // 应用过滤器
-                if (!ApplyFilters(eventData))
-                {
-                    return;
-                }
-                
+                if (!ApplyFilters(eventData)) return;
+
                 // 获取拦截器
                 var interceptors = _registry.GetInterceptors<T>();
-                
+
                 // 执行前置拦截
                 foreach (var interceptor in interceptors)
-                {
                     if (!interceptor.OnBeforeHandle(eventData))
-                    {
                         return; // 被拦截器阻止
-                    }
-                }
-                
+
                 // 获取同步处理器
                 var syncHandlers = _registry.GetSyncHandlers<T>();
-                
+
                 // 处理同步事件
                 foreach (var handler in syncHandlers)
-                {
                     try
                     {
                         if (handler is BaseEventHandler<T> baseHandler)
-                        {
                             baseHandler.SafeHandle(eventData);
-                        }
                         else
-                        {
                             handler.Handle(eventData);
-                        }
-                        
-                        System.Threading.Interlocked.Increment(ref _processedEventCount);
-                        
+
+                        Interlocked.Increment(ref _processedEventCount);
+
                         // 如果事件被标记为已处理，可以选择是否继续处理其他处理器
                         if (eventData.IsHandled)
                         {
                             // 可以在这里添加配置来决定是否继续处理
                         }
-                        
-                        if (eventData.IsCancelled)
-                        {
-                            break; // 事件被取消，停止处理
-                        }
+
+                        if (eventData.IsCancelled) break; // 事件被取消，停止处理
                     }
                     catch (Exception ex)
                     {
-                        System.Threading.Interlocked.Increment(ref _failedEventCount);
-                        
+                        Interlocked.Increment(ref _failedEventCount);
+
                         // 尝试通过拦截器处理异常
-                        bool handled = false;
+                        var handled = false;
                         foreach (var interceptor in interceptors)
-                        {
                             if (interceptor.OnException(eventData, ex))
                             {
                                 handled = true;
                                 break;
                             }
-                        }
-                        
+
                         if (!handled)
-                        {
                             // 如果拦截器没有处理异常，则重新抛出
                             throw;
-                        }
                     }
-                }
-                
+
                 // 执行后置拦截
-                foreach (var interceptor in interceptors)
-                {
-                    interceptor.OnAfterHandle(eventData);
-                }
+                foreach (var interceptor in interceptors) interceptor.OnAfterHandle(eventData);
             }
             catch (Exception ex)
             {
-                System.Threading.Interlocked.Increment(ref _failedEventCount);
+                Interlocked.Increment(ref _failedEventCount);
                 throw new EventBusException($"Failed to publish event of type {typeof(T).Name}", ex);
             }
         }
-        
+
         /// <summary>
         /// 发布事件（异步）
         /// </summary>
@@ -277,38 +247,31 @@ namespace xFrame.Core.EventBus
         {
             if (eventData == null)
                 throw new ArgumentNullException(nameof(eventData));
-            
-            System.Threading.Interlocked.Increment(ref _publishedEventCount);
-            
+
+            Interlocked.Increment(ref _publishedEventCount);
+
             try
             {
                 // 记录事件历史
                 RecordEventHistory(eventData);
-                
+
                 // 应用过滤器
-                if (!ApplyFilters(eventData))
-                {
-                    return;
-                }
-                
+                if (!ApplyFilters(eventData)) return;
+
                 // 获取拦截器
                 var interceptors = _registry.GetInterceptors<T>();
-                
+
                 // 执行前置拦截
                 foreach (var interceptor in interceptors)
-                {
                     if (!interceptor.OnBeforeHandle(eventData))
-                    {
                         return; // 被拦截器阻止
-                    }
-                }
-                
+
                 // 获取异步处理器
                 var asyncHandlers = _registry.GetAsyncHandlers<T>();
-                
+
                 // 创建处理任务列表
                 var tasks = new List<Task>();
-                
+
                 foreach (var handler in asyncHandlers)
                 {
                     var task = Task.Run(async () =>
@@ -316,57 +279,45 @@ namespace xFrame.Core.EventBus
                         try
                         {
                             if (handler is BaseAsyncEventHandler<T> baseHandler)
-                            {
                                 await baseHandler.SafeHandleAsync(eventData);
-                            }
                             else
-                            {
                                 await handler.HandleAsync(eventData);
-                            }
-                            
-                            System.Threading.Interlocked.Increment(ref _processedEventCount);
+
+                            Interlocked.Increment(ref _processedEventCount);
                         }
                         catch (Exception ex)
                         {
-                            System.Threading.Interlocked.Increment(ref _failedEventCount);
-                            
+                            Interlocked.Increment(ref _failedEventCount);
+
                             // 尝试通过拦截器处理异常
-                            bool handled = false;
+                            var handled = false;
                             foreach (var interceptor in interceptors)
-                            {
                                 if (interceptor.OnException(eventData, ex))
                                 {
                                     handled = true;
                                     break;
                                 }
-                            }
-                            
-                            if (!handled)
-                            {
-                                throw;
-                            }
+
+                            if (!handled) throw;
                         }
                     });
-                    
+
                     tasks.Add(task);
                 }
-                
+
                 // 等待所有异步处理器完成
                 await Task.WhenAll(tasks);
-                
+
                 // 执行后置拦截
-                foreach (var interceptor in interceptors)
-                {
-                    interceptor.OnAfterHandle(eventData);
-                }
+                foreach (var interceptor in interceptors) interceptor.OnAfterHandle(eventData);
             }
             catch (Exception ex)
             {
-                System.Threading.Interlocked.Increment(ref _failedEventCount);
+                Interlocked.Increment(ref _failedEventCount);
                 throw new EventBusException($"Failed to publish async event of type {typeof(T).Name}", ex);
             }
         }
-        
+
         /// <summary>
         /// 批量发布事件
         /// </summary>
@@ -376,16 +327,15 @@ namespace xFrame.Core.EventBus
         {
             if (events == null)
                 throw new ArgumentNullException(nameof(events));
-            
+
             var eventList = events.ToList();
             if (eventList.Count == 0)
                 return;
-            
+
             // 按优先级排序
             eventList.Sort((a, b) => a.Priority.CompareTo(b.Priority));
-            
+
             foreach (var eventData in eventList)
-            {
                 try
                 {
                     Publish(eventData);
@@ -394,11 +344,10 @@ namespace xFrame.Core.EventBus
                 {
                     // 批量处理中的单个事件失败不应该影响其他事件
                     // 可以在这里添加日志记录
-                    System.Threading.Interlocked.Increment(ref _failedEventCount);
+                    Interlocked.Increment(ref _failedEventCount);
                 }
-            }
         }
-        
+
         /// <summary>
         /// 延迟发布事件
         /// </summary>
@@ -409,24 +358,23 @@ namespace xFrame.Core.EventBus
         {
             if (eventData == null)
                 throw new ArgumentNullException(nameof(eventData));
-            
+
             if (delay <= 0)
             {
                 Publish(eventData);
                 return;
             }
-            
+
             // 将事件加入延迟队列
             _eventQueue.Enqueue(eventData, typeof(T), delay);
-            
+
             // 启动延迟处理任务
             Task.Run(async () =>
             {
                 await Task.Delay(delay);
-                
+
                 var item = _eventQueue.Dequeue();
                 if (item != null && ReferenceEquals(item.Event, eventData))
-                {
                     try
                     {
                         Publish((T)item.Event);
@@ -435,10 +383,9 @@ namespace xFrame.Core.EventBus
                     {
                         _eventQueue.ReleaseItem(item);
                     }
-                }
             });
         }
-        
+
         /// <summary>
         /// 添加事件过滤器
         /// </summary>
@@ -448,7 +395,7 @@ namespace xFrame.Core.EventBus
         {
             _registry.AddFilter(filter);
         }
-        
+
         /// <summary>
         /// 移除事件过滤器
         /// </summary>
@@ -458,7 +405,7 @@ namespace xFrame.Core.EventBus
         {
             _registry.RemoveFilter(filter);
         }
-        
+
         /// <summary>
         /// 添加事件拦截器
         /// </summary>
@@ -468,7 +415,7 @@ namespace xFrame.Core.EventBus
         {
             _registry.AddInterceptor(interceptor);
         }
-        
+
         /// <summary>
         /// 移除事件拦截器
         /// </summary>
@@ -478,7 +425,7 @@ namespace xFrame.Core.EventBus
         {
             _registry.RemoveInterceptor(interceptor);
         }
-        
+
         /// <summary>
         /// 获取订阅者数量
         /// </summary>
@@ -488,7 +435,7 @@ namespace xFrame.Core.EventBus
         {
             return _registry.GetSubscriberCount<T>();
         }
-        
+
         /// <summary>
         /// 检查是否有订阅者
         /// </summary>
@@ -498,7 +445,7 @@ namespace xFrame.Core.EventBus
         {
             return _registry.HasSubscribers<T>();
         }
-        
+
         /// <summary>
         /// 清空所有订阅
         /// </summary>
@@ -507,13 +454,13 @@ namespace xFrame.Core.EventBus
             _registry.Clear();
             _eventQueue.Clear();
             _eventHistory.Clear();
-            
+
             // 重置统计计数器
-            System.Threading.Interlocked.Exchange(ref _publishedEventCount, 0);
-            System.Threading.Interlocked.Exchange(ref _processedEventCount, 0);
-            System.Threading.Interlocked.Exchange(ref _failedEventCount, 0);
+            Interlocked.Exchange(ref _publishedEventCount, 0);
+            Interlocked.Exchange(ref _processedEventCount, 0);
+            Interlocked.Exchange(ref _failedEventCount, 0);
         }
-        
+
         /// <summary>
         /// 获取事件历史记录
         /// </summary>
@@ -524,16 +471,13 @@ namespace xFrame.Core.EventBus
         {
             if (!_historyEnabled)
                 return Enumerable.Empty<T>();
-            
+
             var eventType = typeof(T);
-            if (_eventHistory.TryGetValue(eventType, out var history))
-            {
-                return history.Cast<T>().Take(count);
-            }
-            
+            if (_eventHistory.TryGetValue(eventType, out var history)) return history.Cast<T>().Take(count);
+
             return Enumerable.Empty<T>();
         }
-        
+
         /// <summary>
         /// 启用或禁用事件历史记录
         /// </summary>
@@ -541,13 +485,10 @@ namespace xFrame.Core.EventBus
         public void SetHistoryEnabled(bool enabled)
         {
             _historyEnabled = enabled;
-            
-            if (!enabled)
-            {
-                _eventHistory.Clear();
-            }
+
+            if (!enabled) _eventHistory.Clear();
         }
-        
+
         /// <summary>
         /// 应用事件过滤器
         /// </summary>
@@ -557,18 +498,14 @@ namespace xFrame.Core.EventBus
         private bool ApplyFilters<T>(T eventData) where T : IEvent
         {
             var filters = _registry.GetFilters<T>();
-            
+
             foreach (var filter in filters)
-            {
                 if (!filter.ShouldHandle(eventData))
-                {
                     return false;
-                }
-            }
-            
+
             return true;
         }
-        
+
         /// <summary>
         /// 记录事件历史
         /// </summary>
@@ -577,22 +514,19 @@ namespace xFrame.Core.EventBus
         {
             if (!_historyEnabled)
                 return;
-            
+
             var eventType = eventData.GetType();
             var history = _eventHistory.GetOrAdd(eventType, _ => new Queue<IEvent>());
-            
+
             lock (history)
             {
                 history.Enqueue(eventData);
-                
+
                 // 保持历史记录大小限制
-                while (history.Count > _maxHistorySize)
-                {
-                    history.Dequeue();
-                }
+                while (history.Count > _maxHistorySize) history.Dequeue();
             }
         }
-        
+
         /// <summary>
         /// 获取事件总线统计信息
         /// </summary>
@@ -601,12 +535,12 @@ namespace xFrame.Core.EventBus
         {
             var registryStats = _registry.GetStatistics();
             var queueStats = _eventQueue.GetStatistics();
-            
+
             return $"EventBus Statistics - Published: {_publishedEventCount}, " +
                    $"Processed: {_processedEventCount}, Failed: {_failedEventCount}, " +
                    $"Registry: [{registryStats}], Queue: [{queueStats}]";
         }
-        
+
         /// <summary>
         /// 释放资源
         /// </summary>
@@ -616,7 +550,7 @@ namespace xFrame.Core.EventBus
             _registry?.Dispose();
         }
     }
-    
+
     /// <summary>
     /// 事件总线异常
     /// </summary>
@@ -629,7 +563,7 @@ namespace xFrame.Core.EventBus
         public EventBusException(string message) : base(message)
         {
         }
-        
+
         /// <summary>
         /// 构造函数
         /// </summary>

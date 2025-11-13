@@ -1,4 +1,4 @@
-namespace xFrame.Core.EventBus
+namespace xFrame.Runtime.EventBus
 {
     /// <summary>
     /// 事件基接口
@@ -10,28 +10,28 @@ namespace xFrame.Core.EventBus
         /// 事件唯一标识符
         /// </summary>
         string EventId { get; }
-        
+
         /// <summary>
         /// 事件时间戳
         /// </summary>
         long Timestamp { get; }
-        
+
         /// <summary>
         /// 事件是否已被处理
         /// </summary>
         bool IsHandled { get; set; }
-        
+
         /// <summary>
         /// 事件是否被取消
         /// </summary>
         bool IsCancelled { get; set; }
-        
+
         /// <summary>
         /// 事件优先级（数值越小优先级越高）
         /// </summary>
         int Priority { get; }
     }
-    
+
     /// <summary>
     /// 泛型事件接口
     /// 提供强类型的事件数据

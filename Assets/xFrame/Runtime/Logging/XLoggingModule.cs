@@ -1,10 +1,9 @@
 using System;
+using System.IO;
 using UnityEngine;
-using VContainer;
-using VContainer.Unity;
-using xFrame.Core.Logging.Appenders;
+using xFrame.Runtime.Logging.Appenders;
 
-namespace xFrame.Core.Logging
+namespace xFrame.Runtime.Logging
 {
     /// <summary>
     /// 日志模块
@@ -55,7 +54,7 @@ namespace xFrame.Core.Logging
         private void ConfigureDefaultAppenders()
         {
             // Unity Debug输出器 - 用于Unity编辑器调试
-            var unityDebugAppender = new UnityDebugLogAppender()
+            var unityDebugAppender = new UnityDebugLogAppender
             {
                 MinLevel = LogLevel.Debug,
                 IsEnabled = true
@@ -65,7 +64,7 @@ namespace xFrame.Core.Logging
             // 控制台输出器 - 用于独立构建版本
             if (!Application.isEditor)
             {
-                var consoleAppender = new ConsoleLogAppender()
+                var consoleAppender = new ConsoleLogAppender
                 {
                     MinLevel = LogLevel.Info,
                     IsEnabled = true
@@ -93,7 +92,6 @@ namespace xFrame.Core.Logging
             // 网络输出器 - 可选，用于远程日志收集
             var networkEndpoint = GetNetworkLogEndpoint();
             if (!string.IsNullOrEmpty(networkEndpoint))
-            {
                 try
                 {
                     var networkAppender = new NetworkLogAppender(networkEndpoint)
@@ -108,7 +106,6 @@ namespace xFrame.Core.Logging
                 {
                     _moduleLogger.Warning($"无法创建网络日志输出器: {ex.Message}");
                 }
-            }
         }
 
         /// <summary>
@@ -119,7 +116,7 @@ namespace xFrame.Core.Logging
         {
             var logDir = Application.persistentDataPath + "/Logs";
             var fileName = $"xFrame_{DateTime.Now:yyyyMMdd}.log";
-            return System.IO.Path.Combine(logDir, fileName);
+            return Path.Combine(logDir, fileName);
         }
 
         /// <summary>

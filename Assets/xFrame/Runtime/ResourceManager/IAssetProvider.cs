@@ -1,8 +1,8 @@
 using System;
 using System.Threading.Tasks;
-using UnityEngine;
+using Object = UnityEngine.Object;
 
-namespace xFrame.Core.ResourceManager
+namespace xFrame.Runtime.ResourceManager
 {
     /// <summary>
     /// 资源提供者接口
@@ -26,7 +26,7 @@ namespace xFrame.Core.ResourceManager
         /// <typeparam name="T">资源类型</typeparam>
         /// <param name="address">资源地址</param>
         /// <returns>加载的资源对象</returns>
-        T LoadAsset<T>(string address) where T : UnityEngine.Object;
+        T LoadAsset<T>(string address) where T : Object;
 
         /// <summary>
         /// 异步加载资源
@@ -34,7 +34,7 @@ namespace xFrame.Core.ResourceManager
         /// <typeparam name="T">资源类型</typeparam>
         /// <param name="address">资源地址</param>
         /// <returns>异步任务，包含加载的资源对象</returns>
-        Task<T> LoadAssetAsync<T>(string address) where T : UnityEngine.Object;
+        Task<T> LoadAssetAsync<T>(string address) where T : Object;
 
         /// <summary>
         /// 同步加载资源（非泛型版本）
@@ -42,7 +42,7 @@ namespace xFrame.Core.ResourceManager
         /// <param name="address">资源地址</param>
         /// <param name="type">资源类型</param>
         /// <returns>加载的资源对象</returns>
-        UnityEngine.Object LoadAsset(string address, Type type);
+        Object LoadAsset(string address, Type type);
 
         /// <summary>
         /// 异步加载资源（非泛型版本）
@@ -50,14 +50,14 @@ namespace xFrame.Core.ResourceManager
         /// <param name="address">资源地址</param>
         /// <param name="type">资源类型</param>
         /// <returns>异步任务，包含加载的资源对象</returns>
-        Task<UnityEngine.Object> LoadAssetAsync(string address, Type type);
+        Task<Object> LoadAssetAsync(string address, Type type);
 
         /// <summary>
         /// 释放资源
         /// </summary>
         /// <param name="address">资源地址</param>
         /// <param name="asset">资源对象</param>
-        void ReleaseAsset(string address, UnityEngine.Object asset);
+        void ReleaseAsset(string address, Object asset);
 
         /// <summary>
         /// 检查资源是否存在
@@ -103,8 +103,8 @@ namespace xFrame.Core.ResourceManager
         /// <summary>
         /// 加载成功率
         /// </summary>
-        public float LoadSuccessRate => LoadSuccessCount + LoadFailureCount > 0 
-            ? (float)LoadSuccessCount / (LoadSuccessCount + LoadFailureCount) 
+        public float LoadSuccessRate => LoadSuccessCount + LoadFailureCount > 0
+            ? (float)LoadSuccessCount / (LoadSuccessCount + LoadFailureCount)
             : 0f;
 
         /// <summary>
