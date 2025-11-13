@@ -123,7 +123,7 @@ namespace xFrame.Examples
         /// </summary>
         private void CreatePoolableObjectPool()
         {
-            Debug.Log("\n--- 示例1: 创建支持IPoolable接口的对象池 ---");
+            Debug.Log("--- 示例1: 创建支持IPoolable接口的对象池 ---");
 
             // 创建子弹对象池，最大容量为10，支持线程安全
             _bulletPool = ObjectPoolFactory.CreateForPoolable<Bullet>(
@@ -142,7 +142,7 @@ namespace xFrame.Examples
         /// </summary>
         private void CreateNormalObjectPool()
         {
-            Debug.Log("\n--- 示例2: 创建普通对象池 ---");
+            Debug.Log("--- 示例2: 创建普通对象池 ---");
 
             // 创建敌人对象池，带有自定义回调
             _enemyPool = ObjectPoolFactory.Create<Enemy>(
@@ -166,7 +166,7 @@ namespace xFrame.Examples
         /// </summary>
         private void CreatePoolManager()
         {
-            Debug.Log("\n--- 示例3: 使用对象池管理器 ---");
+            Debug.Log("--- 示例3: 使用对象池管理器 ---");
 
             // 创建对象池管理器
             _poolManager = new ObjectPoolManager();
@@ -185,7 +185,7 @@ namespace xFrame.Examples
         /// </summary>
         private void DemonstratePoolFeatures()
         {
-            Debug.Log("\n--- 示例4: 演示对象池功能 ---");
+            Debug.Log("--- 示例4: 演示对象池功能 ---");
 
             // 演示子弹对象池
             DemonstrateBulletPool();

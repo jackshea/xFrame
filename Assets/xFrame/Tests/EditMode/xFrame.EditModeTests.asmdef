@@ -1,10 +1,11 @@
 {
-    "name": "xFrameEditModeTests",
+    "name": "xFrame.EditModeTests",
     "rootNamespace": "",
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "xFrameCore"
+        "xFrameCore",
+        "xFrame.Runtime"
     ],
     "includePlatforms": [
         "Editor"

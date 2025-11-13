@@ -1,10 +1,10 @@
 {
-    "name": "xFramePlayModeTests",
+    "name": "xFrame.PlayModeTests",
     "rootNamespace": "",
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "xFrameCore"
+        "xFrame.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
