@@ -53,11 +53,6 @@ namespace xFrame.Runtime
         private IXLogManager _logManager;
 
         /// <summary>
-        /// 模块管理器实例
-        /// </summary>
-        private ModuleManager _moduleManager;
-
-        /// <summary>
         /// 获取单例实例
         /// </summary>
         public static xFrameBootstrapper Instance => Instance;
@@ -66,11 +61,6 @@ namespace xFrame.Runtime
         /// 获取生命周期容器
         /// </summary>
         public LifetimeScope LifetimeScope => _lifetimeScope;
-
-        /// <summary>
-        /// 获取模块管理器
-        /// </summary>
-        public ModuleManager ModuleManager => _moduleManager;
 
         /// <summary>
         /// 获取日志管理器
@@ -105,9 +95,8 @@ namespace xFrame.Runtime
         {
             if (_instance == this) _instance = null;
 
-            if (_initialized && _moduleManager != null)
+            if (_initialized)
             {
-                _moduleManager.Dispose();
                 _initialized = false;
                 Debug.Log("xFrame框架已销毁");
             }
@@ -130,12 +119,7 @@ namespace xFrame.Runtime
             CreateLifetimeScope();
 
             // 获取核心服务
-            _moduleManager = _lifetimeScope.Container.Resolve<ModuleManager>();
             _logManager = _lifetimeScope.Container.Resolve<IXLogManager>();
-
-            // 初始化模块
-            _moduleManager.InitializeModules();
-            _moduleManager.StartModules();
 
             _initialized = true;
             Debug.Log("xFrame框架初始化完成");
@@ -161,16 +145,6 @@ namespace xFrame.Runtime
                 // 创建模块更新器
                 var updaterObj = new GameObject("ModuleUpdater");
                 updaterObj.transform.SetParent(scopeObj.transform);
-                var updater = updaterObj.AddComponent<ModuleUpdater>();
-
-                // 设置引用
-                var field = _lifetimeScope.GetType().GetField("moduleUpdater",
-                    BindingFlags.Instance | BindingFlags.NonPublic);
-
-                if (field != null)
-                    field.SetValue(_lifetimeScope, updater);
-                else
-                    Debug.LogError("无法找到moduleUpdater字段，请检查xFrameLifetimeScope类中的字段名称");
             }
 
             // 如果使用DontDestroyOnLoad，则对生命周期容器也应用

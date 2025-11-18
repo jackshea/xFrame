@@ -9,7 +9,7 @@ namespace xFrame.Runtime.Logging
     /// 日志模块
     /// 负责初始化和配置整个日志系统，集成到VContainer依赖注入框架
     /// </summary>
-    public class XLoggingModule : BaseModule
+    public class XLoggingModule
     {
         private readonly IXLogManager _logManager;
         private readonly IXLogger _moduleLogger;
@@ -24,13 +24,13 @@ namespace xFrame.Runtime.Logging
             _moduleLogger = _logManager.GetLogger<XLoggingModule>();
         }
 
-        public override string ModuleName { get; } = nameof(XLoggingModule);
-        public override int Priority { get; } = 1;
+        public string ModuleName { get; } = nameof(XLoggingModule);
+        public int Priority { get; } = 1;
 
         /// <summary>
         /// 初始化日志模块
         /// </summary>
-        public override void OnInit()
+        public void OnInit()
         {
             _moduleLogger.Info("日志模块初始化开始...");
 
@@ -133,7 +133,7 @@ namespace xFrame.Runtime.Logging
         /// <summary>
         /// 释放资源
         /// </summary>
-        public override void OnDestroy()
+        public void OnDestroy()
         {
             _moduleLogger?.Info("日志模块正在关闭...");
             _logManager?.Shutdown();

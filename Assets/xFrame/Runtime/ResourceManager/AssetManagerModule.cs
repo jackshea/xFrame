@@ -7,7 +7,7 @@ namespace xFrame.Runtime.ResourceManager
     /// 资源管理模块
     /// 负责初始化和配置资源管理系统，集成到VContainer依赖注入框架
     /// </summary>
-    public class AssetManagerModule : BaseModule, IDisposable
+    public class AssetManagerModule : IDisposable
     {
         private readonly IAssetManager _assetManager;
         private readonly IXLogger _moduleLogger;
@@ -24,8 +24,8 @@ namespace xFrame.Runtime.ResourceManager
                             throw new ArgumentNullException(nameof(logManager));
         }
 
-        public override string ModuleName { get; } = nameof(AssetManagerModule);
-        public override int Priority { get; } = 50; // 资源管理模块优先级设为50，在日志模块之后初始化
+        public string ModuleName { get; } = nameof(AssetManagerModule);
+        public int Priority { get; } = 50; // 资源管理模块优先级设为50，在日志模块之后初始化
 
         /// <summary>
         /// 释放资源
@@ -38,7 +38,7 @@ namespace xFrame.Runtime.ResourceManager
         /// <summary>
         /// 初始化资源管理模块
         /// </summary>
-        public override void OnInit()
+        public void OnInit()
         {
             _moduleLogger.Info("资源管理模块初始化开始...");
 
@@ -60,7 +60,7 @@ namespace xFrame.Runtime.ResourceManager
         /// 模块启动
         /// 在所有模块初始化完成后调用
         /// </summary>
-        public override void OnStart()
+        public void OnStart()
         {
             _moduleLogger.Info("资源管理模块启动");
 
@@ -80,7 +80,7 @@ namespace xFrame.Runtime.ResourceManager
         /// 模块销毁
         /// 清理资源和缓存
         /// </summary>
-        public override void OnDestroy()
+        public void OnDestroy()
         {
             _moduleLogger.Info("资源管理模块销毁开始...");
 

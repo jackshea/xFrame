@@ -14,12 +14,6 @@ namespace xFrame.Runtime.DI
     public class xFrameLifetimeScope : LifetimeScope
     {
         /// <summary>
-        /// 模块更新器引用
-        /// </summary>
-        [SerializeField]
-        private ModuleUpdater moduleUpdater;
-
-        /// <summary>
         /// 资源管理器缓存容量
         /// </summary>
         [SerializeField]
@@ -32,33 +26,10 @@ namespace xFrame.Runtime.DI
         /// <param name="builder">容器构建器</param>
         protected override void Configure(IContainerBuilder builder)
         {
-            // 注册核心系统
-            RegisterModuleSystem(builder);
             RegisterLoggingSystem(builder);
             RegisterResourceSystem(builder);
         }
 
-        /// <summary>
-        /// 注册模块系统到VContainer
-        /// </summary>
-        /// <param name="builder">容器构建器</param>
-        private void RegisterModuleSystem(IContainerBuilder builder)
-        {
-            // 注册模块管理器为单例，并实现IStartable接口
-            builder.Register<ModuleManager>(Lifetime.Singleton)
-                .AsImplementedInterfaces()
-                .AsSelf();
-
-            // 注册模块更新器
-            if (moduleUpdater != null) builder.RegisterComponent(moduleUpdater);
-
-            // 构建完成后初始化模块更新器
-            builder.RegisterBuildCallback(container =>
-            {
-                ModuleRegistry.SetupInContainer(container);
-                if (moduleUpdater != null) moduleUpdater.Initialize(container);
-            });
-        }
 
         /// <summary>
         /// 注册日志系统到VContainer
