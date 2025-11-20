@@ -5,7 +5,8 @@
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "xFrame.Runtime",
-        "GenericEventBus"
+        "GenericEventBus",
+        "VContainer"
     ],
     "includePlatforms": [
         "Editor"
