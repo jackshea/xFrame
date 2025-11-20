@@ -10,7 +10,7 @@ namespace xFrame.Runtime.ResourceManager
     public class AssetManagerModule : IDisposable
     {
         private readonly IAssetManager _assetManager;
-        private readonly IXLogger _moduleLogger;
+        private readonly IXLogger _logger;
 
         /// <summary>
         /// 构造函数
@@ -20,12 +20,9 @@ namespace xFrame.Runtime.ResourceManager
         public AssetManagerModule(IAssetManager assetManager, IXLogManager logManager)
         {
             _assetManager = assetManager ?? throw new ArgumentNullException(nameof(assetManager));
-            _moduleLogger = logManager?.GetLogger<AssetManagerModule>() ??
+            _logger = logManager?.GetLogger<AssetManagerModule>() ??
                             throw new ArgumentNullException(nameof(logManager));
         }
-
-        public string ModuleName { get; } = nameof(AssetManagerModule);
-        public int Priority { get; } = 50; // 资源管理模块优先级设为50，在日志模块之后初始化
 
         /// <summary>
         /// 释放资源
@@ -40,18 +37,18 @@ namespace xFrame.Runtime.ResourceManager
         /// </summary>
         public void OnInit()
         {
-            _moduleLogger.Info("资源管理模块初始化开始...");
+            _logger.Info("资源管理模块初始化开始...");
 
             try
             {
                 // 验证资源管理器是否正常工作
                 ValidateAssetManager();
 
-                _moduleLogger.Info("资源管理模块初始化完成");
+                _logger.Info("资源管理模块初始化完成");
             }
             catch (Exception ex)
             {
-                _moduleLogger.Error("资源管理模块初始化失败", ex);
+                _logger.Error("资源管理模块初始化失败", ex);
                 throw;
             }
         }
@@ -62,17 +59,17 @@ namespace xFrame.Runtime.ResourceManager
         /// </summary>
         public void OnStart()
         {
-            _moduleLogger.Info("资源管理模块启动");
+            _logger.Info("资源管理模块启动");
 
             try
             {
                 // 输出缓存统计信息
                 var stats = _assetManager.GetCacheStats();
-                _moduleLogger.Info($"资源缓存统计 - 缓存资源数: {stats.CachedAssetCount}, 命中率: {stats.CacheHitRate:P2}");
+                _logger.Info($"资源缓存统计 - 缓存资源数: {stats.CachedAssetCount}, 命中率: {stats.CacheHitRate:P2}");
             }
             catch (Exception ex)
             {
-                _moduleLogger.Error("资源管理模块启动时获取统计信息失败", ex);
+                _logger.Error("资源管理模块启动时获取统计信息失败", ex);
             }
         }
 
@@ -82,7 +79,7 @@ namespace xFrame.Runtime.ResourceManager
         /// </summary>
         public void OnDestroy()
         {
-            _moduleLogger.Info("资源管理模块销毁开始...");
+            _logger.Info("资源管理模块销毁开始...");
 
             try
             {
@@ -92,11 +89,11 @@ namespace xFrame.Runtime.ResourceManager
                 // 如果资源管理器实现了IDisposable，则释放它
                 if (_assetManager is IDisposable disposableManager) disposableManager.Dispose();
 
-                _moduleLogger.Info("资源管理模块销毁完成");
+                _logger.Info("资源管理模块销毁完成");
             }
             catch (Exception ex)
             {
-                _moduleLogger.Error("资源管理模块销毁失败", ex);
+                _logger.Error("资源管理模块销毁失败", ex);
             }
         }
 
@@ -109,7 +106,7 @@ namespace xFrame.Runtime.ResourceManager
 
             // 检查缓存统计功能是否正常
             var stats = _assetManager.GetCacheStats();
-            _moduleLogger.Debug($"资源管理器验证通过，初始缓存统计: {stats.CachedAssetCount} 个资源");
+            _logger.Debug($"资源管理器验证通过，初始缓存统计: {stats.CachedAssetCount} 个资源");
         }
     }
 }
