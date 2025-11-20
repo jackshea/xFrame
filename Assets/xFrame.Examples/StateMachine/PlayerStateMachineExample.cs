@@ -1,6 +1,8 @@
 using UnityEngine;
+using xFrame.Runtime.StateMachine;
+using xFrame.Runtime.EventBus;
 
-namespace xFrame.StateMachine.Examples
+namespace xFrame.Examples.StateMachine
 {
     /// <summary>
     /// 玩家状态机使用示例
@@ -17,6 +19,7 @@ namespace xFrame.StateMachine.Examples
 
             // 创建状态机
             _stateMachine = new StateMachine<PlayerContext>(_context);
+            _stateMachine.Name = "PlayerStateMachine";
 
             // 添加状态
             _stateMachine.AddState(new PlayerIdleState());
@@ -24,8 +27,8 @@ namespace xFrame.StateMachine.Examples
             _stateMachine.AddState(new PlayerJumpState());
             _stateMachine.AddState(new PlayerDeadState());
 
-            // 监听状态改变事件
-            _stateMachine.OnStateChanged += OnStateChanged;
+            // 通过事件总线监听状态改变事件
+            xFrameEventBus.SubscribeTo<StateChangedEvent<PlayerContext>>(OnStateChanged);
 
             // 设置初始状态
             _stateMachine.ChangeState<PlayerIdleState>();
@@ -89,15 +92,17 @@ namespace xFrame.StateMachine.Examples
         /// <summary>
         /// 状态改变回调
         /// </summary>
-        /// <param name="previousState">前一个状态</param>
-        /// <param name="newState">新状态</param>
-        private void OnStateChanged(IState<PlayerContext> previousState, IState<PlayerContext> newState)
+        /// <param name="evt">状态改变事件</param>
+        private void OnStateChanged(ref StateChangedEvent<PlayerContext> evt)
         {
-            Debug.Log($"[PlayerStateMachine] 状态改变: {previousState?.GetType().Name} -> {newState?.GetType().Name}");
+            Debug.Log($"[PlayerStateMachine] 状态改变: {evt.PreviousState?.GetType().Name} -> {evt.CurrentState?.GetType().Name}");
         }
 
         private void OnDestroy()
         {
+            // 取消事件订阅
+            xFrameEventBus.UnsubscribeFrom<StateChangedEvent<PlayerContext>>(OnStateChanged);
+            
             // 清理状态机
             _stateMachine?.Stop();
             _stateMachine = null;

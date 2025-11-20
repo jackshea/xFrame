@@ -1,4 +1,4 @@
-namespace xFrame.StateMachine
+namespace xFrame.Runtime.StateMachine
 {
     /// <summary>
     /// 状态接口，定义状态的基本行为

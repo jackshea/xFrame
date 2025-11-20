@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace xFrame.StateMachine.Examples
+namespace xFrame.Examples.StateMachine
 {
     /// <summary>
     /// 玩家状态机上下文示例

@@ -1,40 +1,38 @@
 using System;
 using System.Collections.Generic;
-using xFrame.Bootstrapper;
 using UnityEngine;
+using VContainer.Unity;
 
-namespace xFrame.StateMachine
+namespace xFrame.Runtime.StateMachine
 {
     /// <summary>
-    /// 状态机管理模块，负责管理多个状态机实例
+    /// 状态机管理服务，负责管理多个状态机实例，实现VContainer的ITickable接口自动更新
     /// </summary>
-    public class StateMachineModule : IModule
+    public class StateMachineServiceService : IStateMachineService, ITickable, IDisposable
     {
         private readonly Dictionary<string, object> _stateMachines = new Dictionary<string, object>();
         private readonly List<object> _updateableStateMachines = new List<object>();
 
         /// <summary>
-        /// 模块名称
+        /// 构造函数
         /// </summary>
-        public string Name => "StateMachineModule";
-
-        /// <summary>
-        /// 模块优先级
-        /// </summary>
-        public int Priority => 50;
-
-        /// <summary>
-        /// 初始化模块
-        /// </summary>
-        public void Initialize()
+        public StateMachineServiceService()
         {
-            Debug.Log("[StateMachineModule] Initialized");
+            Debug.Log("[StateMachineModuleService] Created");
         }
 
         /// <summary>
-        /// 关闭模块
+        /// VContainer的Tick回调，每帧自动调用
         /// </summary>
-        public void Shutdown()
+        void ITickable.Tick()
+        {
+            Update();
+        }
+
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        public void Dispose()
         {
             // 停止所有状态机
             foreach (var sm in _updateableStateMachines)
@@ -52,7 +50,7 @@ namespace xFrame.StateMachine
 
             _stateMachines.Clear();
             _updateableStateMachines.Clear();
-            Debug.Log("[StateMachineModule] Shutdown");
+            Debug.Log("[StateMachineModuleService] Disposed");
         }
 
         /// <summary>
@@ -69,6 +67,7 @@ namespace xFrame.StateMachine
             }
 
             var stateMachine = new StateMachine();
+            stateMachine.Name = name;
             _stateMachines[name] = stateMachine;
 
             if (autoUpdate)
@@ -95,6 +94,7 @@ namespace xFrame.StateMachine
             }
 
             var stateMachine = new StateMachine<TContext>(context);
+            stateMachine.Name = name;
             _stateMachines[name] = stateMachine;
 
             if (autoUpdate)
@@ -159,9 +159,9 @@ namespace xFrame.StateMachine
         }
 
         /// <summary>
-        /// 更新所有自动更新的状态机
+        /// 更新所有自动更新的状态机（内部方法）
         /// </summary>
-        public void Update()
+        private void Update()
         {
             for (int i = 0; i < _updateableStateMachines.Count; i++)
             {

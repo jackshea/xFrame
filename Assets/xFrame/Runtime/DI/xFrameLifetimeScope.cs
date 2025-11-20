@@ -4,6 +4,7 @@ using VContainer;
 using VContainer.Unity;
 using xFrame.Runtime.Logging;
 using xFrame.Runtime.ResourceManager;
+using xFrame.Runtime.StateMachine;
 
 namespace xFrame.Runtime.DI
 {
@@ -28,6 +29,7 @@ namespace xFrame.Runtime.DI
         {
             RegisterLoggingSystem(builder);
             RegisterResourceSystem(builder);
+            RegisterStateMachineModule(builder);
         }
 
 
@@ -76,6 +78,16 @@ namespace xFrame.Runtime.DI
             builder.Register<AssetManagerModule>(Lifetime.Singleton)
                 .AsImplementedInterfaces()
                 .AsSelf();
+        }
+
+        /// <summary>
+        /// 注册状态机模块到VContainer
+        /// </summary>
+        /// <param name="builder">容器构建器</param>
+        private void RegisterStateMachineModule(IContainerBuilder builder)
+        {
+            // 使用扩展方法注册状态机模块
+            builder.RegisterStateMachineModule();
         }
     }
 }

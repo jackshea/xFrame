@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
+using xFrame.Runtime.EventBus;
 
-namespace xFrame.StateMachine
+namespace xFrame.Runtime.StateMachine
 {
     /// <summary>
     /// 通用有限状态机，不带上下文
@@ -10,6 +11,7 @@ namespace xFrame.StateMachine
     {
         private IState _currentState;
         private readonly Dictionary<Type, IState> _states = new Dictionary<Type, IState>();
+        private string _name;
 
         /// <summary>
         /// 当前状态
@@ -27,9 +29,13 @@ namespace xFrame.StateMachine
         public bool IsRunning { get; private set; }
 
         /// <summary>
-        /// 状态改变事件
+        /// 状态机名称
         /// </summary>
-        public event Action<IState, IState> OnStateChanged;
+        public string Name
+        {
+            get => _name;
+            set => _name = value;
+        }
 
         /// <summary>
         /// 添加状态
@@ -98,8 +104,8 @@ namespace xFrame.StateMachine
             // 进入新状态
             _currentState.OnEnter();
 
-            // 触发状态改变事件
-            OnStateChanged?.Invoke(previousState, _currentState);
+            // 通过事件总线触发状态改变事件
+            xFrameEventBus.Raise(new StateChangedEvent(_name, previousState, _currentState));
 
             IsRunning = true;
         }
@@ -147,6 +153,7 @@ namespace xFrame.StateMachine
         private IState<TContext> _currentState;
         private readonly Dictionary<Type, IState<TContext>> _states = new Dictionary<Type, IState<TContext>>();
         private TContext _context;
+        private string _name;
 
         /// <summary>
         /// 当前状态
@@ -173,9 +180,13 @@ namespace xFrame.StateMachine
         public bool IsRunning { get; private set; }
 
         /// <summary>
-        /// 状态改变事件
+        /// 状态机名称
         /// </summary>
-        public event Action<IState<TContext>, IState<TContext>> OnStateChanged;
+        public string Name
+        {
+            get => _name;
+            set => _name = value;
+        }
 
         /// <summary>
         /// 构造函数
@@ -253,8 +264,8 @@ namespace xFrame.StateMachine
             // 进入新状态
             _currentState.OnEnter(_context);
 
-            // 触发状态改变事件
-            OnStateChanged?.Invoke(previousState, _currentState);
+            // 通过事件总线触发状态改变事件
+            xFrameEventBus.Raise(new StateChangedEvent<TContext>(_name, previousState, _currentState, _context));
 
             IsRunning = true;
         }

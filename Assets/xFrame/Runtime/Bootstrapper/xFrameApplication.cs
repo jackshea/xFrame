@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using xFrame.Runtime.EventBus;
 
 namespace xFrame.Runtime
 {
@@ -40,7 +41,7 @@ namespace xFrame.Runtime
         /// <summary>
         /// 获取单例实例
         /// </summary>
-        public static xFrameApplication Instance => Instance;
+        public static xFrameApplication Instance => _instance;
 
         /// <summary>
         /// 获取框架启动器
@@ -107,11 +108,6 @@ namespace xFrame.Runtime
         }
 
         /// <summary>
-        /// 应用程序初始化完成事件
-        /// </summary>
-        public event Action OnApplicationInitialized;
-
-        /// <summary>
         /// 初始化应用程序
         /// </summary>
         private void Initialize()
@@ -133,8 +129,8 @@ namespace xFrame.Runtime
             _initialized = true;
             Debug.Log("xFrame应用程序初始化完成");
 
-            // 触发初始化完成事件
-            OnApplicationInitialized?.Invoke();
+            // 通过事件总线触发初始化完成事件
+            xFrameEventBus.Raise(new ApplicationInitializedEvent(this));
         }
 
         /// <summary>

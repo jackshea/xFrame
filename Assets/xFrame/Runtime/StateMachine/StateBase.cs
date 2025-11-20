@@ -1,4 +1,4 @@
-namespace xFrame.StateMachine
+namespace xFrame.Runtime.StateMachine
 {
     /// <summary>
     /// 状态基类，提供默认的空实现

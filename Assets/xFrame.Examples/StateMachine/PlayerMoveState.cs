@@ -1,6 +1,7 @@
 using UnityEngine;
+using xFrame.Runtime.StateMachine;
 
-namespace xFrame.StateMachine.Examples
+namespace xFrame.Examples.StateMachine
 {
     /// <summary>
     /// 玩家移动状态
