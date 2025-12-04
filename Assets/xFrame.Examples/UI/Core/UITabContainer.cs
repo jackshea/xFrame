@@ -412,7 +412,7 @@ namespace xFrame.Runtime.UI
         /// <summary>
         /// 容器销毁时
         /// </summary>
-        protected override void OnDestroy()
+        protected override void OnUIDestroy()
         {
             // 销毁所有页面
             foreach (var page in _pages)

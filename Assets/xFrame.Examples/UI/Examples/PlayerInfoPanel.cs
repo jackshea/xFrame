@@ -120,7 +120,7 @@ namespace xFrame.Examples.UI
             Debug.Log("[PlayerInfoPanel] 玩家信息面板已关闭");
         }
 
-        protected override void OnDestroy()
+        protected override void OnUIDestroy()
         {
             // 取消事件订阅
             xFrameEventBus.UnsubscribeFrom<PlayerDataUpdatedEvent>(OnPlayerDataUpdated);
@@ -128,7 +128,7 @@ namespace xFrame.Examples.UI
             if (closeButton != null)
                 closeButton.onClick.RemoveListener(OnCloseButtonClicked);
 
-            base.OnDestroy();
+            base.OnUIDestroy();
             Debug.Log("[PlayerInfoPanel] UI销毁完成");
         }
 

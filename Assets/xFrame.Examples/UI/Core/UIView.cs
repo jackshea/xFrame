@@ -47,7 +47,7 @@ namespace xFrame.Runtime.UI
         /// <summary>
         /// 组件管理器
         /// </summary>
-        protected UIComponentManager ComponentManager { get; private set; }
+        internal UIComponentManager ComponentManager { get; private set; }
 
         /// <summary>
         /// Unity Awake生命周期
@@ -105,26 +105,35 @@ namespace xFrame.Runtime.UI
         /// UI销毁时调用（仅调用一次）
         /// 用于清理资源、取消事件订阅等
         /// </summary>
-        protected virtual void OnDestroy() { }
+        protected virtual void OnUIDestroy() { }
 
         #endregion
 
         #region IPoolable接口实现
 
         /// <summary>
-        /// 从对象池取出时调用
+        /// 从对象池获取时调用
         /// </summary>
-        public virtual void OnSpawn()
+        public void OnGet()
         {
             gameObject.SetActive(true);
         }
 
         /// <summary>
-        /// 返回对象池时调用
+        /// 释放回对象池时调用
         /// </summary>
-        public virtual void OnRecycle()
+        public void OnRelease()
         {
             gameObject.SetActive(false);
+        }
+
+        /// <summary>
+        /// 对象被销毁时调用（IPoolable接口）
+        /// </summary>
+        public void OnDestroy()
+        {
+            // 调用 UI 销毁生命周期
+            InternalOnDestroy();
         }
 
         #endregion
@@ -227,7 +236,7 @@ namespace xFrame.Runtime.UI
         {
             if (IsCreated)
             {
-                OnDestroy();
+                OnUIDestroy();
                 IsCreated = false;
 
                 // 销毁所有子组件

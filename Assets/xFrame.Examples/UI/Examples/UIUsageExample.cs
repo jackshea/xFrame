@@ -205,10 +205,10 @@ namespace xFrame.Examples.UI
             Debug.Log("\n--- 示例5: 事件通信 ---");
 
             // 订阅UI打开事件
-            xFrameEventBus.SubscribeTo<UI.Events.UIOpenedEvent>(OnUIOpened);
+            xFrameEventBus.SubscribeTo<xFrame.Runtime.UI.Events.UIOpenedEvent>(OnUIOpened);
 
             // 订阅UI关闭事件
-            xFrameEventBus.SubscribeTo<UI.Events.UIClosedEvent>(OnUIClosed);
+            xFrameEventBus.SubscribeTo<xFrame.Runtime.UI.Events.UIClosedEvent>(OnUIClosed);
 
             Debug.Log("已订阅UI事件");
         }
@@ -216,7 +216,7 @@ namespace xFrame.Examples.UI
         /// <summary>
         /// UI打开事件处理
         /// </summary>
-        private void OnUIOpened(ref UI.Events.UIOpenedEvent evt)
+        private void OnUIOpened(ref xFrame.Runtime.UI.Events.UIOpenedEvent evt)
         {
             Debug.Log($"[事件] UI已打开: {evt.UIType.Name}, 层级: {evt.Layer}");
         }
@@ -224,7 +224,7 @@ namespace xFrame.Examples.UI
         /// <summary>
         /// UI关闭事件处理
         /// </summary>
-        private void OnUIClosed(ref UI.Events.UIClosedEvent evt)
+        private void OnUIClosed(ref xFrame.Runtime.UI.Events.UIClosedEvent evt)
         {
             Debug.Log($"[事件] UI已关闭: {evt.UIType.Name}, 层级: {evt.Layer}");
         }
@@ -315,8 +315,8 @@ namespace xFrame.Examples.UI
         private void OnDestroy()
         {
             // 取消事件订阅
-            xFrameEventBus.UnsubscribeFrom<UI.Events.UIOpenedEvent>(OnUIOpened);
-            xFrameEventBus.UnsubscribeFrom<UI.Events.UIClosedEvent>(OnUIClosed);
+            xFrameEventBus.UnsubscribeFrom<xFrame.Runtime.UI.Events.UIOpenedEvent>(OnUIOpened);
+            xFrameEventBus.UnsubscribeFrom<xFrame.Runtime.UI.Events.UIClosedEvent>(OnUIClosed);
         }
 
         #endregion

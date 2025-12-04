@@ -1,3 +1,4 @@
+using DG.Tweening;
 using UnityEngine;
 
 namespace xFrame.Runtime.UI
@@ -57,9 +58,8 @@ namespace xFrame.Runtime.UI
         {
             if (RectTransform != null)
             {
-                RectTransform.localScale = Vector3.zero;
-                LeanTween.scale(RectTransform, Vector3.one, AnimationDuration)
-                    .setEase(LeanTweenType.easeOutBack);
+                RectTransform.localScale = Vector3.one;
+                RectTransform.DOScale(Vector3.one, AnimationDuration).SetEase(Ease.OutBack);
             }
         }
 
@@ -71,8 +71,7 @@ namespace xFrame.Runtime.UI
         {
             if (RectTransform != null)
             {
-                LeanTween.scale(RectTransform, Vector3.zero, AnimationDuration)
-                    .setEase(LeanTweenType.easeInBack);
+                RectTransform.DOScale(Vector3.zero, AnimationDuration).SetEase(Ease.InBack);
             }
         }
 
@@ -107,13 +106,3 @@ namespace xFrame.Runtime.UI
     }
 }
 
-/* 
- * 注意：此示例代码使用了LeanTween作为动画库
- * 如果项目中没有LeanTween，可以：
- * 1. 安装LeanTween插件
- * 2. 使用其他动画库（如DOTween）替换
- * 3. 使用Unity的Animator或自定义动画实现
- * 
- * 示例替换为DOTween：
- * RectTransform.DOScale(Vector3.one, AnimationDuration).SetEase(Ease.OutBack);
- */

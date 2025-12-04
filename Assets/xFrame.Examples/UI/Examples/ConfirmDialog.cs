@@ -152,7 +152,7 @@ namespace xFrame.Examples.UI
         /// <summary>
         /// UI销毁时调用
         /// </summary>
-        protected override void OnDestroy()
+        protected override void OnUIDestroy()
         {
             // 取消按钮事件
             if (confirmButton != null)
@@ -161,7 +161,7 @@ namespace xFrame.Examples.UI
             if (cancelButton != null)
                 cancelButton.onClick.RemoveListener(OnCancelButtonClicked);
 
-            base.OnDestroy();
+            base.OnUIDestroy();
             Debug.Log("[ConfirmDialog] UI销毁完成");
         }
 

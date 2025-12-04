@@ -2,6 +2,7 @@ using UnityEngine;
 using VContainer;
 using xFrame.Runtime.UI;
 using System.Threading.Tasks;
+using DG.Tweening;
 
 namespace xFrame.Examples.UI
 {
@@ -124,10 +125,10 @@ namespace xFrame.Examples.UI
             Debug.Log("  [UIPanelA] OnClose - 面板关闭");
         }
 
-        protected override void OnDestroy()
+        protected override void OnUIDestroy()
         {
-            base.OnDestroy();
-            Debug.Log("  [UIPanelA] OnDestroy - 面板销毁");
+            base.OnUIDestroy();
+            Debug.Log("  [UIPanelA] OnUIDestroy - 面板销毁");
         }
     }
 
@@ -169,10 +170,10 @@ namespace xFrame.Examples.UI
             Debug.Log("  [UIPanelB] OnClose - 面板关闭");
         }
 
-        protected override void OnDestroy()
+        protected override void OnUIDestroy()
         {
-            base.OnDestroy();
-            Debug.Log("  [UIPanelB] OnDestroy - 面板销毁");
+            base.OnUIDestroy();
+            Debug.Log("  [UIPanelB] OnUIDestroy - 面板销毁");
         }
     }
 
@@ -214,10 +215,10 @@ namespace xFrame.Examples.UI
             Debug.Log("  [UIPanelC] OnClose - 面板关闭");
         }
 
-        protected override void OnDestroy()
+        protected override void OnUIDestroy()
         {
-            base.OnDestroy();
-            Debug.Log("  [UIPanelC] OnDestroy - 面板销毁");
+            base.OnUIDestroy();
+            Debug.Log("  [UIPanelC] OnUIDestroy - 面板销毁");
         }
     }
 
@@ -279,8 +280,7 @@ namespace xFrame.Examples.UI
             
             _isAnimationPlaying = true;
             
-            // 使用DOTween或LeanTween播放动画
-            // transform.DOScale(Vector3.one, 0.3f).OnComplete(() => _isAnimationPlaying = false);
+            transform.DOScale(Vector3.one, 0.3f).OnComplete(() => _isAnimationPlaying = false);
             
             _isAnimationPlaying = false;
         }

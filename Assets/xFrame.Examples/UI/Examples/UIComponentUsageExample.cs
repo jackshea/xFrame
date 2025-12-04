@@ -340,11 +340,11 @@ namespace xFrame.Examples.UI
             // ComponentManager会自动调用所有子组件的Hide()
         }
 
-        protected override void OnDestroy()
+        protected override void OnUIDestroy()
         {
             xFrameEventBus.UnsubscribeFrom<UIComponentEventWrapper<SkillButtonClickedEvent>>(
                 OnSkillButtonClicked);
-            base.OnDestroy();
+            base.OnUIDestroy();
         }
 
         #endregion

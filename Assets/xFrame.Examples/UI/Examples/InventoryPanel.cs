@@ -99,7 +99,7 @@ namespace xFrame.Examples.UI
             Debug.Log("[InventoryPanel] 关闭背包");
         }
 
-        protected override void OnDestroy()
+        protected override void OnUIDestroy()
         {
             // 取消事件订阅
             UnsubscribeComponentEvents();
@@ -109,7 +109,7 @@ namespace xFrame.Examples.UI
                 closeButton.onClick.RemoveListener(OnCloseButtonClicked);
             }
 
-            base.OnDestroy();
+            base.OnUIDestroy();
             Debug.Log("[InventoryPanel] 销毁完成");
         }
 

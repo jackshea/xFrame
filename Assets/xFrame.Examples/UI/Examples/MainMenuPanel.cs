@@ -148,7 +148,7 @@ namespace xFrame.Examples.UI
         /// <summary>
         /// UI销毁时调用（仅一次）
         /// </summary>
-        protected override void OnDestroy()
+        protected override void OnUIDestroy()
         {
             // 取消按钮事件绑定
             if (startButton != null)
@@ -163,7 +163,7 @@ namespace xFrame.Examples.UI
             if (exitButton != null)
                 exitButton.onClick.RemoveListener(OnExitButtonClicked);
 
-            base.OnDestroy();
+            base.OnUIDestroy();
             Debug.Log("[MainMenuPanel] UI销毁完成");
         }
 
