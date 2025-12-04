@@ -1,6 +1,6 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using xFrame.Runtime.UI;
 
 namespace xFrame.Examples.UI.Components
@@ -14,10 +14,17 @@ namespace xFrame.Examples.UI.Components
         #region UI组件
 
         [Header("UI引用")]
-        [SerializeField] private Image iconImage;
-        [SerializeField] private TextMeshProUGUI countText;
-        [SerializeField] private Button slotButton;
-        [SerializeField] private GameObject selectedFrame;
+        [SerializeField]
+        private Image iconImage;
+
+        [SerializeField]
+        private TextMeshProUGUI countText;
+
+        [SerializeField]
+        private Button slotButton;
+
+        [SerializeField]
+        private GameObject selectedFrame;
 
         #endregion
 
@@ -35,10 +42,7 @@ namespace xFrame.Examples.UI.Components
             base.OnInitialize();
 
             // 绑定按钮事件
-            if (slotButton != null)
-            {
-                slotButton.onClick.AddListener(OnSlotClicked);
-            }
+            if (slotButton != null) slotButton.onClick.AddListener(OnSlotClicked);
 
             // 初始化状态
             SetSelected(false);
@@ -88,10 +92,7 @@ namespace xFrame.Examples.UI.Components
             base.OnDestroyComponent();
 
             // 取消按钮绑定
-            if (slotButton != null)
-            {
-                slotButton.onClick.RemoveListener(OnSlotClicked);
-            }
+            if (slotButton != null) slotButton.onClick.RemoveListener(OnSlotClicked);
 
             Debug.Log($"[ItemSlotComponent] 销毁, ID: {ComponentId}");
         }
@@ -127,13 +128,9 @@ namespace xFrame.Examples.UI.Components
             if (countText != null)
             {
                 if (_currentData.Count > 1)
-                {
                     countText.text = _currentData.Count.ToString();
-                }
                 else
-                {
                     countText.text = "";
-                }
             }
         }
 
@@ -145,10 +142,7 @@ namespace xFrame.Examples.UI.Components
         {
             _isSelected = selected;
 
-            if (selectedFrame != null)
-            {
-                selectedFrame.SetActive(selected);
-            }
+            if (selectedFrame != null) selectedFrame.SetActive(selected);
         }
 
         #endregion

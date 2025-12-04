@@ -1,9 +1,9 @@
+using System.Threading.Tasks;
 using UnityEngine;
 using VContainer;
-using VContainer.Unity;
-using xFrame.Runtime.UI;
 using xFrame.Runtime.EventBus;
-using System.Threading.Tasks;
+using xFrame.Runtime.UI;
+using xFrame.Runtime.UI.Events;
 
 namespace xFrame.Examples.UI
 {
@@ -13,21 +13,6 @@ namespace xFrame.Examples.UI
     /// </summary>
     public class UIUsageExample : MonoBehaviour
     {
-        #region 依赖注入
-
-        private IUIManager _uiManager;
-
-        /// <summary>
-        /// VContainer依赖注入
-        /// </summary>
-        [Inject]
-        public void Construct(IUIManager uiManager)
-        {
-            _uiManager = uiManager;
-        }
-
-        #endregion
-
         #region Unity生命周期
 
         private async void Start()
@@ -63,6 +48,32 @@ namespace xFrame.Examples.UI
 
             // 示例6: UI查询
             Example6_QueryUI();
+        }
+
+        #endregion
+
+        #region Unity生命周期
+
+        private void OnDestroy()
+        {
+            // 取消事件订阅
+            xFrameEventBus.UnsubscribeFrom<UIOpenedEvent>(OnUIOpened);
+            xFrameEventBus.UnsubscribeFrom<UIClosedEvent>(OnUIClosed);
+        }
+
+        #endregion
+
+        #region 依赖注入
+
+        private IUIManager _uiManager;
+
+        /// <summary>
+        /// VContainer依赖注入
+        /// </summary>
+        [Inject]
+        public void Construct(IUIManager uiManager)
+        {
+            _uiManager = uiManager;
         }
 
         #endregion
@@ -191,10 +202,7 @@ namespace xFrame.Examples.UI
 
             await Task.Delay(500);
 
-            if (_uiManager.CanGoBack())
-            {
-                _uiManager.Back(); // 返回到UI A
-            }
+            if (_uiManager.CanGoBack()) _uiManager.Back(); // 返回到UI A
         }
 
         /// <summary>
@@ -205,10 +213,10 @@ namespace xFrame.Examples.UI
             Debug.Log("\n--- 示例5: 事件通信 ---");
 
             // 订阅UI打开事件
-            xFrameEventBus.SubscribeTo<xFrame.Runtime.UI.Events.UIOpenedEvent>(OnUIOpened);
+            xFrameEventBus.SubscribeTo<UIOpenedEvent>(OnUIOpened);
 
             // 订阅UI关闭事件
-            xFrameEventBus.SubscribeTo<xFrame.Runtime.UI.Events.UIClosedEvent>(OnUIClosed);
+            xFrameEventBus.SubscribeTo<UIClosedEvent>(OnUIClosed);
 
             Debug.Log("已订阅UI事件");
         }
@@ -216,7 +224,7 @@ namespace xFrame.Examples.UI
         /// <summary>
         /// UI打开事件处理
         /// </summary>
-        private void OnUIOpened(ref xFrame.Runtime.UI.Events.UIOpenedEvent evt)
+        private void OnUIOpened(ref UIOpenedEvent evt)
         {
             Debug.Log($"[事件] UI已打开: {evt.UIType.Name}, 层级: {evt.Layer}");
         }
@@ -224,7 +232,7 @@ namespace xFrame.Examples.UI
         /// <summary>
         /// UI关闭事件处理
         /// </summary>
-        private void OnUIClosed(ref xFrame.Runtime.UI.Events.UIClosedEvent evt)
+        private void OnUIClosed(ref UIClosedEvent evt)
         {
             Debug.Log($"[事件] UI已关闭: {evt.UIType.Name}, 层级: {evt.Layer}");
         }
@@ -237,19 +245,16 @@ namespace xFrame.Examples.UI
             Debug.Log("\n--- 示例6: UI查询 ---");
 
             // 检查UI是否打开
-            bool isMainMenuOpen = _uiManager.IsOpen<MainMenuPanel>();
+            var isMainMenuOpen = _uiManager.IsOpen<MainMenuPanel>();
             Debug.Log($"主菜单是否打开: {isMainMenuOpen}");
 
             // 获取已打开的UI实例
             var mainMenu = _uiManager.Get<MainMenuPanel>();
-            if (mainMenu != null)
-            {
-                Debug.Log($"获取到主菜单实例: {mainMenu.name}");
-            }
+            if (mainMenu != null) Debug.Log($"获取到主菜单实例: {mainMenu.name}");
 
             // 获取指定层级的UI数量
-            int normalLayerCount = _uiManager.GetOpenUICount(UILayer.Normal);
-            int popupLayerCount = _uiManager.GetOpenUICount(UILayer.Popup);
+            var normalLayerCount = _uiManager.GetOpenUICount(UILayer.Normal);
+            var popupLayerCount = _uiManager.GetOpenUICount(UILayer.Popup);
 
             Debug.Log($"Normal层UI数量: {normalLayerCount}");
             Debug.Log($"Popup层UI数量: {popupLayerCount}");
@@ -306,17 +311,6 @@ namespace xFrame.Examples.UI
 
             // 关闭所有UI
             _uiManager.CloseAll();
-        }
-
-        #endregion
-
-        #region Unity生命周期
-
-        private void OnDestroy()
-        {
-            // 取消事件订阅
-            xFrameEventBus.UnsubscribeFrom<xFrame.Runtime.UI.Events.UIOpenedEvent>(OnUIOpened);
-            xFrameEventBus.UnsubscribeFrom<xFrame.Runtime.UI.Events.UIClosedEvent>(OnUIClosed);
         }
 
         #endregion

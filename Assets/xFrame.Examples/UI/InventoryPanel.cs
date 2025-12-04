@@ -1,10 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using VContainer;
-using xFrame.Runtime.UI;
-using xFrame.Runtime.EventBus;
 using xFrame.Examples.UI.Components;
+using xFrame.Runtime.EventBus;
+using xFrame.Runtime.UI;
 
 namespace xFrame.Examples.UI
 {
@@ -14,21 +13,57 @@ namespace xFrame.Examples.UI
     /// </summary>
     public class InventoryPanel : UIPanel
     {
+        #region 按钮事件
+
+        private void OnCloseButtonClicked()
+        {
+            // 通过UIManager关闭
+            // _uiManager.Close(this);
+            Debug.Log("[InventoryPanel] 点击关闭按钮");
+        }
+
+        #endregion
+
+        #region 调试方法
+
+        /// <summary>
+        /// 获取组件统计信息
+        /// </summary>
+        [ContextMenu("打印组件统计")]
+        private void PrintComponentStats()
+        {
+            Debug.Log("=== 背包面板组件统计 ===");
+            Debug.Log($"总组件数: {ComponentManager.GetComponentCount()}");
+            Debug.Log($"ItemSlotComponent数量: {ComponentManager.GetComponentCountOfType<ItemSlotComponent>()}");
+
+            var slots = ComponentManager.GetComponentsOfType<ItemSlotComponent>();
+            Debug.Log("槽位列表:");
+            foreach (var slot in slots) Debug.Log($"  - ID: {slot.ComponentId}, Empty: {slot.IsEmpty()}");
+        }
+
+        #endregion
+
         #region UI组件
 
         [Header("UI引用")]
-        [SerializeField] private Transform slotContainer;
-        [SerializeField] private ItemSlotComponent slotPrefab;
-        [SerializeField] private Button closeButton;
+        [SerializeField]
+        private Transform slotContainer;
+
+        [SerializeField]
+        private ItemSlotComponent slotPrefab;
+
+        [SerializeField]
+        private Button closeButton;
 
         [Header("配置")]
-        [SerializeField] private int slotCount = 20;
+        [SerializeField]
+        private int slotCount = 20;
 
         #endregion
 
         #region 私有字段
 
-        private List<ItemSlotComponent> _itemSlots = new List<ItemSlotComponent>();
+        private readonly List<ItemSlotComponent> _itemSlots = new();
         private ItemSlotComponent _selectedSlot;
 
         #endregion
@@ -51,10 +86,7 @@ namespace xFrame.Examples.UI
             CreateItemSlots();
 
             // 绑定按钮
-            if (closeButton != null)
-            {
-                closeButton.onClick.AddListener(OnCloseButtonClicked);
-            }
+            if (closeButton != null) closeButton.onClick.AddListener(OnCloseButtonClicked);
 
             // 订阅组件事件（方式1：通过事件总线）
             SubscribeComponentEvents();
@@ -67,10 +99,7 @@ namespace xFrame.Examples.UI
             base.OnOpen(data);
 
             // 接收背包数据
-            if (data is InventoryData inventoryData)
-            {
-                LoadInventoryData(inventoryData);
-            }
+            if (data is InventoryData inventoryData) LoadInventoryData(inventoryData);
 
             Debug.Log("[InventoryPanel] 打开背包");
         }
@@ -104,10 +133,7 @@ namespace xFrame.Examples.UI
             // 取消事件订阅
             UnsubscribeComponentEvents();
 
-            if (closeButton != null)
-            {
-                closeButton.onClick.RemoveListener(OnCloseButtonClicked);
-            }
+            if (closeButton != null) closeButton.onClick.RemoveListener(OnCloseButtonClicked);
 
             base.OnUIDestroy();
             Debug.Log("[InventoryPanel] 销毁完成");
@@ -128,7 +154,7 @@ namespace xFrame.Examples.UI
                 return;
             }
 
-            for (int i = 0; i < slotCount; i++)
+            for (var i = 0; i < slotCount; i++)
             {
                 // 实例化槽位
                 var slotInstance = Instantiate(slotPrefab, slotContainer);
@@ -153,10 +179,7 @@ namespace xFrame.Examples.UI
         {
             if (data == null || data.Items == null) return;
 
-            for (int i = 0; i < data.Items.Count && i < _itemSlots.Count; i++)
-            {
-                _itemSlots[i].SetData(data.Items[i]);
-            }
+            for (var i = 0; i < data.Items.Count && i < _itemSlots.Count; i++) _itemSlots[i].SetData(data.Items[i]);
 
             Debug.Log($"[InventoryPanel] 加载了 {data.Items.Count} 个物品");
         }
@@ -166,10 +189,7 @@ namespace xFrame.Examples.UI
         /// </summary>
         private void RefreshAllSlots()
         {
-            foreach (var slot in _itemSlots)
-            {
-                slot.Refresh();
-            }
+            foreach (var slot in _itemSlots) slot.Refresh();
         }
 
         #endregion
@@ -295,14 +315,12 @@ namespace xFrame.Examples.UI
 
             // 查找空槽位
             foreach (var slot in _itemSlots)
-            {
                 if (slot.IsEmpty())
                 {
                     slot.SetData(itemData);
                     Debug.Log($"[InventoryPanel] 添加物品: {itemData.ItemName}");
                     return true;
                 }
-            }
 
             Debug.LogWarning("[InventoryPanel] 背包已满，无法添加物品");
             return false;
@@ -342,39 +360,6 @@ namespace xFrame.Examples.UI
         }
 
         #endregion
-
-        #region 按钮事件
-
-        private void OnCloseButtonClicked()
-        {
-            // 通过UIManager关闭
-            // _uiManager.Close(this);
-            Debug.Log("[InventoryPanel] 点击关闭按钮");
-        }
-
-        #endregion
-
-        #region 调试方法
-
-        /// <summary>
-        /// 获取组件统计信息
-        /// </summary>
-        [ContextMenu("打印组件统计")]
-        private void PrintComponentStats()
-        {
-            Debug.Log($"=== 背包面板组件统计 ===");
-            Debug.Log($"总组件数: {ComponentManager.GetComponentCount()}");
-            Debug.Log($"ItemSlotComponent数量: {ComponentManager.GetComponentCountOfType<ItemSlotComponent>()}");
-
-            var slots = ComponentManager.GetComponentsOfType<ItemSlotComponent>();
-            Debug.Log($"槽位列表:");
-            foreach (var slot in slots)
-            {
-                Debug.Log($"  - ID: {slot.ComponentId}, Empty: {slot.IsEmpty()}");
-            }
-        }
-
-        #endregion
     }
 
     #region 数据类型
@@ -384,7 +369,7 @@ namespace xFrame.Examples.UI
     /// </summary>
     public class InventoryData
     {
-        public List<ItemSlotData> Items { get; set; } = new List<ItemSlotData>();
+        public List<ItemSlotData> Items { get; set; } = new();
 
         /// <summary>
         /// 创建测试数据

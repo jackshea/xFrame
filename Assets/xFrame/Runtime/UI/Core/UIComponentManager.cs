@@ -11,8 +11,8 @@ namespace xFrame.Runtime.UI
     /// </summary>
     public class UIComponentManager
     {
-        private readonly Dictionary<string, UIComponent> _components = new Dictionary<string, UIComponent>();
-        private readonly Dictionary<Type, List<UIComponent>> _componentsByType = new Dictionary<Type, List<UIComponent>>();
+        private readonly Dictionary<string, UIComponent> _components = new();
+        private readonly Dictionary<Type, List<UIComponent>> _componentsByType = new();
 
         /// <summary>
         /// 构造函数
@@ -37,28 +37,17 @@ namespace xFrame.Runtime.UI
             }
 
             // 初始化组件
-            if (!component.IsInitialized)
-            {
-                component.Initialize();
-            }
+            if (!component.IsInitialized) component.Initialize();
 
             // 按ID存储
-            if (!_components.ContainsKey(component.ComponentId))
-            {
-                _components[component.ComponentId] = component;
-            }
+            if (!_components.ContainsKey(component.ComponentId)) _components[component.ComponentId] = component;
 
             // 按类型存储
             var componentType = typeof(T);
             if (!_componentsByType.ContainsKey(componentType))
-            {
                 _componentsByType[componentType] = new List<UIComponent>();
-            }
 
-            if (!_componentsByType[componentType].Contains(component))
-            {
-                _componentsByType[componentType].Add(component);
-            }
+            if (!_componentsByType[componentType].Contains(component)) _componentsByType[componentType].Add(component);
 
             Debug.Log($"[UIComponentManager] 注册组件: {componentType.Name}, ID: {component.ComponentId}");
         }
@@ -86,14 +75,10 @@ namespace xFrame.Runtime.UI
 
                 var componentType = component.GetType();
                 if (!_componentsByType.ContainsKey(componentType))
-                {
                     _componentsByType[componentType] = new List<UIComponent>();
-                }
 
                 if (!_componentsByType[componentType].Contains(component))
-                {
                     _componentsByType[componentType].Add(component);
-                }
             }
 
             Debug.Log($"[UIComponentManager] 自动注册了 {components.Length} 个组件");
@@ -110,10 +95,7 @@ namespace xFrame.Runtime.UI
                 _components.Remove(componentId);
 
                 var componentType = component.GetType();
-                if (_componentsByType.TryGetValue(componentType, out var list))
-                {
-                    list.Remove(component);
-                }
+                if (_componentsByType.TryGetValue(componentType, out var list)) list.Remove(component);
 
                 component.DestroyComponent();
                 Debug.Log($"[UIComponentManager] 注销组件: {componentType.Name}, ID: {componentId}");
@@ -154,10 +136,7 @@ namespace xFrame.Runtime.UI
         public T GetComponentOfType<T>() where T : UIComponent
         {
             var componentType = typeof(T);
-            if (_componentsByType.TryGetValue(componentType, out var list) && list.Count > 0)
-            {
-                return list[0] as T;
-            }
+            if (_componentsByType.TryGetValue(componentType, out var list) && list.Count > 0) return list[0] as T;
             return null;
         }
 
@@ -172,15 +151,9 @@ namespace xFrame.Runtime.UI
             var componentType = typeof(T);
 
             if (_componentsByType.TryGetValue(componentType, out var list))
-            {
                 foreach (var component in list)
-                {
                     if (component is T typedComponent)
-                    {
                         result.Add(typedComponent);
-                    }
-                }
-            }
 
             return result;
         }
@@ -204,12 +177,8 @@ namespace xFrame.Runtime.UI
         public void OnParentShow()
         {
             foreach (var component in _components.Values)
-            {
                 if (component.IsVisible)
-                {
                     component.Show();
-                }
-            }
         }
 
         /// <summary>
@@ -218,12 +187,8 @@ namespace xFrame.Runtime.UI
         public void OnParentHide()
         {
             foreach (var component in _components.Values)
-            {
                 if (component.IsVisible)
-                {
                     component.Hide();
-                }
-            }
         }
 
         /// <summary>
@@ -231,10 +196,7 @@ namespace xFrame.Runtime.UI
         /// </summary>
         public void OnParentClose()
         {
-            foreach (var component in _components.Values)
-            {
-                component.Reset();
-            }
+            foreach (var component in _components.Values) component.Reset();
         }
 
         /// <summary>
@@ -242,10 +204,7 @@ namespace xFrame.Runtime.UI
         /// </summary>
         public void OnParentDestroy()
         {
-            foreach (var component in _components.Values)
-            {
-                component.DestroyComponent();
-            }
+            foreach (var component in _components.Values) component.DestroyComponent();
 
             _components.Clear();
             _componentsByType.Clear();
@@ -260,10 +219,7 @@ namespace xFrame.Runtime.UI
         /// </summary>
         public void ShowAll()
         {
-            foreach (var component in _components.Values)
-            {
-                component.Show();
-            }
+            foreach (var component in _components.Values) component.Show();
         }
 
         /// <summary>
@@ -271,10 +227,7 @@ namespace xFrame.Runtime.UI
         /// </summary>
         public void HideAll()
         {
-            foreach (var component in _components.Values)
-            {
-                component.Hide();
-            }
+            foreach (var component in _components.Values) component.Hide();
         }
 
         /// <summary>
@@ -284,10 +237,7 @@ namespace xFrame.Runtime.UI
         public void ShowComponentsOfType<T>() where T : UIComponent
         {
             var components = GetComponentsOfType<T>();
-            foreach (var component in components)
-            {
-                component.Show();
-            }
+            foreach (var component in components) component.Show();
         }
 
         /// <summary>
@@ -297,10 +247,7 @@ namespace xFrame.Runtime.UI
         public void HideComponentsOfType<T>() where T : UIComponent
         {
             var components = GetComponentsOfType<T>();
-            foreach (var component in components)
-            {
-                component.Hide();
-            }
+            foreach (var component in components) component.Hide();
         }
 
         /// <summary>
@@ -308,10 +255,7 @@ namespace xFrame.Runtime.UI
         /// </summary>
         public void RefreshAll()
         {
-            foreach (var component in _components.Values)
-            {
-                component.Refresh();
-            }
+            foreach (var component in _components.Values) component.Refresh();
         }
 
         #endregion
@@ -335,10 +279,7 @@ namespace xFrame.Runtime.UI
         public int GetComponentCountOfType<T>() where T : UIComponent
         {
             var componentType = typeof(T);
-            if (_componentsByType.TryGetValue(componentType, out var list))
-            {
-                return list.Count;
-            }
+            if (_componentsByType.TryGetValue(componentType, out var list)) return list.Count;
             return 0;
         }
 

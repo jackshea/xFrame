@@ -47,7 +47,7 @@ namespace xFrame.Runtime.UI
         /// <summary>
         /// 组件管理器
         /// </summary>
-        internal UIComponentManager ComponentManager { get; private set; }
+        public UIComponentManager ComponentManager { get; private set; }
 
         /// <summary>
         /// Unity Awake生命周期
@@ -59,10 +59,7 @@ namespace xFrame.Runtime.UI
             RectTransform = GetComponent<RectTransform>();
 
             // 如果没有CanvasGroup组件，自动添加
-            if (CanvasGroup == null)
-            {
-                CanvasGroup = gameObject.AddComponent<CanvasGroup>();
-            }
+            if (CanvasGroup == null) CanvasGroup = gameObject.AddComponent<CanvasGroup>();
 
             // 初始化组件管理器
             ComponentManager = new UIComponentManager();
@@ -74,38 +71,50 @@ namespace xFrame.Runtime.UI
         /// UI创建时调用（仅调用一次）
         /// 用于初始化UI组件、绑定事件等
         /// </summary>
-        protected virtual void OnCreate() { }
+        protected virtual void OnCreate()
+        {
+        }
 
         /// <summary>
         /// UI打开时调用（可多次调用）
         /// </summary>
         /// <param name="data">传递给UI的数据</param>
-        protected virtual void OnOpen(object data) { }
+        protected virtual void OnOpen(object data)
+        {
+        }
 
         /// <summary>
         /// UI显示时调用（可多次调用）
         /// 当UI从隐藏状态变为显示状态时调用
         /// 场景：1. 打开时调用 2. 从导航栈中恢复时调用
         /// </summary>
-        protected virtual void OnShow() { }
+        protected virtual void OnShow()
+        {
+        }
 
         /// <summary>
         /// UI隐藏时调用（可多次调用）
         /// 当UI从显示状态变为隐藏状态时调用
         /// 场景：1. 被其他UI遮挡压入栈时调用 2. 关闭前调用
         /// </summary>
-        protected virtual void OnHide() { }
+        protected virtual void OnHide()
+        {
+        }
 
         /// <summary>
         /// UI关闭时调用（可多次调用）
         /// </summary>
-        protected virtual void OnClose() { }
+        protected virtual void OnClose()
+        {
+        }
 
         /// <summary>
         /// UI销毁时调用（仅调用一次）
         /// 用于清理资源、取消事件订阅等
         /// </summary>
-        protected virtual void OnUIDestroy() { }
+        protected virtual void OnUIDestroy()
+        {
+        }
 
         #endregion
 
@@ -254,10 +263,7 @@ namespace xFrame.Runtime.UI
         /// <param name="visible">是否可见</param>
         public void SetVisible(bool visible)
         {
-            if (CanvasGroup != null)
-            {
-                CanvasGroup.alpha = visible ? 1f : 0f;
-            }
+            if (CanvasGroup != null) CanvasGroup.alpha = visible ? 1f : 0f;
         }
 
         /// <summary>

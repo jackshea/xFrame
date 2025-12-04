@@ -1,9 +1,11 @@
-using UnityEngine;
-using VContainer;
-using xFrame.Runtime.UI;
-using xFrame.Runtime.EventBus;
-using xFrame.Examples.UI.Components;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+using VContainer;
+using xFrame.Runtime.EventBus;
+using xFrame.Runtime.UI;
 
 namespace xFrame.Examples.UI
 {
@@ -15,35 +17,35 @@ namespace xFrame.Examples.UI
     {
         private IUIManager _uiManager;
 
-        [Inject]
-        public void Construct(IUIManager uiManager)
-        {
-            _uiManager = uiManager;
-        }
-
         private async void Start()
         {
             Debug.Log("=== UI组件系统使用示例 ===\n");
 
-            await System.Threading.Tasks.Task.Delay(1000);
+            await Task.Delay(1000);
 
             // 示例1: 组件复用
             Example1_ComponentReuse();
 
-            await System.Threading.Tasks.Task.Delay(2000);
+            await Task.Delay(2000);
 
             // 示例2: 父子通讯
             Example2_ParentChildCommunication();
 
-            await System.Threading.Tasks.Task.Delay(2000);
+            await Task.Delay(2000);
 
             // 示例3: 生命周期传递
             Example3_LifecyclePropagation();
 
-            await System.Threading.Tasks.Task.Delay(2000);
+            await Task.Delay(2000);
 
             // 示例4: 组件ID识别
             Example4_ComponentIdIdentification();
+        }
+
+        [Inject]
+        public void Construct(IUIManager uiManager)
+        {
+            _uiManager = uiManager;
         }
 
         /// <summary>
@@ -152,12 +154,43 @@ namespace xFrame.Examples.UI
     /// </summary>
     public class SkillButtonComponent : UIComponent
     {
-        [SerializeField] private UnityEngine.UI.Button button;
-        [SerializeField] private UnityEngine.UI.Image icon;
-        [SerializeField] private TMPro.TextMeshProUGUI cooldownText;
+        [SerializeField]
+        private Button button;
+
+        [SerializeField]
+        private Image icon;
+
+        [SerializeField]
+        private TextMeshProUGUI cooldownText;
+
+        private float _cooldownRemaining;
 
         private SkillData _skillData;
-        private float _cooldownRemaining;
+
+        #region 事件处理
+
+        private void OnButtonClicked()
+        {
+            if (_cooldownRemaining > 0)
+            {
+                Debug.Log($"[SkillButton] 技能冷却中: {_skillData?.Name}");
+                return;
+            }
+
+            Debug.Log($"[SkillButton] 技能释放: {_skillData?.Name}");
+
+            // 发送事件（通过事件总线）
+            SendEvent(new SkillButtonClickedEvent
+            {
+                SkillId = _skillData.Id,
+                SkillName = _skillData.Name
+            });
+
+            // 开始冷却
+            StartCooldown();
+        }
+
+        #endregion
 
         #region 生命周期
 
@@ -230,39 +263,10 @@ namespace xFrame.Examples.UI
             if (cooldownText != null)
             {
                 if (_cooldownRemaining > 0)
-                {
                     cooldownText.text = _cooldownRemaining.ToString("F1");
-                }
                 else
-                {
                     cooldownText.text = "";
-                }
             }
-        }
-
-        #endregion
-
-        #region 事件处理
-
-        private void OnButtonClicked()
-        {
-            if (_cooldownRemaining > 0)
-            {
-                Debug.Log($"[SkillButton] 技能冷却中: {_skillData?.Name}");
-                return;
-            }
-
-            Debug.Log($"[SkillButton] 技能释放: {_skillData?.Name}");
-
-            // 发送事件（通过事件总线）
-            SendEvent(new SkillButtonClickedEvent
-            {
-                SkillId = _skillData.Id,
-                SkillName = _skillData.Name
-            });
-
-            // 开始冷却
-            StartCooldown();
         }
 
         #endregion
@@ -295,10 +299,13 @@ namespace xFrame.Examples.UI
     /// </summary>
     public class SkillBarPanel : UIPanel
     {
-        [SerializeField] private Transform skillContainer;
-        [SerializeField] private SkillButtonComponent skillButtonPrefab;
+        [SerializeField]
+        private Transform skillContainer;
 
-        private List<SkillButtonComponent> _skillButtons = new List<SkillButtonComponent>();
+        [SerializeField]
+        private SkillButtonComponent skillButtonPrefab;
+
+        private readonly List<SkillButtonComponent> _skillButtons = new();
 
         #region 生命周期
 
@@ -320,10 +327,7 @@ namespace xFrame.Examples.UI
         {
             base.OnOpen(data);
 
-            if (data is List<SkillData> skills)
-            {
-                LoadSkills(skills);
-            }
+            if (data is List<SkillData> skills) LoadSkills(skills);
         }
 
         protected override void OnShow()
@@ -353,7 +357,7 @@ namespace xFrame.Examples.UI
 
         private void CreateSkillButtons()
         {
-            for (int i = 0; i < 4; i++)
+            for (var i = 0; i < 4; i++)
             {
                 var button = Instantiate(skillButtonPrefab, skillContainer);
                 ComponentManager.RegisterComponent(button);
@@ -366,10 +370,7 @@ namespace xFrame.Examples.UI
 
         private void LoadSkills(List<SkillData> skills)
         {
-            for (int i = 0; i < skills.Count && i < _skillButtons.Count; i++)
-            {
-                _skillButtons[i].SetData(skills[i]);
-            }
+            for (var i = 0; i < skills.Count && i < _skillButtons.Count; i++) _skillButtons[i].SetData(skills[i]);
         }
 
         #endregion
@@ -379,7 +380,7 @@ namespace xFrame.Examples.UI
         private void OnSkillButtonClicked(
             ref UIComponentEventWrapper<SkillButtonClickedEvent> wrapper)
         {
-            Debug.Log($"[SkillBarPanel] 技能按钮点击: " +
+            Debug.Log("[SkillBarPanel] 技能按钮点击: " +
                       $"ComponentId={wrapper.ComponentId}, " +
                       $"SkillId={wrapper.Event.SkillId}, " +
                       $"SkillName={wrapper.Event.SkillName}");

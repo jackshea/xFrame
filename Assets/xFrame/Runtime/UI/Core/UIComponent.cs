@@ -42,143 +42,8 @@ namespace xFrame.Runtime.UI
 
             // 获取或添加CanvasGroup
             CanvasGroup = GetComponent<CanvasGroup>();
-            if (CanvasGroup == null)
-            {
-                CanvasGroup = gameObject.AddComponent<CanvasGroup>();
-            }
+            if (CanvasGroup == null) CanvasGroup = gameObject.AddComponent<CanvasGroup>();
         }
-
-        #region 组件生命周期
-
-        /// <summary>
-        /// 初始化组件
-        /// 由父UI调用，只执行一次
-        /// </summary>
-        public void Initialize()
-        {
-            if (IsInitialized) return;
-
-            OnInitialize();
-            IsInitialized = true;
-        }
-
-        /// <summary>
-        /// 组件初始化回调
-        /// 用于绑定事件、获取组件引用等
-        /// </summary>
-        protected virtual void OnInitialize() { }
-
-        /// <summary>
-        /// 设置组件数据
-        /// 可多次调用
-        /// </summary>
-        /// <param name="data">组件数据</param>
-        public void SetData(object data)
-        {
-            OnSetData(data);
-        }
-
-        /// <summary>
-        /// 设置数据回调
-        /// </summary>
-        /// <param name="data">组件数据</param>
-        protected virtual void OnSetData(object data) { }
-
-        /// <summary>
-        /// 显示组件
-        /// </summary>
-        public void Show()
-        {
-            if (IsVisible) return;
-
-            IsVisible = true;
-            OnShow();
-
-            // 显示UI
-            if (CanvasGroup != null)
-            {
-                CanvasGroup.alpha = 1f;
-                CanvasGroup.interactable = true;
-                CanvasGroup.blocksRaycasts = true;
-            }
-
-            gameObject.SetActive(true);
-        }
-
-        /// <summary>
-        /// 显示回调
-        /// </summary>
-        protected virtual void OnShow() { }
-
-        /// <summary>
-        /// 隐藏组件
-        /// </summary>
-        public void Hide()
-        {
-            if (!IsVisible) return;
-
-            IsVisible = false;
-            OnHide();
-
-            // 隐藏UI
-            if (CanvasGroup != null)
-            {
-                CanvasGroup.alpha = 0f;
-                CanvasGroup.interactable = false;
-                CanvasGroup.blocksRaycasts = false;
-            }
-
-            gameObject.SetActive(false);
-        }
-
-        /// <summary>
-        /// 隐藏回调
-        /// </summary>
-        protected virtual void OnHide() { }
-
-        /// <summary>
-        /// 刷新组件显示
-        /// </summary>
-        public void Refresh()
-        {
-            OnRefresh();
-        }
-
-        /// <summary>
-        /// 刷新回调
-        /// </summary>
-        protected virtual void OnRefresh() { }
-
-        /// <summary>
-        /// 重置组件状态
-        /// 用于对象池回收前
-        /// </summary>
-        public void Reset()
-        {
-            OnReset();
-            IsVisible = false;
-        }
-
-        /// <summary>
-        /// 重置回调
-        /// </summary>
-        protected virtual void OnReset() { }
-
-        /// <summary>
-        /// 销毁组件
-        /// </summary>
-        public void DestroyComponent()
-        {
-            OnDestroyComponent();
-            IsInitialized = false;
-        }
-
-        /// <summary>
-        /// 销毁回调
-        /// </summary>
-        protected virtual void OnDestroyComponent() { }
-
-        #endregion
 
         #region 组件事件系统
 
@@ -207,6 +72,152 @@ namespace xFrame.Runtime.UI
 
         #endregion
 
+        #region 组件生命周期
+
+        /// <summary>
+        /// 初始化组件
+        /// 由父UI调用，只执行一次
+        /// </summary>
+        public void Initialize()
+        {
+            if (IsInitialized) return;
+
+            OnInitialize();
+            IsInitialized = true;
+        }
+
+        /// <summary>
+        /// 组件初始化回调
+        /// 用于绑定事件、获取组件引用等
+        /// </summary>
+        protected virtual void OnInitialize()
+        {
+        }
+
+        /// <summary>
+        /// 设置组件数据
+        /// 可多次调用
+        /// </summary>
+        /// <param name="data">组件数据</param>
+        public void SetData(object data)
+        {
+            OnSetData(data);
+        }
+
+        /// <summary>
+        /// 设置数据回调
+        /// </summary>
+        /// <param name="data">组件数据</param>
+        protected virtual void OnSetData(object data)
+        {
+        }
+
+        /// <summary>
+        /// 显示组件
+        /// </summary>
+        public void Show()
+        {
+            if (IsVisible) return;
+
+            IsVisible = true;
+            OnShow();
+
+            // 显示UI
+            if (CanvasGroup != null)
+            {
+                CanvasGroup.alpha = 1f;
+                CanvasGroup.interactable = true;
+                CanvasGroup.blocksRaycasts = true;
+            }
+
+            gameObject.SetActive(true);
+        }
+
+        /// <summary>
+        /// 显示回调
+        /// </summary>
+        protected virtual void OnShow()
+        {
+        }
+
+        /// <summary>
+        /// 隐藏组件
+        /// </summary>
+        public void Hide()
+        {
+            if (!IsVisible) return;
+
+            IsVisible = false;
+            OnHide();
+
+            // 隐藏UI
+            if (CanvasGroup != null)
+            {
+                CanvasGroup.alpha = 0f;
+                CanvasGroup.interactable = false;
+                CanvasGroup.blocksRaycasts = false;
+            }
+
+            gameObject.SetActive(false);
+        }
+
+        /// <summary>
+        /// 隐藏回调
+        /// </summary>
+        protected virtual void OnHide()
+        {
+        }
+
+        /// <summary>
+        /// 刷新组件显示
+        /// </summary>
+        public void Refresh()
+        {
+            OnRefresh();
+        }
+
+        /// <summary>
+        /// 刷新回调
+        /// </summary>
+        protected virtual void OnRefresh()
+        {
+        }
+
+        /// <summary>
+        /// 重置组件状态
+        /// 用于对象池回收前
+        /// </summary>
+        public void Reset()
+        {
+            OnReset();
+            IsVisible = false;
+        }
+
+        /// <summary>
+        /// 重置回调
+        /// </summary>
+        protected virtual void OnReset()
+        {
+        }
+
+        /// <summary>
+        /// 销毁组件
+        /// </summary>
+        public void DestroyComponent()
+        {
+            OnDestroyComponent();
+            IsInitialized = false;
+        }
+
+        /// <summary>
+        /// 销毁回调
+        /// </summary>
+        protected virtual void OnDestroyComponent()
+        {
+        }
+
+        #endregion
+
         #region 辅助方法
 
         /// <summary>
@@ -216,13 +227,9 @@ namespace xFrame.Runtime.UI
         public void SetVisible(bool visible)
         {
             if (visible)
-            {
                 Show();
-            }
             else
-            {
                 Hide();
-            }
         }
 
         /// <summary>

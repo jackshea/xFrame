@@ -1,8 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 using VContainer;
-using xFrame.Runtime.UI;
 using xFrame.Runtime.EventBus;
+using xFrame.Runtime.UI;
 
 namespace xFrame.Examples.UI
 {
@@ -15,10 +15,17 @@ namespace xFrame.Examples.UI
         #region UI组件
 
         [Header("UI组件")]
-        [SerializeField] private Button startButton;
-        [SerializeField] private Button settingsButton;
-        [SerializeField] private Button achievementsButton;
-        [SerializeField] private Button exitButton;
+        [SerializeField]
+        private Button startButton;
+
+        [SerializeField]
+        private Button settingsButton;
+
+        [SerializeField]
+        private Button achievementsButton;
+
+        [SerializeField]
+        private Button exitButton;
 
         #endregion
 
@@ -94,10 +101,7 @@ namespace xFrame.Examples.UI
             base.OnOpen(data);
 
             // 处理传入的数据
-            if (data is MainMenuData menuData)
-            {
-                Debug.Log($"[MainMenuPanel] 打开主菜单，玩家名称: {menuData.PlayerName}");
-            }
+            if (data is MainMenuData menuData) Debug.Log($"[MainMenuPanel] 打开主菜单，玩家名称: {menuData.PlayerName}");
 
             Debug.Log("[MainMenuPanel] 主菜单已打开");
         }
@@ -182,7 +186,7 @@ namespace xFrame.Examples.UI
             xFrameEventBus.Raise(new GameStartEvent());
 
             // 关闭主菜单，打开游戏界面
-            // _uiManager.OpenAsync<GamePlayPanel>();
+            _uiManager.OpenAsync<UIView>(); // 使用UIView作为示例
         }
 
         /// <summary>
@@ -193,7 +197,7 @@ namespace xFrame.Examples.UI
             Debug.Log("[MainMenuPanel] 打开设置");
 
             // 打开设置窗口
-            // await _uiManager.OpenAsync<SettingsWindow>();
+            await _uiManager.OpenAsync<UIWindow>(); // 使用UIWindow作为示例
         }
 
         /// <summary>
@@ -204,7 +208,7 @@ namespace xFrame.Examples.UI
             Debug.Log("[MainMenuPanel] 打开成就");
 
             // 打开成就面板
-            // await _uiManager.OpenAsync<AchievementsPanel>();
+            await _uiManager.OpenAsync<UIView>(); // 使用UIView作为示例
         }
 
         /// <summary>
@@ -224,13 +228,10 @@ namespace xFrame.Examples.UI
                     Debug.Log("确认退出游戏");
                     Application.Quit();
                 },
-                OnCancel = () =>
-                {
-                    Debug.Log("取消退出");
-                }
+                OnCancel = () => { Debug.Log("取消退出"); }
             };
 
-            // await _uiManager.OpenAsync<ConfirmDialog>(dialogData);
+            await _uiManager.OpenAsync<UIWindow>(dialogData); // 使用UIWindow作为示例
         }
 
         #endregion

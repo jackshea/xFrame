@@ -1,8 +1,8 @@
+using System.Threading.Tasks;
+using DG.Tweening;
 using UnityEngine;
 using VContainer;
 using xFrame.Runtime.UI;
-using System.Threading.Tasks;
-using DG.Tweening;
 
 namespace xFrame.Examples.UI
 {
@@ -14,18 +14,18 @@ namespace xFrame.Examples.UI
     {
         private IUIManager _uiManager;
 
-        [Inject]
-        public void Construct(IUIManager uiManager)
-        {
-            _uiManager = uiManager;
-        }
-
         private async void Start()
         {
             Debug.Log("=== UI导航栈生命周期示例 ===\n");
 
             // 演示完整的导航栈生命周期
             await DemonstrateNavigationLifecycle();
+        }
+
+        [Inject]
+        public void Construct(IUIManager uiManager)
+        {
+            _uiManager = uiManager;
         }
 
         /// <summary>
@@ -35,35 +35,35 @@ namespace xFrame.Examples.UI
         {
             Debug.Log("【场景1】打开UI A");
             Debug.Log("预期生命周期: OnCreate → OnOpen → OnShow\n");
-            // await _uiManager.OpenAsync<UIPanelA>();
+            await _uiManager.OpenAsync<UIPanelA>();
             await Task.Delay(1000);
 
             Debug.Log("【场景2】打开UI B（A被压入栈）");
             Debug.Log("预期生命周期:");
             Debug.Log("  - A: OnHide （被遮挡）");
             Debug.Log("  - B: OnCreate → OnOpen → OnShow\n");
-            // await _uiManager.OpenAsync<UIPanelB>();
+            await _uiManager.OpenAsync<UIPanelB>();
             await Task.Delay(1000);
 
             Debug.Log("【场景3】打开UI C（B被压入栈）");
             Debug.Log("预期生命周期:");
             Debug.Log("  - B: OnHide （被遮挡）");
             Debug.Log("  - C: OnCreate → OnOpen → OnShow\n");
-            // await _uiManager.OpenAsync<UIPanelC>();
+            await _uiManager.OpenAsync<UIPanelC>();
             await Task.Delay(1000);
 
             Debug.Log("【场景4】Back返回到B（C关闭，B恢复）");
             Debug.Log("预期生命周期:");
             Debug.Log("  - C: OnHide → OnClose");
             Debug.Log("  - B: OnShow （从栈中恢复）\n");
-            // _uiManager.Back();
+            _uiManager.Back();
             await Task.Delay(1000);
 
             Debug.Log("【场景5】Back返回到A（B关闭，A恢复）");
             Debug.Log("预期生命周期:");
             Debug.Log("  - B: OnHide → OnClose");
             Debug.Log("  - A: OnShow （从栈中恢复）\n");
-            // _uiManager.Back();
+            _uiManager.Back();
             await Task.Delay(1000);
 
             Debug.Log("【场景6】关闭A");
@@ -101,7 +101,7 @@ namespace xFrame.Examples.UI
         {
             base.OnShow();
             Debug.Log("  [UIPanelA] OnShow - 面板显示");
-            
+
             // ✅ 在这里执行显示逻辑
             // - 播放显示动画
             // - 恢复背景音乐
@@ -112,7 +112,7 @@ namespace xFrame.Examples.UI
         {
             base.OnHide();
             Debug.Log("  [UIPanelA] OnHide - 面板隐藏");
-            
+
             // ✅ 在这里执行隐藏逻辑
             // - 暂停动画
             // - 降低音量
@@ -235,6 +235,14 @@ namespace xFrame.Examples.UI
         private bool _isAnimationPlaying;
         private bool _isUpdateActive;
 
+        private void Update()
+        {
+            // 只在激活状态下更新
+            if (!_isUpdateActive) return;
+
+            // 执行需要每帧更新的逻辑
+        }
+
         protected override void OnShow()
         {
             base.OnShow();
@@ -277,11 +285,11 @@ namespace xFrame.Examples.UI
         private void PlayShowAnimation()
         {
             if (_isAnimationPlaying) return;
-            
+
             _isAnimationPlaying = true;
-            
+
             transform.DOScale(Vector3.one, 0.3f).OnComplete(() => _isAnimationPlaying = false);
-            
+
             _isAnimationPlaying = false;
         }
 
@@ -294,14 +302,6 @@ namespace xFrame.Examples.UI
         {
             // 刷新UI显示的数据
             Debug.Log("[GameMenuPanel] 刷新UI数据");
-        }
-
-        private void Update()
-        {
-            // 只在激活状态下更新
-            if (!_isUpdateActive) return;
-
-            // 执行需要每帧更新的逻辑
         }
     }
 

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,22 +9,12 @@ namespace xFrame.Runtime.UI
     /// </summary>
     public class UITabContainerBuilder
     {
-        private UITabContainer _container;
-        private Transform _pageContainer;
+        private readonly UITabContainer _container;
+        private readonly List<TabPageConfig> _pageConfigs = new();
         private Transform _buttonContainer;
         private UITabButton _buttonPrefab;
-        private readonly List<TabPageConfig> _pageConfigs = new List<TabPageConfig>();
-        
-        /// <summary>
-        /// 页面配置
-        /// </summary>
-        private class TabPageConfig
-        {
-            public UITabPage Page { get; set; }
-            public string ButtonText { get; set; }
-            public Sprite ButtonIcon { get; set; }
-        }
-        
+        private Transform _pageContainer;
+
         /// <summary>
         /// 构造函数
         /// </summary>
@@ -34,7 +23,7 @@ namespace xFrame.Runtime.UI
         {
             _container = container;
         }
-        
+
         /// <summary>
         /// 设置页面容器
         /// </summary>
@@ -45,7 +34,7 @@ namespace xFrame.Runtime.UI
             _pageContainer = pageContainer;
             return this;
         }
-        
+
         /// <summary>
         /// 设置按钮容器
         /// </summary>
@@ -56,7 +45,7 @@ namespace xFrame.Runtime.UI
             _buttonContainer = buttonContainer;
             return this;
         }
-        
+
         /// <summary>
         /// 设置按钮预制体
         /// </summary>
@@ -67,7 +56,7 @@ namespace xFrame.Runtime.UI
             _buttonPrefab = buttonPrefab;
             return this;
         }
-        
+
         /// <summary>
         /// 添加页面
         /// </summary>
@@ -85,7 +74,7 @@ namespace xFrame.Runtime.UI
             });
             return this;
         }
-        
+
         /// <summary>
         /// 添加页面（泛型）
         /// </summary>
@@ -94,7 +83,7 @@ namespace xFrame.Runtime.UI
         /// <param name="buttonText">按钮文本（可选）</param>
         /// <param name="buttonIcon">按钮图标（可选）</param>
         /// <returns>Builder实例</returns>
-        public UITabContainerBuilder AddPage<T>(T pagePrefab, string buttonText = null, Sprite buttonIcon = null) 
+        public UITabContainerBuilder AddPage<T>(T pagePrefab, string buttonText = null, Sprite buttonIcon = null)
             where T : UITabPage
         {
             if (pagePrefab == null)
@@ -102,13 +91,13 @@ namespace xFrame.Runtime.UI
                 Debug.LogError("[UITabContainerBuilder] 页面预制体为空");
                 return this;
             }
-            
+
             // 实例化页面
             var pageInstance = GameObject.Instantiate(pagePrefab);
-            
+
             return AddPage(pageInstance, buttonText, buttonIcon);
         }
-        
+
         /// <summary>
         /// 构建容器
         /// </summary>
@@ -120,23 +109,21 @@ namespace xFrame.Runtime.UI
                 Debug.LogError("[UITabContainerBuilder] 容器为空");
                 return null;
             }
-            
+
             // 添加所有页面
-            for (int i = 0; i < _pageConfigs.Count; i++)
+            for (var i = 0; i < _pageConfigs.Count; i++)
             {
                 var config = _pageConfigs[i];
-                int pageIndex = _container.AddPage(config.Page);
-                
+                var pageIndex = _container.AddPage(config.Page);
+
                 // 创建按钮（如果配置了）
                 if (_buttonContainer != null && _buttonPrefab != null)
-                {
                     CreateButton(pageIndex, config.ButtonText, config.ButtonIcon);
-                }
             }
-            
+
             return _container;
         }
-        
+
         /// <summary>
         /// 创建标签按钮
         /// </summary>
@@ -147,10 +134,10 @@ namespace xFrame.Runtime.UI
         {
             // 实例化按钮
             var button = GameObject.Instantiate(_buttonPrefab, _buttonContainer);
-            
+
             // 注册到组件管理器
             _container.ComponentManager.RegisterComponent(button);
-            
+
             // 设置按钮数据
             button.SetData(new TabButtonData
             {
@@ -159,17 +146,24 @@ namespace xFrame.Runtime.UI
                 Icon = buttonIcon,
                 Container = _container
             });
-            
+
             button.Show();
-            
+
             // 监听页面切换事件，更新按钮状态
-            _container.OnPageChanged += (oldIndex, newIndex) =>
-            {
-                button.SetSelected(newIndex == pageIndex);
-            };
+            _container.OnPageChanged += (oldIndex, newIndex) => { button.SetSelected(newIndex == pageIndex); };
+        }
+
+        /// <summary>
+        /// 页面配置
+        /// </summary>
+        private class TabPageConfig
+        {
+            public UITabPage Page { get; set; }
+            public string ButtonText { get; set; }
+            public Sprite ButtonIcon { get; set; }
         }
     }
-    
+
     /// <summary>
     /// UITabContainer扩展方法
     /// </summary>

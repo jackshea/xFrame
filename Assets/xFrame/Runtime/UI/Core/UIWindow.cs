@@ -69,10 +69,7 @@ namespace xFrame.Runtime.UI
         /// </summary>
         protected virtual void PlayCloseAnimation()
         {
-            if (RectTransform != null)
-            {
-                RectTransform.DOScale(Vector3.zero, AnimationDuration).SetEase(Ease.InBack);
-            }
+            if (RectTransform != null) RectTransform.DOScale(Vector3.zero, AnimationDuration).SetEase(Ease.InBack);
         }
 
         /// <summary>
@@ -105,4 +102,3 @@ namespace xFrame.Runtime.UI
         }
     }
 }
-

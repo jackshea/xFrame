@@ -1,7 +1,8 @@
 using System;
+using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using VContainer;
 using xFrame.Runtime.UI;
 
@@ -16,14 +17,24 @@ namespace xFrame.Examples.UI
         #region UI组件
 
         [Header("文本组件")]
-        [SerializeField] private TextMeshProUGUI titleText;
-        [SerializeField] private TextMeshProUGUI messageText;
+        [SerializeField]
+        private TextMeshProUGUI titleText;
+
+        [SerializeField]
+        private TextMeshProUGUI messageText;
 
         [Header("按钮组件")]
-        [SerializeField] private Button confirmButton;
-        [SerializeField] private Button cancelButton;
-        [SerializeField] private TextMeshProUGUI confirmButtonText;
-        [SerializeField] private TextMeshProUGUI cancelButtonText;
+        [SerializeField]
+        private Button confirmButton;
+
+        [SerializeField]
+        private Button cancelButton;
+
+        [SerializeField]
+        private TextMeshProUGUI confirmButtonText;
+
+        [SerializeField]
+        private TextMeshProUGUI cancelButtonText;
 
         #endregion
 
@@ -228,25 +239,22 @@ namespace xFrame.Examples.UI
         protected override void PlayCloseAnimation()
         {
             if (RectTransform != null)
-            {
                 // LeanTween.scale(RectTransform, Vector3.zero, AnimationDuration)
                 //     .setEase(LeanTweenType.easeInBack);
-
                 StartCoroutine(ScaleAnimation(Vector3.one, Vector3.zero, AnimationDuration));
-            }
         }
 
         /// <summary>
         /// 简单的缩放动画协程
         /// </summary>
-        private System.Collections.IEnumerator ScaleAnimation(Vector3 from, Vector3 to, float duration)
+        private IEnumerator ScaleAnimation(Vector3 from, Vector3 to, float duration)
         {
-            float elapsed = 0f;
+            var elapsed = 0f;
 
             while (elapsed < duration)
             {
                 elapsed += Time.deltaTime;
-                float t = elapsed / duration;
+                var t = elapsed / duration;
 
                 // 使用EaseOutBack曲线
                 t = EaseOutBack(t);

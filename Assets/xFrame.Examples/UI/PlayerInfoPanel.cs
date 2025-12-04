@@ -1,9 +1,10 @@
+using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using VContainer;
-using xFrame.Runtime.UI;
 using xFrame.Runtime.EventBus;
+using xFrame.Runtime.UI;
 
 namespace xFrame.Examples.UI
 {
@@ -13,27 +14,53 @@ namespace xFrame.Examples.UI
     /// </summary>
     public class PlayerInfoPanel : UIPanel
     {
+        #region 私有字段
+
+        private PlayerInfoViewModel _viewModel;
+
+        #endregion
+
         #region UI组件
 
         [Header("玩家信息")]
-        [SerializeField] private Image avatarImage;
-        [SerializeField] private TextMeshProUGUI playerNameText;
-        [SerializeField] private TextMeshProUGUI levelText;
+        [SerializeField]
+        private Image avatarImage;
+
+        [SerializeField]
+        private TextMeshProUGUI playerNameText;
+
+        [SerializeField]
+        private TextMeshProUGUI levelText;
 
         [Header("属性信息")]
-        [SerializeField] private Slider healthSlider;
-        [SerializeField] private TextMeshProUGUI healthText;
-        [SerializeField] private Slider manaSlider;
-        [SerializeField] private TextMeshProUGUI manaText;
-        [SerializeField] private Slider expSlider;
-        [SerializeField] private TextMeshProUGUI expText;
+        [SerializeField]
+        private Slider healthSlider;
+
+        [SerializeField]
+        private TextMeshProUGUI healthText;
+
+        [SerializeField]
+        private Slider manaSlider;
+
+        [SerializeField]
+        private TextMeshProUGUI manaText;
+
+        [SerializeField]
+        private Slider expSlider;
+
+        [SerializeField]
+        private TextMeshProUGUI expText;
 
         [Header("货币信息")]
-        [SerializeField] private TextMeshProUGUI goldText;
-        [SerializeField] private TextMeshProUGUI diamondText;
+        [SerializeField]
+        private TextMeshProUGUI goldText;
+
+        [SerializeField]
+        private TextMeshProUGUI diamondText;
 
         [Header("按钮")]
-        [SerializeField] private Button closeButton;
+        [SerializeField]
+        private Button closeButton;
 
         #endregion
 
@@ -54,12 +81,6 @@ namespace xFrame.Examples.UI
         public override UILayer Layer => UILayer.Normal;
         public override bool UseStack => true;
         public override bool Cacheable => true;
-
-        #endregion
-
-        #region 私有字段
-
-        private PlayerInfoViewModel _viewModel;
 
         #endregion
 
@@ -99,10 +120,7 @@ namespace xFrame.Examples.UI
             Debug.Log("[PlayerInfoPanel] 玩家信息面板显示");
 
             // 显示时刷新数据（可能在被遮挡期间数据发生了变化）
-            if (_viewModel != null)
-            {
-                UpdateView();
-            }
+            if (_viewModel != null) UpdateView();
         }
 
         protected override void OnHide()
@@ -172,15 +190,9 @@ namespace xFrame.Examples.UI
         /// </summary>
         private void UpdateHealthBar()
         {
-            if (healthSlider != null)
-            {
-                healthSlider.value = (float)_viewModel.CurrentHealth / _viewModel.MaxHealth;
-            }
+            if (healthSlider != null) healthSlider.value = (float)_viewModel.CurrentHealth / _viewModel.MaxHealth;
 
-            if (healthText != null)
-            {
-                healthText.text = $"{_viewModel.CurrentHealth}/{_viewModel.MaxHealth}";
-            }
+            if (healthText != null) healthText.text = $"{_viewModel.CurrentHealth}/{_viewModel.MaxHealth}";
         }
 
         /// <summary>
@@ -188,15 +200,9 @@ namespace xFrame.Examples.UI
         /// </summary>
         private void UpdateManaBar()
         {
-            if (manaSlider != null)
-            {
-                manaSlider.value = (float)_viewModel.CurrentMana / _viewModel.MaxMana;
-            }
+            if (manaSlider != null) manaSlider.value = (float)_viewModel.CurrentMana / _viewModel.MaxMana;
 
-            if (manaText != null)
-            {
-                manaText.text = $"{_viewModel.CurrentMana}/{_viewModel.MaxMana}";
-            }
+            if (manaText != null) manaText.text = $"{_viewModel.CurrentMana}/{_viewModel.MaxMana}";
         }
 
         /// <summary>
@@ -204,15 +210,9 @@ namespace xFrame.Examples.UI
         /// </summary>
         private void UpdateExpBar()
         {
-            if (expSlider != null)
-            {
-                expSlider.value = (float)_viewModel.CurrentExp / _viewModel.ExpToNextLevel;
-            }
+            if (expSlider != null) expSlider.value = (float)_viewModel.CurrentExp / _viewModel.ExpToNextLevel;
 
-            if (expText != null)
-            {
-                expText.text = $"{_viewModel.CurrentExp}/{_viewModel.ExpToNextLevel}";
-            }
+            if (expText != null) expText.text = $"{_viewModel.CurrentExp}/{_viewModel.ExpToNextLevel}";
         }
 
         #endregion
@@ -251,7 +251,7 @@ namespace xFrame.Examples.UI
             if (RectTransform != null)
             {
                 // 从右侧滑入
-                Vector2 startPos = RectTransform.anchoredPosition + new Vector2(Screen.width, 0);
+                var startPos = RectTransform.anchoredPosition + new Vector2(Screen.width, 0);
                 RectTransform.anchoredPosition = startPos;
 
                 // 使用协程实现简单动画
@@ -264,19 +264,19 @@ namespace xFrame.Examples.UI
             // 滑出动画
             if (RectTransform != null)
             {
-                Vector2 endPos = RectTransform.anchoredPosition + new Vector2(Screen.width, 0);
+                var endPos = RectTransform.anchoredPosition + new Vector2(Screen.width, 0);
                 StartCoroutine(SlideAnimation(RectTransform.anchoredPosition, endPos, AnimationDuration));
             }
         }
 
-        private System.Collections.IEnumerator SlideAnimation(Vector2 from, Vector2 to, float duration)
+        private IEnumerator SlideAnimation(Vector2 from, Vector2 to, float duration)
         {
-            float elapsed = 0f;
+            var elapsed = 0f;
 
             while (elapsed < duration)
             {
                 elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / duration);
+                var t = Mathf.Clamp01(elapsed / duration);
 
                 // 使用EaseOutCubic曲线
                 t = 1f - Mathf.Pow(1f - t, 3f);
