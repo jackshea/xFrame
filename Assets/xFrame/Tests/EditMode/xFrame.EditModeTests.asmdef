@@ -6,7 +6,8 @@
         "UnityEditor.TestRunner",
         "xFrame.Runtime",
         "GenericEventBus",
-        "VContainer"
+        "VContainer",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [
         "Editor"

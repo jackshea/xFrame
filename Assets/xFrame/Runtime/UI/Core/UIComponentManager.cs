@@ -36,6 +36,9 @@ namespace xFrame.Runtime.UI
                 return;
             }
 
+            // 确保运行时所需字段已初始化
+            component.EnsureRuntimeSetup();
+
             // 初始化组件
             if (!component.IsInitialized) component.Initialize();
 

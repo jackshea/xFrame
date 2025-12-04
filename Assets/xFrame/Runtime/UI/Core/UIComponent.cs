@@ -37,12 +37,24 @@ namespace xFrame.Runtime.UI
         /// </summary>
         protected virtual void Awake()
         {
+            EnsureRuntimeSetup();
+        }
+
+        /// <summary>
+        /// 确保运行时必要字段被初始化（用于编辑器测试环境）
+        /// </summary>
+        internal void EnsureRuntimeSetup()
+        {
             // 生成唯一ID
-            ComponentId = $"{GetType().Name}_{Guid.NewGuid():N}";
+            if (string.IsNullOrEmpty(ComponentId))
+                ComponentId = $"{GetType().Name}_{Guid.NewGuid():N}";
 
             // 获取或添加CanvasGroup
-            CanvasGroup = GetComponent<CanvasGroup>();
-            if (CanvasGroup == null) CanvasGroup = gameObject.AddComponent<CanvasGroup>();
+            if (CanvasGroup == null)
+            {
+                CanvasGroup = GetComponent<CanvasGroup>();
+                if (CanvasGroup == null) CanvasGroup = gameObject.AddComponent<CanvasGroup>();
+            }
         }
 
         #region 组件事件系统
