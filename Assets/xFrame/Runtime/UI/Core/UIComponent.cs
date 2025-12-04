@@ -248,6 +248,82 @@ namespace xFrame.Runtime.UI
         #endregion
     }
 
+    /// <summary>
+    /// 泛型UI组件基类
+    /// 提供类型安全的数据设置方法
+    /// </summary>
+    /// <typeparam name="TData">组件数据类型</typeparam>
+    public abstract class UIComponent<TData> : UIComponent where TData : class
+    {
+        /// <summary>
+        /// 当前组件数据
+        /// </summary>
+        protected TData CurrentData { get; private set; }
+
+        /// <summary>
+        /// 类型安全的数据设置方法
+        /// </summary>
+        /// <param name="data">组件数据</param>
+        public void SetData(TData data)
+        {
+            CurrentData = data;
+            OnSetData(data);
+        }
+
+        /// <summary>
+        /// 重写基类的SetData，提供类型转换
+        /// </summary>
+        /// <param name="data">组件数据</param>
+        protected sealed override void OnSetData(object data)
+        {
+            if (data is TData typedData)
+            {
+                CurrentData = typedData;
+                OnSetData(typedData);
+            }
+            else if (data != null)
+            {
+                Debug.LogWarning($"[{GetType().Name}] 数据类型不匹配: 期望 {typeof(TData).Name}, 实际 {data.GetType().Name}");
+            }
+        }
+
+        /// <summary>
+        /// 类型安全的数据设置回调
+        /// 子类重写此方法处理数据
+        /// </summary>
+        /// <param name="data">组件数据</param>
+        protected virtual void OnSetData(TData data)
+        {
+        }
+
+        /// <summary>
+        /// 获取当前数据
+        /// </summary>
+        /// <returns>当前组件数据</returns>
+        public TData GetData()
+        {
+            return CurrentData;
+        }
+
+        /// <summary>
+        /// 检查是否有数据
+        /// </summary>
+        /// <returns>是否有数据</returns>
+        public bool HasData()
+        {
+            return CurrentData != null;
+        }
+
+        /// <summary>
+        /// 重置时清空数据
+        /// </summary>
+        protected override void OnReset()
+        {
+            base.OnReset();
+            CurrentData = null;
+        }
+    }
+
     #region 组件事件接口和类型
 
     /// <summary>

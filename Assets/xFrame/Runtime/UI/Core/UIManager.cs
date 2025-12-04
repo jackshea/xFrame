@@ -6,7 +6,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using VContainer;
 using VContainer.Unity;
+using xFrame.Runtime.EventBus;
 using xFrame.Runtime.ResourceManager;
+using xFrame.Runtime.UI.Events;
 
 namespace xFrame.Runtime.UI
 {
@@ -248,6 +250,12 @@ namespace xFrame.Runtime.UI
             var parentTransform = _layerRoots[uiInstance.Layer];
             uiInstance.transform.SetParent(parentTransform, false);
 
+            // 如果是模态窗口，创建遮罩
+            if (uiInstance is UIWindow window && window.IsModal)
+            {
+                CreateWindowMask(window, parentTransform);
+            }
+
             // 调用生命周期
             uiInstance.InternalOnCreate();
             uiInstance.InternalOnOpen(data);
@@ -256,7 +264,7 @@ namespace xFrame.Runtime.UI
             _openedUIs[uiType] = uiInstance;
 
             // 如果是窗口且使用导航栈，添加到栈中
-            if (uiInstance is UIWindow window && window.UseStack)
+            if (uiInstance is UIWindow windowForStack && windowForStack.UseStack)
             {
                 // 隐藏栈顶UI
                 if (_navigationStack.Count > 0)
@@ -270,6 +278,9 @@ namespace xFrame.Runtime.UI
 
             // 设置Canvas排序
             UpdateCanvasSortOrder(uiInstance);
+
+            // 发送UI打开事件
+            RaiseUIOpenedEvent(uiType, uiInstance);
 
             return uiInstance;
         }
@@ -365,6 +376,76 @@ namespace xFrame.Runtime.UI
             }
         }
 
+        /// <summary>
+        /// 为模态窗口创建遮罩
+        /// </summary>
+        /// <param name="window">窗口实例</param>
+        /// <param name="parentTransform">父节点</param>
+        private void CreateWindowMask(UIWindow window, Transform parentTransform)
+        {
+            // 创建遮罩GameObject
+            var maskGO = new GameObject($"Mask_{window.GetType().Name}");
+            maskGO.transform.SetParent(parentTransform, false);
+
+            // 添加RectTransform并设置为全屏
+            var rectTransform = maskGO.AddComponent<RectTransform>();
+            rectTransform.anchorMin = Vector2.zero;
+            rectTransform.anchorMax = Vector2.one;
+            rectTransform.offsetMin = Vector2.zero;
+            rectTransform.offsetMax = Vector2.zero;
+
+            // 添加Image组件作为遮罩背景
+            var image = maskGO.AddComponent<Image>();
+            var maskColor = window.MaskColor;
+            maskColor.a = window.MaskAlpha;
+            image.color = maskColor;
+            image.raycastTarget = true;
+
+            // 添加Button组件处理点击事件
+            if (window.CloseOnMaskClick)
+            {
+                var button = maskGO.AddComponent<Button>();
+                button.transition = Selectable.Transition.None;
+                button.onClick.AddListener(() => OnMaskClicked(window));
+            }
+
+            // 确保遮罩在窗口下方
+            maskGO.transform.SetAsLastSibling();
+            window.transform.SetAsLastSibling();
+
+            // 保存遮罩引用
+            window.MaskObject = maskGO;
+
+            Debug.Log($"[UIManager] 创建遮罩: {maskGO.name}");
+        }
+
+        /// <summary>
+        /// 销毁窗口遮罩
+        /// </summary>
+        /// <param name="window">窗口实例</param>
+        private void DestroyWindowMask(UIWindow window)
+        {
+            if (window.MaskObject != null)
+            {
+                Debug.Log($"[UIManager] 销毁遮罩: {window.MaskObject.name}");
+                Destroy(window.MaskObject);
+                window.MaskObject = null;
+            }
+        }
+
+        /// <summary>
+        /// 遮罩点击事件处理
+        /// </summary>
+        /// <param name="window">关联的窗口</param>
+        private void OnMaskClicked(UIWindow window)
+        {
+            if (window != null && window.CloseOnMaskClick)
+            {
+                Debug.Log($"[UIManager] 遮罩被点击，关闭窗口: {window.GetType().Name}");
+                Close(window);
+            }
+        }
+
         #endregion
 
         #region 关闭UI
@@ -427,11 +508,20 @@ namespace xFrame.Runtime.UI
                 }
             }
 
+            // 如果是模态窗口，销毁遮罩
+            if (uiInstance is UIWindow window && window.MaskObject != null)
+            {
+                DestroyWindowMask(window);
+            }
+
             // 调用关闭生命周期
             uiInstance.InternalOnClose();
 
             // 从已打开列表移除
             _openedUIs.Remove(uiType);
+
+            // 发送UI关闭事件
+            RaiseUIClosedEvent(uiType, uiInstance.Layer);
 
             // 如果可缓存，放入对象池
             if (uiInstance.Cacheable)
@@ -692,6 +782,65 @@ namespace xFrame.Runtime.UI
         public int GetOpenUICount(UILayer layer)
         {
             return _openedUIs.Values.Count(ui => ui.Layer == layer);
+        }
+
+        #endregion
+
+        #region 事件通知
+
+        /// <summary>
+        /// 发送UI打开事件
+        /// </summary>
+        /// <param name="uiType">UI类型</param>
+        /// <param name="view">UI实例</param>
+        private void RaiseUIOpenedEvent(Type uiType, UIView view)
+        {
+            var openedEvent = new UIOpenedEvent(uiType, view, view.Layer);
+            xFrameEventBus.Raise(openedEvent);
+
+            // 发送层级变化事件
+            RaiseUILayerChangedEvent(view.Layer);
+
+            Debug.Log($"[UIManager] 发送UI打开事件: {uiType.Name}");
+        }
+
+        /// <summary>
+        /// 发送UI关闭事件
+        /// </summary>
+        /// <param name="uiType">UI类型</param>
+        /// <param name="layer">UI层级</param>
+        private void RaiseUIClosedEvent(Type uiType, UILayer layer)
+        {
+            var closedEvent = new UIClosedEvent(uiType, layer);
+            xFrameEventBus.Raise(closedEvent);
+
+            // 发送层级变化事件
+            RaiseUILayerChangedEvent(layer);
+
+            Debug.Log($"[UIManager] 发送UI关闭事件: {uiType.Name}");
+        }
+
+        /// <summary>
+        /// 发送UI层级变化事件
+        /// </summary>
+        /// <param name="layer">变化的层级</param>
+        private void RaiseUILayerChangedEvent(UILayer layer)
+        {
+            var count = GetOpenUICount(layer);
+            var layerEvent = new UILayerChangedEvent(layer, count);
+            xFrameEventBus.Raise(layerEvent);
+        }
+
+        /// <summary>
+        /// 发送UI导航事件
+        /// </summary>
+        /// <param name="fromType">来源UI类型</param>
+        /// <param name="toType">目标UI类型</param>
+        /// <param name="navigationType">导航类型</param>
+        private void RaiseUINavigationEvent(Type fromType, Type toType, NavigationType navigationType)
+        {
+            var navEvent = new UINavigationEvent(fromType, toType, navigationType);
+            xFrameEventBus.Raise(navEvent);
         }
 
         #endregion

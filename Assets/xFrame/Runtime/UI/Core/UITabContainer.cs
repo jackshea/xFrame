@@ -381,7 +381,7 @@ namespace xFrame.Runtime.UI
             _pagesByType.Clear();
             _pagesByName.Clear();
 
-            OnDestroy();
+            base.OnUIDestroy();
         }
 
         #endregion
