@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Text;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -23,6 +25,22 @@ namespace xFrame.Runtime.Persistence
         private readonly MigrationManager _migrationManager;
         private readonly PersistenceConfig _config;
         private readonly IXLogger _logger;
+        
+        // 内存缓存
+        private readonly ConcurrentDictionary<string, CacheEntry> _cache = new();
+        
+        // 版本号缓存，避免重复创建实例
+        private readonly ConcurrentDictionary<Type, int> _versionCache = new();
+        
+        /// <summary>
+        /// 缓存条目
+        /// </summary>
+        private class CacheEntry
+        {
+            public object Data { get; set; }
+            public DateTime ExpireTime { get; set; }
+            public bool IsExpired => DateTime.UtcNow > ExpireTime;
+        }
 
         /// <summary>
         /// 持久化配置
@@ -105,6 +123,12 @@ namespace xFrame.Runtime.Persistence
         {
             try
             {
+                // 备份原有数据
+                if (_config.EnableBackup && _provider.Exists(key))
+                {
+                    CreateBackup(key);
+                }
+                
                 var wrapper = CreateWrapper<T>(data);
                 var wrapperJson = JsonUtility.ToJson(wrapper);
                 var wrapperBytes = Encoding.UTF8.GetBytes(wrapperJson);
@@ -113,6 +137,10 @@ namespace xFrame.Runtime.Persistence
                 var encryptedBytes = _encryptor.Encrypt(wrapperBytes);
 
                 _provider.SaveRaw(key, encryptedBytes);
+                
+                // 更新缓存
+                UpdateCache(key, data);
+                
                 _logger.Debug($"保存数据成功: {key}");
             }
             catch (Exception ex)
@@ -137,6 +165,12 @@ namespace xFrame.Runtime.Persistence
         {
             try
             {
+                // 备份原有数据
+                if (_config.EnableBackup && _provider.Exists(key))
+                {
+                    await CreateBackupAsync(key);
+                }
+                
                 var wrapper = CreateWrapper<T>(data);
                 var wrapperJson = JsonUtility.ToJson(wrapper);
                 var wrapperBytes = Encoding.UTF8.GetBytes(wrapperJson);
@@ -145,6 +179,10 @@ namespace xFrame.Runtime.Persistence
                 var encryptedBytes = _encryptor.Encrypt(wrapperBytes);
 
                 await _provider.SaveRawAsync(key, encryptedBytes);
+                
+                // 更新缓存
+                UpdateCache(key, data);
+                
                 _logger.Debug($"异步保存数据成功: {key}");
             }
             catch (Exception ex)
@@ -169,6 +207,13 @@ namespace xFrame.Runtime.Persistence
         {
             try
             {
+                // 尝试从缓存获取
+                if (TryGetFromCache<T>(key, out var cachedData))
+                {
+                    _logger.Debug($"从缓存加载数据: {key}");
+                    return cachedData;
+                }
+                
                 var encryptedBytes = _provider.LoadRaw(key);
                 if (encryptedBytes == null || encryptedBytes.Length == 0)
                 {
@@ -200,6 +245,13 @@ namespace xFrame.Runtime.Persistence
         {
             try
             {
+                // 尝试从缓存获取
+                if (TryGetFromCache<T>(key, out var cachedData))
+                {
+                    _logger.Debug($"从缓存加载数据: {key}");
+                    return cachedData;
+                }
+                
                 var encryptedBytes = await _provider.LoadRawAsync(key);
                 if (encryptedBytes == null || encryptedBytes.Length == 0)
                 {
@@ -243,7 +295,7 @@ namespace xFrame.Runtime.Persistence
                     if (!_validator.VerifyHash(payload, storedHash))
                     {
                         _logger.Error($"数据校验失败: {key}");
-                        throw new InvalidOperationException($"数据校验失败: {key}");
+                        throw new DataValidationException(key);
                     }
                 }
             }
@@ -258,16 +310,31 @@ namespace xFrame.Runtime.Persistence
                 if (wrapper.dataVersion < currentVersion)
                 {
                     _logger.Info($"执行数据迁移: {key} v{wrapper.dataVersion} -> v{currentVersion}");
-                    dataJson = _migrationManager.Migrate<T>(dataJson, wrapper.dataVersion, currentVersion);
+                    try
+                    {
+                        dataJson = _migrationManager.Migrate<T>(dataJson, wrapper.dataVersion, currentVersion);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new DataMigrationException(typeof(T), wrapper.dataVersion, currentVersion, ex);
+                    }
 
                     // 迁移后重新保存
                     var migratedData = JsonUtility.FromJson<T>(dataJson);
                     Save(key, migratedData);
+                    
+                    // 更新缓存
+                    UpdateCache(key, migratedData);
                     return migratedData;
                 }
             }
 
-            return JsonUtility.FromJson<T>(dataJson);
+            var result = JsonUtility.FromJson<T>(dataJson);
+            
+            // 更新缓存
+            UpdateCache(key, result);
+            
+            return result;
         }
 
         /// <summary>
@@ -305,7 +372,7 @@ namespace xFrame.Runtime.Persistence
         /// </summary>
         public async UniTask<T> LoadOrDefaultAsync<T>(string key, T defaultValue)
         {
-            if (!Exists(key))
+            if (!await ExistsAsync(key))
             {
                 return defaultValue;
             }
@@ -380,19 +447,27 @@ namespace xFrame.Runtime.Persistence
         }
 
         /// <summary>
-        /// 获取类型的当前版本号
+        /// 获取类型的当前版本号（使用缓存避免重复创建实例）
         /// </summary>
         private int GetCurrentVersion<T>()
         {
-            if (typeof(IVersionedData).IsAssignableFrom(typeof(T)))
+            var type = typeof(T);
+            
+            // 尝试从缓存获取
+            if (_versionCache.TryGetValue(type, out var cachedVersion))
             {
-                // 创建临时实例获取版本号
+                return cachedVersion;
+            }
+            
+            var version = 1;
+            if (typeof(IVersionedData).IsAssignableFrom(type))
+            {
                 try
                 {
                     var instance = Activator.CreateInstance<T>();
                     if (instance is IVersionedData versionedData)
                     {
-                        return versionedData.CurrentVersion;
+                        version = versionedData.CurrentVersion;
                     }
                 }
                 catch
@@ -400,8 +475,347 @@ namespace xFrame.Runtime.Persistence
                     // 如果无法创建实例，返回默认版本
                 }
             }
-
-            return 1;
+            
+            // 缓存版本号
+            _versionCache.TryAdd(type, version);
+            return version;
         }
+        
+        /// <summary>
+        /// 更新缓存
+        /// </summary>
+        private void UpdateCache<T>(string key, T data)
+        {
+            if (!_config.EnableCache) return;
+            
+            var entry = new CacheEntry
+            {
+                Data = data,
+                ExpireTime = DateTime.UtcNow.AddSeconds(_config.CacheExpirationSeconds)
+            };
+            _cache[key] = entry;
+        }
+        
+        /// <summary>
+        /// 尝试从缓存获取数据
+        /// </summary>
+        private bool TryGetFromCache<T>(string key, out T data)
+        {
+            data = default;
+            if (!_config.EnableCache) return false;
+            
+            if (_cache.TryGetValue(key, out var entry))
+            {
+                if (!entry.IsExpired && entry.Data is T typedData)
+                {
+                    data = typedData;
+                    return true;
+                }
+                
+                // 移除过期缓存
+                _cache.TryRemove(key, out _);
+            }
+            
+            return false;
+        }
+        
+        /// <summary>
+        /// 使缓存失效
+        /// </summary>
+        private void InvalidateCache(string key)
+        {
+            if (_config.EnableCache)
+            {
+                _cache.TryRemove(key, out _);
+            }
+        }
+        
+        /// <summary>
+        /// 清除所有缓存
+        /// </summary>
+        public void ClearCache()
+        {
+            _cache.Clear();
+            _logger.Debug("已清除所有缓存");
+        }
+        
+        /// <summary>
+        /// 批量保存数据
+        /// </summary>
+        /// <param name="items">键值对列表</param>
+        public void SaveBatch<T>(IEnumerable<KeyValuePair<string, T>> items)
+        {
+            foreach (var item in items)
+            {
+                Save(item.Key, item.Value);
+            }
+        }
+        
+        /// <summary>
+        /// 异步批量保存数据
+        /// </summary>
+        /// <param name="items">键值对列表</param>
+        public async UniTask SaveBatchAsync<T>(IEnumerable<KeyValuePair<string, T>> items)
+        {
+            foreach (var item in items)
+            {
+                await SaveAsync(item.Key, item.Value);
+            }
+        }
+        
+        /// <summary>
+        /// 批量加载数据
+        /// </summary>
+        /// <param name="keys">键列表</param>
+        /// <returns>键值对字典</returns>
+        public Dictionary<string, T> LoadBatch<T>(IEnumerable<string> keys)
+        {
+            var result = new Dictionary<string, T>();
+            foreach (var key in keys)
+            {
+                var data = Load<T>(key);
+                if (data != null)
+                {
+                    result[key] = data;
+                }
+            }
+            return result;
+        }
+        
+        /// <summary>
+        /// 异步批量加载数据
+        /// </summary>
+        /// <param name="keys">键列表</param>
+        /// <returns>键值对字典</returns>
+        public async UniTask<Dictionary<string, T>> LoadBatchAsync<T>(IEnumerable<string> keys)
+        {
+            var result = new Dictionary<string, T>();
+            foreach (var key in keys)
+            {
+                var data = await LoadAsync<T>(key);
+                if (data != null)
+                {
+                    result[key] = data;
+                }
+            }
+            return result;
+        }
+        
+        /// <summary>
+        /// 异步检查数据是否存在（使用类型名作为键）
+        /// </summary>
+        public UniTask<bool> ExistsAsync<T>()
+        {
+            return ExistsAsync(GetDefaultKey<T>());
+        }
+        
+        /// <summary>
+        /// 异步检查数据是否存在（指定键）
+        /// </summary>
+        public UniTask<bool> ExistsAsync(string key)
+        {
+            return _provider.ExistsAsync(key);
+        }
+        
+        /// <summary>
+        /// 异步删除数据（使用类型名作为键）
+        /// </summary>
+        public UniTask<bool> DeleteAsync<T>()
+        {
+            return DeleteAsync(GetDefaultKey<T>());
+        }
+        
+        /// <summary>
+        /// 异步删除数据（指定键）
+        /// </summary>
+        public async UniTask<bool> DeleteAsync(string key)
+        {
+            InvalidateCache(key);
+            var result = await _provider.DeleteAsync(key);
+            if (result)
+            {
+                _logger.Debug($"异步删除数据成功: {key}");
+            }
+            return result;
+        }
+        
+        #region 备份功能
+        
+        /// <summary>
+        /// 获取备份键名
+        /// </summary>
+        private string GetBackupKey(string key, int backupIndex)
+        {
+            return $"{key}.backup.{backupIndex}";
+        }
+        
+        /// <summary>
+        /// 创建数据备份
+        /// </summary>
+        private void CreateBackup(string key)
+        {
+            try
+            {
+                var currentData = _provider.LoadRaw(key);
+                if (currentData == null || currentData.Length == 0) return;
+                
+                // 滚动备份：将旧备份向后移动
+                for (var i = _config.MaxBackupCount - 1; i > 0; i--)
+                {
+                    var fromKey = GetBackupKey(key, i - 1);
+                    var toKey = GetBackupKey(key, i);
+                    
+                    if (_provider.Exists(fromKey))
+                    {
+                        var backupData = _provider.LoadRaw(fromKey);
+                        _provider.SaveRaw(toKey, backupData);
+                    }
+                }
+                
+                // 保存当前数据为第一个备份
+                _provider.SaveRaw(GetBackupKey(key, 0), currentData);
+                _logger.Debug($"创建备份成功: {key}");
+            }
+            catch (Exception ex)
+            {
+                _logger.Warning($"创建备份失败: {key}, 错误: {ex.Message}");
+            }
+        }
+        
+        /// <summary>
+        /// 异步创建数据备份
+        /// </summary>
+        private async UniTask CreateBackupAsync(string key)
+        {
+            try
+            {
+                var currentData = await _provider.LoadRawAsync(key);
+                if (currentData == null || currentData.Length == 0) return;
+                
+                // 滚动备份：将旧备份向后移动
+                for (var i = _config.MaxBackupCount - 1; i > 0; i--)
+                {
+                    var fromKey = GetBackupKey(key, i - 1);
+                    var toKey = GetBackupKey(key, i);
+                    
+                    if (_provider.Exists(fromKey))
+                    {
+                        var backupData = await _provider.LoadRawAsync(fromKey);
+                        await _provider.SaveRawAsync(toKey, backupData);
+                    }
+                }
+                
+                // 保存当前数据为第一个备份
+                await _provider.SaveRawAsync(GetBackupKey(key, 0), currentData);
+                _logger.Debug($"异步创建备份成功: {key}");
+            }
+            catch (Exception ex)
+            {
+                _logger.Warning($"异步创建备份失败: {key}, 错误: {ex.Message}");
+            }
+        }
+        
+        /// <summary>
+        /// 从备份恢复数据
+        /// </summary>
+        /// <param name="key">存储键</param>
+        /// <param name="backupIndex">备份索引（0为最新备份）</param>
+        /// <returns>是否成功恢复</returns>
+        public bool RestoreFromBackup(string key, int backupIndex = 0)
+        {
+            try
+            {
+                var backupKey = GetBackupKey(key, backupIndex);
+                if (!_provider.Exists(backupKey))
+                {
+                    _logger.Warning($"备份不存在: {backupKey}");
+                    return false;
+                }
+                
+                var backupData = _provider.LoadRaw(backupKey);
+                _provider.SaveRaw(key, backupData);
+                InvalidateCache(key);
+                
+                _logger.Info($"从备份恢复成功: {key} <- {backupKey}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"从备份恢复失败: {key}", ex);
+                return false;
+            }
+        }
+        
+        /// <summary>
+        /// 异步从备份恢复数据
+        /// </summary>
+        /// <param name="key">存储键</param>
+        /// <param name="backupIndex">备份索引（0为最新备份）</param>
+        /// <returns>是否成功恢复</returns>
+        public async UniTask<bool> RestoreFromBackupAsync(string key, int backupIndex = 0)
+        {
+            try
+            {
+                var backupKey = GetBackupKey(key, backupIndex);
+                if (!await _provider.ExistsAsync(backupKey))
+                {
+                    _logger.Warning($"备份不存在: {backupKey}");
+                    return false;
+                }
+                
+                var backupData = await _provider.LoadRawAsync(backupKey);
+                await _provider.SaveRawAsync(key, backupData);
+                InvalidateCache(key);
+                
+                _logger.Info($"异步从备份恢复成功: {key} <- {backupKey}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"异步从备份恢复失败: {key}", ex);
+                return false;
+            }
+        }
+        
+        /// <summary>
+        /// 获取可用的备份数量
+        /// </summary>
+        /// <param name="key">存储键</param>
+        /// <returns>备份数量</returns>
+        public int GetBackupCount(string key)
+        {
+            var count = 0;
+            for (var i = 0; i < _config.MaxBackupCount; i++)
+            {
+                if (_provider.Exists(GetBackupKey(key, i)))
+                {
+                    count++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            return count;
+        }
+        
+        /// <summary>
+        /// 删除所有备份
+        /// </summary>
+        /// <param name="key">存储键</param>
+        public void DeleteAllBackups(string key)
+        {
+            for (var i = 0; i < _config.MaxBackupCount; i++)
+            {
+                var backupKey = GetBackupKey(key, i);
+                if (_provider.Exists(backupKey))
+                {
+                    _provider.Delete(backupKey);
+                }
+            }
+            _logger.Debug($"已删除所有备份: {key}");
+        }
+        
+        #endregion
     }
 }
