@@ -1,3 +1,16 @@
 {
-  "name": "xFrame.Editor"
+    "name": "xFrame.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:59270932edc81b24d825b66e1b1a60ff"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }
