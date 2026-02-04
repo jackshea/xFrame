@@ -4,6 +4,7 @@ using VContainer;
 using VContainer.Unity;
 using xFrame.Runtime.Logging;
 using xFrame.Runtime.ResourceManager;
+using xFrame.Runtime.Scheduler;
 using xFrame.Runtime.StateMachine;
 
 namespace xFrame.Runtime.DI
@@ -30,6 +31,7 @@ namespace xFrame.Runtime.DI
             RegisterLoggingSystem(builder);
             RegisterResourceSystem(builder);
             RegisterStateMachineModule(builder);
+            RegisterSchedulerModule(builder);
         }
 
 
@@ -88,6 +90,21 @@ namespace xFrame.Runtime.DI
         {
             // 使用扩展方法注册状态机模块
             builder.RegisterStateMachineModule();
+        }
+
+        /// <summary>
+        /// 注册调度器模块到VContainer
+        /// </summary>
+        /// <param name="builder">容器构建器</param>
+        private void RegisterSchedulerModule(IContainerBuilder builder)
+        {
+            // 使用扩展方法注册调度器模块
+            builder.RegisterSchedulerModule();
+
+            // 注册调度器模块为单例，并标记为可初始化
+            builder.Register<SchedulerModule>(Lifetime.Singleton)
+                .AsImplementedInterfaces()
+                .AsSelf();
         }
     }
 }
