@@ -4,6 +4,7 @@ using VContainer;
 using VContainer.Unity;
 using xFrame.Runtime.Logging;
 using xFrame.Runtime.ResourceManager;
+using xFrame.Runtime.Serialization;
 using xFrame.Runtime.Scheduler;
 using xFrame.Runtime.StateMachine;
 
@@ -31,6 +32,7 @@ namespace xFrame.Runtime.DI
             RegisterLoggingSystem(builder);
             RegisterResourceSystem(builder);
             RegisterStateMachineModule(builder);
+            RegisterSerializationModule(builder);
             RegisterSchedulerModule(builder);
         }
 
@@ -90,6 +92,16 @@ namespace xFrame.Runtime.DI
         {
             // 使用扩展方法注册状态机模块
             builder.RegisterStateMachineModule();
+        }
+
+        /// <summary>
+        /// 注册序列化模块到VContainer
+        /// </summary>
+        /// <param name="builder">容器构建器</param>
+        private void RegisterSerializationModule(IContainerBuilder builder)
+        {
+            // 使用扩展方法注册序列化模块
+            builder.RegisterSerializationModule();
         }
 
         /// <summary>

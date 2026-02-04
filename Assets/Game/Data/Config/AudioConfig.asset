@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a55aa6a1d5a2f4240aa980325d121530, type: 3}
+  m_Name: AudioConfig
+  m_EditorClassIdentifier: 
+  _title: "\u97F3\u9891\u914D\u7F6E"
+  _description: "\u7528\u4E8E\u97F3\u9891\u914D\u7F6E"
+  MasterVolume: 1
+  MusicVolume: 0.8
+  SFXVolume: 1
+  VoiceVolume: 1
+  IsMuted: 0
+  PauseOnFocusLost: 1
+  FadeDuration: 0.5
