@@ -8,7 +8,9 @@
       "Bash(ls:*)",
       "Bash(dotnet build:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "mcp__UnityMCP__batch_execute",
+      "mcp__UnityMCP__manage_scene"
     ]
   }
 }
