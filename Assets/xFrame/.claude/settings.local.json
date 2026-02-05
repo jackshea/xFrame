@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(set:*)",
+      "Bash(uvx:*)",
+      "Bash(powershell:*)",
+      "Bash(fsutil:*)",
+      "Bash(python:*)"
+    ]
+  }
+}

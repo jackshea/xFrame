@@ -570,6 +570,281 @@ namespace xFrame.Tests
 
         #endregion
 
+        #region 边界情况和高级测试
+
+        /// <summary>
+        /// 测试事件参数可以被修改并传递给后续处理器
+        /// </summary>
+        [Test]
+        public void EventParameterModification_ShouldPropagateToNextHandler()
+        {
+            // Arrange
+            var capturedValue1 = 0;
+            var capturedValue2 = 0;
+
+            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) =>
+            {
+                capturedValue1 = e.Value;
+                e.Value = 999; // 修改参数
+            }, priority: 10);
+
+            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) =>
+            {
+                capturedValue2 = e.Value;
+            }, priority: 5);
+
+            var testEvent = new TestEvent { Message = "Test", Value = 100 };
+
+            // Act
+            xFrameEventBus.Raise(testEvent);
+
+            // Assert
+            Assert.AreEqual(100, capturedValue1, "第一个处理器应该收到原始值");
+            Assert.AreEqual(999, capturedValue2, "第二个处理器应该收到修改后的值");
+        }
+
+        /// <summary>
+        /// 测试嵌套事件触发
+        /// </summary>
+        [Test]
+        public void NestedEventRaising_ShouldWorkCorrectly()
+        {
+            // Arrange
+            int outerCount = 0;
+            int innerCount = 0;
+            string executionOrder = "";
+
+            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) =>
+            {
+                outerCount++;
+                executionOrder += "O1";
+
+                // 在处理器内部触发另一个事件
+                xFrameEventBus.Raise(new AnotherTestEvent { Flag = true });
+            }, priority: 10);
+
+            xFrameEventBus.SubscribeTo<AnotherTestEvent>((ref AnotherTestEvent e) =>
+            {
+                innerCount++;
+                executionOrder += "I1";
+            });
+
+            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) =>
+            {
+                outerCount++;
+                executionOrder += "O2";
+            }, priority: 0);
+
+            // Act
+            xFrameEventBus.Raise(new TestEvent());
+
+            // Assert
+            Assert.AreEqual(2, outerCount, "外部事件应该被触发2次");
+            Assert.AreEqual(1, innerCount, "内部事件应该被触发1次");
+            Assert.AreEqual("O1I1O2", executionOrder, "执行顺序应该正确");
+        }
+
+        /// <summary>
+        /// 测试重复订阅同一处理器
+        /// </summary>
+        [Test]
+        public void DuplicateSubscription_ShouldCallHandlerMultipleTimes()
+        {
+            // Arrange
+            int callCount = 0;
+            GenericEventBus<IEvent>.EventHandler<TestEvent> handler = (ref TestEvent e) => callCount++;
+
+            // 重复订阅同一处理器
+            xFrameEventBus.SubscribeTo<TestEvent>(handler);
+            xFrameEventBus.SubscribeTo<TestEvent>(handler);
+            xFrameEventBus.SubscribeTo<TestEvent>(handler);
+
+            var testEvent = new TestEvent();
+
+            // Act
+            xFrameEventBus.Raise(testEvent);
+
+            // Assert
+            Assert.AreEqual(3, callCount, "重复订阅的处理器应该被调用3次");
+        }
+
+        /// <summary>
+        /// 测试取消不存在的处理器不应该抛出异常
+        /// </summary>
+        [Test]
+        public void UnsubscribeNonExistentHandler_ShouldNotThrow()
+        {
+            // Arrange
+            GenericEventBus<IEvent>.EventHandler<TestEvent> handler = (ref TestEvent e) => { };
+            var testEvent = new TestEvent();
+
+            // Act & Assert - 不应该抛出异常
+            Assert.DoesNotThrow(() =>
+            {
+                xFrameEventBus.UnsubscribeFrom<TestEvent>(handler);
+                xFrameEventBus.Raise(testEvent);
+            }, "取消不存在的处理器不应该抛出异常");
+        }
+
+        /// <summary>
+        /// 测试大量订阅者的性能
+        /// </summary>
+        [Test]
+        public void LargeNumberOfSubscribers_ShouldPerformReasonably()
+        {
+            // Arrange
+            const int subscriberCount = 1000;
+            int callCount = 0;
+
+            for (int i = 0; i < subscriberCount; i++)
+            {
+                xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) => callCount++);
+            }
+
+            var testEvent = new TestEvent();
+
+            // Act
+            xFrameEventBus.Raise(testEvent);
+
+            // Assert
+            Assert.AreEqual(subscriberCount, callCount, $"所有 {subscriberCount} 个订阅者都应该被调用");
+        }
+
+        /// <summary>
+        /// 测试在处理器中订阅新处理器
+        /// </summary>
+        [Test]
+        public void SubscribeDuringEventProcessing_ShouldNotAffectCurrentEvent()
+        {
+            // Arrange
+            int initialCount = 0;
+            int newCount = 0;
+
+            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) =>
+            {
+                initialCount++;
+                // 在处理器中订阅新处理器
+                xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent ev) => newCount++);
+            });
+
+            var testEvent = new TestEvent();
+
+            // Act - 第一次触发
+            xFrameEventBus.Raise(testEvent);
+            // Assert - 初始处理器应该被调用，新处理器不应该被调用
+            Assert.AreEqual(1, initialCount, "初始处理器应该被调用");
+            Assert.AreEqual(0, newCount, "在处理期间订阅的新处理器不应该被调用");
+
+            // 第二次触发
+            xFrameEventBus.Raise(testEvent);
+            // Assert - 现在两个处理器都应该被调用
+            Assert.AreEqual(2, initialCount, "初始处理器应该被调用2次");
+            Assert.AreEqual(1, newCount, "新处理器应该被调用");
+        }
+
+        /// <summary>
+        /// 测试在处理器中取消订阅当前处理器
+        /// </summary>
+        [Test]
+        public void UnsubscribeSelfDuringProcessing_ShouldCompleteExecution()
+        {
+            // Arrange
+            int callCount = 0;
+            GenericEventBus<IEvent>.EventHandler<TestEvent> handler = null;
+
+            handler = (ref TestEvent e) =>
+            {
+                callCount++;
+                xFrameEventBus.UnsubscribeFrom<TestEvent>(handler);
+            };
+
+            xFrameEventBus.SubscribeTo<TestEvent>(handler);
+            var testEvent = new TestEvent();
+
+            // Act
+            xFrameEventBus.Raise(testEvent);
+
+            // Assert
+            Assert.AreEqual(1, callCount, "处理器应该被调用一次");
+
+            // 第二次触发不应该调用
+            xFrameEventBus.Raise(testEvent);
+            Assert.AreEqual(1, callCount, "取消订阅后不应该再被调用");
+        }
+
+        /// <summary>
+        /// 测试目标和来源同时匹配
+        /// </summary>
+        [Test]
+        public void SubscribeToBothTargetAndSource_ShouldMatchCorrectly()
+        {
+            // Arrange
+            GameObject target = new GameObject("Target");
+            GameObject source = new GameObject("Source");
+            GameObject other = new GameObject("Other");
+
+            int targetCount = 0;
+            int sourceCount = 0;
+            int bothCount = 0;
+
+            xFrameEventBus.SubscribeToTarget<TestEvent>(target,
+                (ref TestEvent e, GameObject t, GameObject s) => targetCount++);
+
+            xFrameEventBus.SubscribeToSource<TestEvent>(source,
+                (ref TestEvent e, GameObject t, GameObject s) => sourceCount++);
+
+            var testEvent = new TestEvent();
+
+            // Act 1: 匹配目标但不匹配来源
+            xFrameEventBus.Raise(testEvent, target, other);
+            Assert.AreEqual(1, targetCount, "目标订阅者应该被调用");
+            Assert.AreEqual(0, sourceCount, "来源订阅者不应该被调用");
+
+            // Act 2: 匹配来源但不匹配目标
+            xFrameEventBus.Raise(testEvent, other, source);
+            Assert.AreEqual(1, targetCount, "目标订阅者应该仍为1");
+            Assert.AreEqual(1, sourceCount, "来源订阅者应该被调用");
+
+            // Act 3: 同时匹配目标和来源
+            xFrameEventBus.Raise(testEvent, target, source);
+            Assert.AreEqual(2, targetCount, "目标订阅者应该被调用2次");
+            Assert.AreEqual(2, sourceCount, "来源订阅者应该被调用2次");
+
+            // Cleanup
+            GameObject.DestroyImmediate(target);
+            GameObject.DestroyImmediate(source);
+            GameObject.DestroyImmediate(other);
+        }
+
+        /// <summary>
+        /// 测试带有目标的立即触发事件
+        /// </summary>
+        [Test]
+        public void RaiseImmediatelyWithTargetAndSource_ShouldWork()
+        {
+            // Arrange
+            GameObject target = new GameObject("Target");
+            GameObject source = new GameObject("Source");
+            int callCount = 0;
+
+            xFrameEventBus.SubscribeTo<TestEvent>(
+                (ref TestEvent e, GameObject t, GameObject s) => callCount++);
+
+            var testEvent = new TestEvent { Message = "Immediate" };
+
+            // Act
+            xFrameEventBus.RaiseImmediately(testEvent, target, source);
+
+            // Assert
+            Assert.AreEqual(1, callCount, "处理器应该被立即调用");
+
+            // Cleanup
+            GameObject.DestroyImmediate(target);
+            GameObject.DestroyImmediate(source);
+        }
+
+        #endregion
+
         #region 辅助方法
 
         /// <summary>
