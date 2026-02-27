@@ -62,6 +62,21 @@ Unity Test Framework 支持 `-testFilter`（完整测试名、Fixture、分号�
   2) 相关 EditMode/PlayMode 测试通过。
   3) 关键脚本在 Editor 中可编译。
 
+### 3.6 AI 统一验证脚本（推荐）
+- Python（推荐，跨平台）：`python scripts/ai/validate.py`
+  - 单目标：`python scripts/ai/validate.py single --platform EditMode --filter "xFrame.Tests.DITests"`
+  - 单套件：`python scripts/ai/validate.py suite --platform EditMode`
+  - 全量：`python scripts/ai/validate.py full`
+- Bash：`./scripts/ai/validate.sh`
+  - 单目标：`./scripts/ai/validate.sh single --platform EditMode --filter "xFrame.Tests.DITests"`
+  - 单套件：`./scripts/ai/validate.sh suite --platform EditMode`
+  - 全量：`./scripts/ai/validate.sh full`
+- PowerShell：`./scripts/ai/validate.ps1`
+  - 单目标：`./scripts/ai/validate.ps1 -Command single -Platform EditMode -Filter "xFrame.Tests.DITests"`
+  - 单套件：`./scripts/ai/validate.ps1 -Command suite -Platform PlayMode`
+  - 全量：`./scripts/ai/validate.ps1 -Command full`
+- Unity 路径优先通过 `UNITY_EDITOR_PATH` 注入，或命令参数显式指定。
+
 ## 4. 代码风格（基于现有实现）
 
 ### 4.1 基础格式
