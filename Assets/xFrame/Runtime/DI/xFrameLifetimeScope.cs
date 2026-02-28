@@ -7,6 +7,10 @@ using xFrame.Runtime.ResourceManager;
 using xFrame.Runtime.Serialization;
 using xFrame.Runtime.Scheduler;
 using xFrame.Runtime.StateMachine;
+using xFrame.Runtime.Networking;
+using xFrame.Runtime.Platform;
+using xFrame.Runtime.Utilities;
+using xFrame.Runtime.MVVM;
 
 namespace xFrame.Runtime.DI
 {
@@ -34,6 +38,10 @@ namespace xFrame.Runtime.DI
             RegisterStateMachineModule(builder);
             RegisterSerializationModule(builder);
             RegisterSchedulerModule(builder);
+            RegisterNetworkingModule(builder);
+            RegisterPlatformModule(builder);
+            RegisterUtilitiesModule(builder);
+            RegisterMVVMModule(builder);
         }
 
 
@@ -117,6 +125,42 @@ namespace xFrame.Runtime.DI
             builder.Register<SchedulerModule>(Lifetime.Singleton)
                 .AsImplementedInterfaces()
                 .AsSelf();
+        }
+
+        /// <summary>
+        /// 注册网络模块到VContainer
+        /// </summary>
+        /// <param name="builder">容器构建器</param>
+        private void RegisterNetworkingModule(IContainerBuilder builder)
+        {
+            builder.RegisterNetworkingModule();
+        }
+
+        /// <summary>
+        /// 注册平台模块到VContainer
+        /// </summary>
+        /// <param name="builder">容器构建器</param>
+        private void RegisterPlatformModule(IContainerBuilder builder)
+        {
+            builder.RegisterPlatformModule();
+        }
+
+        /// <summary>
+        /// 注册工具模块到VContainer
+        /// </summary>
+        /// <param name="builder">容器构建器</param>
+        private void RegisterUtilitiesModule(IContainerBuilder builder)
+        {
+            builder.RegisterUtilitiesModule();
+        }
+
+        /// <summary>
+        /// 注册 MVVM 模块到VContainer
+        /// </summary>
+        /// <param name="builder">容器构建器</param>
+        private void RegisterMVVMModule(IContainerBuilder builder)
+        {
+            builder.RegisterMVVMModule();
         }
     }
 }

@@ -145,6 +145,17 @@ schedulerService.NextFrame(() => Debug.Log("下一帧执行"));
 - `UIComponent` - UI 组件基类
 - `UIBinder` - UI 绑定器
 
+### MVVM（数据绑定 UI）
+
+提供轻量级 MVVM 基础能力，用于实现 UI 与业务逻辑解耦。
+
+**核心能力：**
+- `BindableProperty<T>`：低开销属性变更通知
+- `RelayCommand`：View 到 ViewModel 的命令调用
+- `BindingContext`：统一管理绑定生命周期，避免内存泄漏
+
+示例位于 `Assets/xFrame/Runtime/MVVM/Examples/`，包含 `PlayerModel`、`PlayerViewModel` 与 `PlayerView`。
+
 ### Persistence（数据持久化）
 
 跨平台的数据持久化系统，支持多种存储提供者。
@@ -163,15 +174,15 @@ LRU（最近最少使用）缓存实现。
 
 ### Networking（网络通信）
 
-网络通信工具模块。
+已提供基础接口与默认实现（`INetworkClient`、`NullNetworkClient`），可按项目协议扩展。
 
 ### Platform（平台特定工具）
 
-平台特定功能模块。
+已提供基础平台服务封装（`IPlatformService`、`UnityPlatformService`）。
 
 ### Utilities（工具函数）
 
-通用辅助函数集合。
+已提供基础工具能力（`IGuidService`、`RetryUtility`）。
 
 ## 测试
 
@@ -181,7 +192,6 @@ LRU（最近最少使用）缓存实现。
 位于 `Assets/xFrame/Tests/EditMode/`，包括：
 - EventBus 测试
 - LRU Cache 测试
-- MVP 测试
 - ObjectPool 测试
 - Persistence 测试
 - Scheduler 测试
@@ -189,6 +199,7 @@ LRU（最近最少使用）缓存实现。
 - StateMachine 测试
 - DI 测试
 - UI 测试
+- MVVM 测试
 
 ### PlayMode 测试
 位于 `Assets/xFrame/Tests/PlayMode/`，包括：
@@ -209,7 +220,6 @@ LRU（最近最少使用）缓存实现。
 ## 文档
 
 各模块的详细文档位于 `Assets/xFrame/Docs/`：
-- MVP 文档
 - UI 框架文档
 - 有限状态机文档
 - 数据持久化文档
