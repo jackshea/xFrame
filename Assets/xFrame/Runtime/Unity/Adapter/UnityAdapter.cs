@@ -1,4 +1,5 @@
 using UnityEngine;
+using xFrame.Runtime.Core;
 
 namespace xFrame.Runtime.Unity.Adapter
 {
@@ -37,26 +38,26 @@ namespace xFrame.Runtime.Unity.Adapter
     /// <summary>
     /// Unity日志适配器 - 将核心日志输出到Unity控制台
     /// </summary>
-    public class UnityLogAppender : Core.ICoreLogAppender
+    public class UnityLogAppender : ICoreLogAppender
     {
-        public void Append(Core.CoreLogEntry entry)
+        public void Append(CoreLogEntry entry)
         {
             var message = $"[{entry.Category}] {entry.Message}";
             
             switch (entry.Level)
             {
-                case Core.LogLevel.Verbose:
-                case Core.LogLevel.Debug:
+                case LogLevel.Verbose:
+                case LogLevel.Debug:
                     UnityEngine.Debug.Log(message);
                     break;
-                case Core.LogLevel.Info:
+                case LogLevel.Info:
                     UnityEngine.Debug.Log(message);
                     break;
-                case Core.LogLevel.Warning:
+                case LogLevel.Warning:
                     UnityEngine.Debug.LogWarning(message);
                     break;
-                case Core.LogLevel.Error:
-                case Core.LogLevel.Fatal:
+                case LogLevel.Error:
+                case LogLevel.Fatal:
                     if (entry.Exception != null)
                         UnityEngine.Debug.LogError($"{message}\n{entry.Exception}");
                     else
@@ -74,8 +75,8 @@ namespace xFrame.Runtime.Unity.Adapter
         public System.Action OnUpdate;
         public System.Action OnLateUpdate;
         public System.Action OnFixedUpdate;
-        public System.Action OnDestroy;
-        public System.Action OnApplicationQuit;
+        public System.Action OnDestroyAction;
+        public System.Action OnApplicationQuitAction;
 
         private void Update()
         {
@@ -94,12 +95,12 @@ namespace xFrame.Runtime.Unity.Adapter
 
         private void OnDestroy()
         {
-            OnDestroy?.Invoke();
+            OnDestroyAction?.Invoke();
         }
 
         private void OnApplicationQuit()
         {
-            OnApplicationQuit?.Invoke();
+            OnApplicationQuitAction?.Invoke();
         }
     }
 }

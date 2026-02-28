@@ -248,7 +248,7 @@ namespace xFrame.Runtime.Core.Events
         public bool Raise<TCoreEvent>(in TCoreEvent @event) where TCoreEvent : ICoreEvent
         {
             var previousIsRaising = _isEventBeingRaised;
-            _isEventBeingRaising = true;
+            _isEventBeingRaised = true;
             _eventConsumed = false;
 
             try

@@ -17,7 +17,7 @@ namespace xFrame.Runtime.Scheduler
         public static void RegisterCoreSchedulerModule(this IContainerBuilder builder)
         {
             // 注册核心日志管理器
-            builder.Register<Core.CoreLogManager>(Lifetime.Singleton)
+            builder.Register<CoreLogManager>(Lifetime.Singleton)
                 .As<ICoreLogManager>();
 
             // 注册核心调度器

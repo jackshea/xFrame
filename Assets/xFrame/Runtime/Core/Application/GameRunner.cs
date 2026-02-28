@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using xFrame.Runtime.Core.Scheduler;
 
 namespace xFrame.Runtime.Core
 {
@@ -152,7 +153,7 @@ namespace xFrame.Runtime.Core
         {
             var timeProvider = new SimulatedTimeProvider();
             var logManager = new CoreLogManager();
-            var scheduler = new Core.Scheduler.CoreScheduler(logManager);
+            var scheduler = new CoreScheduler(logManager);
 
             var runner = new GameRunner(timeProvider, logManager, scheduler);
             

@@ -244,7 +244,7 @@ namespace xFrame.Tests.Core
                 var logger = logManager.GetLogger("TestLogger");
                 
                 // 设置日志级别
-                logManager.SetGlobalLogLevel(Core.LogLevel.Debug);
+                logManager.SetGlobalLogLevel(LogLevel.Debug);
                 
                 // 记录日志
                 logger.Debug("调试信息");
