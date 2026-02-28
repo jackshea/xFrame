@@ -1,0 +1,1 @@
+uvx.exe --prerelease explicit --from "mcpforunityserver>=0.0.0a0" mcp-for-unity --transport http --http-url http://0.0.0.0:8080 --project-scoped-tools
