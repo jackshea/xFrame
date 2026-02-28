@@ -2,6 +2,10 @@
 本文件面向在本仓库执行任务的 agent（编码、测试、重构、文档）。
 目标：降低试错成本，统一风格，保证变更可验证、可回归。
 
+## 约定
+- 默认使用中文作为首先语言
+- 使用Windows风格的换行符CRLF
+
 ## 1. 项目基础信息
 - Unity 版本：`2021.3.51f1`（`ProjectSettings/ProjectVersion.txt`）。
 - 核心目录：`Assets/xFrame/`；业务目录：`Assets/Game/`。
