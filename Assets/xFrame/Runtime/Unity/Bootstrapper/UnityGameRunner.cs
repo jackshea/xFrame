@@ -3,6 +3,7 @@ using VContainer;
 using VContainer.Unity;
 using xFrame.Runtime.Core;
 using xFrame.Runtime.Core.Scheduler;
+using xFrame.Runtime.Unity.Adapter;
 
 namespace xFrame.Runtime.Unity.Bootstrapper
 {
@@ -23,7 +24,7 @@ namespace xFrame.Runtime.Unity.Bootstrapper
         private bool _isRunning;
 
         public bool IsRunning => _isRunning;
-        public IGameCore GameCore => _coreRunner;
+        public IGameCore GameCore => _coreRunner?.GameCore;
         public ITimeProvider TimeProvider => _timeProvider;
         public ICoreLogManager LogManager => _logManager;
 
@@ -83,13 +84,13 @@ namespace xFrame.Runtime.Unity.Bootstrapper
             }
 
             // 创建Unity时间提供者
-            _timeProvider = new Unity.Adapter.UnityTimeProvider();
+            _timeProvider = new UnityTimeProvider();
             
             // 创建核心日志管理器（添加Unity输出器）
-            _logManager = new Core.CoreLogManager(new Core.ICoreLogAppender[]
+            _logManager = new CoreLogManager(new ICoreLogAppender[]
             {
-                new Core.ConsoleLogAppender(),
-                new Unity.Adapter.UnityLogAppender()
+                new ConsoleLogAppender(),
+                new UnityLogAppender()
             });
 
             // 创建调度器
@@ -168,18 +169,15 @@ namespace xFrame.Runtime.Unity.Bootstrapper
                 .As<ITimeProvider>();
 
             // 注册核心日志管理器
-            builder.Register<Core.CoreLogManager>(Lifetime.Singleton)
+            builder.Register<CoreLogManager>(Lifetime.Singleton)
                 .As<ICoreLogManager>();
 
             // 注册核心调度器
             builder.Register<CoreScheduler>(Lifetime.Singleton)
                 .As<ICoreScheduler>();
 
-            // 注册核心运行器工厂
-            builder.RegisterFactory<ITimeProvider, ICoreLogManager, ICoreScheduler, GameRunner>(
-                (container, timeProvider, logManager, scheduler) => 
-                    new GameRunner(timeProvider, logManager, scheduler),
-                Lifetime.Transient);
+            // 注册核心运行器
+            builder.Register<GameRunner>(Lifetime.Transient);
         }
     }
 }

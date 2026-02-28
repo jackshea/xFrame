@@ -130,7 +130,7 @@ namespace xFrame.Runtime.Core.Scheduler
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error($"任务更新异常: TaskId={task.TaskId}, Status={task.Status}", ex);
+                    _logger.Fatal($"任务更新异常: TaskId={task.TaskId}, Status={task.Status}", ex);
                     _tasksToRemove.Add(task);
                 }
             }
@@ -426,7 +426,7 @@ namespace xFrame.Runtime.Core.Scheduler
                 _task = _asyncAction(_cancellationToken);
             }
 
-            if (_task.IsCompleted)
+            if (_task.GetAwaiter().IsCompleted)
             {
                 try
                 {
