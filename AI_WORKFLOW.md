@@ -92,3 +92,12 @@ python scripts/ai/validate.py suite --platform EditMode --unity "C:\\Program Fil
 - 相关测试通过（至少受影响模块的最小验证）
 - 无新增编译错误（Unity Console / batch log）
 - 变更说明包含：改动点 + 验证命令 + 结果
+
+## 6. AgentBridge 附加验证
+
+当改动 `Assets/xFrame/Runtime/Networking/AgentBridge` 或 `Assets/xFrame/Editor/AgentBridge` 时，额外执行：
+
+```bash
+python -m unittest scripts/agent/test_unity_rpc_client.py
+python -m py_compile scripts/agent/unity_rpc_client.py
+```

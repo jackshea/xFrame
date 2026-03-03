@@ -1,4 +1,6 @@
 using VContainer;
+using xFrame.Runtime.Networking.AgentBridge;
+using xFrame.Runtime.Networking.AgentBridge.Commands;
 
 namespace xFrame.Runtime.Networking
 {
@@ -16,6 +18,17 @@ namespace xFrame.Runtime.Networking
             builder.Register<NullNetworkClient>(Lifetime.Singleton)
                 .As<INetworkClient>()
                 .AsSelf();
+
+            builder.Register<AgentBridgeOptions>(Lifetime.Singleton).AsSelf();
+            builder.Register<AgentCommandRegistry>(Lifetime.Singleton).AsSelf();
+            builder.Register<AgentReflectionInvoker>(Lifetime.Singleton).AsSelf();
+            builder.Register<AgentRpcRouter>(Lifetime.Singleton).AsSelf();
+
+            builder.Register<PingCommandHandler>(Lifetime.Singleton).AsSelf().As<IAgentRpcCommandHandler>();
+            builder.Register<AuthenticateCommandHandler>(Lifetime.Singleton).AsSelf().As<IAgentRpcCommandHandler>();
+            builder.Register<ListCommandsHandler>(Lifetime.Singleton).AsSelf().As<IAgentRpcCommandHandler>();
+            builder.Register<FindGameObjectCommandHandler>(Lifetime.Singleton).AsSelf().As<IAgentRpcCommandHandler>();
+            builder.Register<InvokeComponentCommandHandler>(Lifetime.Singleton).AsSelf().As<IAgentRpcCommandHandler>();
         }
     }
 }
