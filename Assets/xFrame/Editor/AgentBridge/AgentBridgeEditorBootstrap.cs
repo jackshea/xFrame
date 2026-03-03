@@ -1,5 +1,5 @@
+using System;
 using UnityEditor;
-using UnityEngine;
 using xFrame.Runtime.Logging;
 
 namespace xFrame.Editor.AgentBridge
@@ -13,6 +13,8 @@ namespace xFrame.Editor.AgentBridge
         static AgentBridgeEditorBootstrap()
         {
             EditorApplication.delayCall += EnsureStarted;
+            AssemblyReloadEvents.beforeAssemblyReload += StopSilently;
+            EditorApplication.quitting += StopSilently;
         }
 
         [MenuItem("xFrame/AgentBridge/Start")]
@@ -20,31 +22,69 @@ namespace xFrame.Editor.AgentBridge
         {
             if (_server != null)
             {
-                Logger.Warning("AgentBridge already started.");
-                Debug.LogWarning("[AgentBridge] already started.");
                 return;
             }
 
-            _server = new FleckAgentBridgeServer();
-            _server.Start();
-            Logger.Info($"AgentBridge started. Endpoint={_server.Endpoint}");
-            Debug.Log($"[AgentBridge] started. Endpoint={_server.Endpoint}");
+            try
+            {
+                _server = new FleckAgentBridgeServer();
+                _server.Start();
+                Logger.Info($"AgentBridge started. Endpoint={_server.Endpoint}");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("AgentBridge start failed.", ex);
+                _server?.Dispose();
+                _server = null;
+            }
+        }
+
+        [MenuItem("xFrame/AgentBridge/Start", true)]
+        private static bool ValidateStart()
+        {
+            return _server == null;
         }
 
         [MenuItem("xFrame/AgentBridge/Stop")]
         public static void Stop()
         {
+            StopCore(false);
+        }
+
+        [MenuItem("xFrame/AgentBridge/Stop", true)]
+        private static bool ValidateStop()
+        {
+            return _server != null;
+        }
+
+        private static void StopSilently()
+        {
+            StopCore(true);
+        }
+
+        private static void StopCore(bool silent)
+        {
             if (_server == null)
             {
-                Logger.Warning("AgentBridge is not running.");
-                Debug.LogWarning("[AgentBridge] is not running.");
                 return;
             }
 
-            _server.Stop();
-            _server = null;
-            Logger.Info("AgentBridge stopped.");
-            Debug.Log("[AgentBridge] stopped.");
+            try
+            {
+                _server.Stop();
+                if (!silent)
+                {
+                    Logger.Info("AgentBridge stopped.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("AgentBridge stop failed.", ex);
+            }
+            finally
+            {
+                _server = null;
+            }
         }
     }
 }

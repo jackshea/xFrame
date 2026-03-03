@@ -6,14 +6,19 @@ namespace xFrame.Runtime.Networking.AgentBridge
     public sealed class AgentBridgeOptions
     {
         /// <summary>
-        /// WebSocket 绑定地址。
+        /// WebSocket 绑定地址（默认仅本机回环）。
         /// </summary>
-        public string Host { get; set; } = "0.0.0.0";
+        public string Host { get; set; } = "127.0.0.1";
 
         /// <summary>
         /// WebSocket 监听端口。
         /// </summary>
         public int Port { get; set; } = 17777;
+
+        /// <summary>
+        /// 主线程分发超时时间（毫秒）。
+        /// </summary>
+        public int MainThreadTimeoutMs { get; set; } = 5000;
 
         /// <summary>
         /// 认证 Token。

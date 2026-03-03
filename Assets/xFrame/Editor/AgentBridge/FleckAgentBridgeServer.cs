@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Fleck;
-using UnityEngine;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using xFrame.Runtime.Logging;
 using xFrame.Runtime.Networking.AgentBridge;
 using xFrame.Runtime.Networking.AgentBridge.Commands;
@@ -16,7 +17,10 @@ namespace xFrame.Editor.AgentBridge
         private readonly AgentBridgeOptions _options;
         private readonly IXLogger _logger;
         private readonly AgentRpcRouter _router;
+        private EditorMainThreadDispatcher _dispatcher;
         private readonly List<IWebSocketConnection> _connections = new();
+        private readonly object _connectionLock = new();
+        private readonly TimeSpan _dispatchTimeout;
 
         private WebSocketServer _server;
 
@@ -24,6 +28,8 @@ namespace xFrame.Editor.AgentBridge
         {
             _options = options ?? new AgentBridgeOptions();
             _logger = new XLogManager().GetLogger("AgentBridge");
+            _dispatcher = new EditorMainThreadDispatcher();
+            _dispatchTimeout = TimeSpan.FromMilliseconds(Math.Max(100, _options.MainThreadTimeoutMs));
 
             var registry = new AgentCommandRegistry();
             registry.Register(new PingCommandHandler());
@@ -46,67 +52,162 @@ namespace xFrame.Editor.AgentBridge
                 return;
             }
 
-            var endpoint = Endpoint;
-            _server = new WebSocketServer(endpoint);
-            _server.Start(socket =>
+            if (_dispatcher == null)
             {
-                socket.OnOpen = () =>
-                {
-                    _connections.Add(socket);
-                    _logger.Info($"AgentBridge connected: {socket.ConnectionInfo.ClientIpAddress}");
-                    Debug.Log($"[AgentBridge] connected: {socket.ConnectionInfo.ClientIpAddress}");
-                };
+                _dispatcher = new EditorMainThreadDispatcher();
+            }
 
-                socket.OnClose = () =>
-                {
-                    _connections.Remove(socket);
-                    _logger.Info("AgentBridge connection closed.");
-                    Debug.Log("[AgentBridge] connection closed.");
-                };
+            var endpoint = Endpoint;
 
-                socket.OnError = ex =>
+            try
+            {
+                _server = new WebSocketServer(endpoint);
+                _server.Start(socket =>
                 {
-                    _logger.Error("AgentBridge socket error.", ex);
-                    Debug.LogError($"[AgentBridge] socket error: {ex}");
-                };
-
-                socket.OnMessage = message =>
-                {
-                    var connectionId = socket.ConnectionInfo.Id.ToString();
-                    var response = _router.Handle(message, connectionId);
-                    if (!string.IsNullOrWhiteSpace(response))
+                    socket.OnOpen = () =>
                     {
-                        socket.Send(response);
-                    }
-                };
-            });
+                        lock (_connectionLock)
+                        {
+                            _connections.Add(socket);
+                        }
 
-            _logger.Info($"AgentBridge started at {endpoint}");
-            Debug.Log($"[AgentBridge] server started at {endpoint}");
+                        _logger.Info($"AgentBridge connected: {socket.ConnectionInfo.ClientIpAddress}");
+                    };
+
+                    socket.OnClose = () =>
+                    {
+                        lock (_connectionLock)
+                        {
+                            _connections.Remove(socket);
+                        }
+
+                        _router.RemoveContext(socket.ConnectionInfo.Id.ToString());
+                        _logger.Info("AgentBridge connection closed.");
+                    };
+
+                    socket.OnError = ex =>
+                    {
+                        _logger.Error("AgentBridge socket error.", ex);
+                    };
+
+                    socket.OnMessage = message =>
+                    {
+                        var connectionId = socket.ConnectionInfo.Id.ToString();
+                        var response = HandleMessage(message, connectionId);
+                        if (!string.IsNullOrWhiteSpace(response))
+                        {
+                            socket.Send(response);
+                        }
+                    };
+                });
+
+                _logger.Info($"AgentBridge started at {endpoint}");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"AgentBridge startup failed. endpoint={endpoint}", ex);
+                _server?.Dispose();
+                _server = null;
+                throw;
+            }
         }
 
         public void Stop()
         {
             if (_server == null)
             {
+                DisposeDispatcher();
                 return;
             }
 
             try
             {
-                foreach (var connection in _connections.ToArray())
+                IWebSocketConnection[] snapshot;
+                lock (_connectionLock)
+                {
+                    snapshot = _connections.ToArray();
+                    _connections.Clear();
+                }
+
+                foreach (var connection in snapshot)
                 {
                     connection.Close();
                 }
 
-                _connections.Clear();
                 _server.Dispose();
+                _router.ClearContexts();
                 _logger.Info("AgentBridge stopped.");
-                Debug.Log("[AgentBridge] server stopped.");
             }
             finally
             {
                 _server = null;
+                DisposeDispatcher();
+            }
+        }
+
+        private string HandleMessage(string message, string connectionId)
+        {
+            try
+            {
+                if (_dispatcher == null)
+                {
+                    throw new InvalidOperationException("Main thread dispatcher is not available.");
+                }
+
+                return _dispatcher.Invoke(() => _router.Handle(message, connectionId), _dispatchTimeout);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("AgentBridge request handling failed.", ex);
+                return BuildInternalErrorResponse(message, ex);
+            }
+        }
+
+        private void DisposeDispatcher()
+        {
+            _dispatcher?.Dispose();
+            _dispatcher = null;
+        }
+
+        private static string BuildInternalErrorResponse(string message, Exception ex)
+        {
+            if (!TryReadRequestId(message, out var requestId))
+            {
+                return null;
+            }
+
+            var response = new JsonRpcResponse
+            {
+                Id = requestId,
+                Error = new JsonRpcError
+                {
+                    Code = AgentRpcErrorCodes.InternalError,
+                    Message = "Internal error.",
+                    Data = ex.Message
+                }
+            };
+
+            return JsonConvert.SerializeObject(response);
+        }
+
+        private static bool TryReadRequestId(string message, out JToken requestId)
+        {
+            requestId = null;
+
+            try
+            {
+                var requestObj = JObject.Parse(message);
+                if (!requestObj.TryGetValue("id", out var idToken) || idToken == null || idToken.Type == JTokenType.Null)
+                {
+                    return false;
+                }
+
+                requestId = idToken;
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
 

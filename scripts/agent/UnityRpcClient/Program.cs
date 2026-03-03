@@ -190,7 +190,14 @@ public static class Program
         Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
 
-    public static async Task<int> Main(string[] args)
+    public static Task<int> Main(string[] args)
+    {
+        return RunAsync(args);
+    }
+
+    public static async Task<int> RunAsync(
+        string[] args,
+        Func<JsonRpcClientConfig, UnityJsonRpcClient>? clientFactory = null)
     {
         if (args.Length == 0 || !string.Equals(args[0], "call", StringComparison.OrdinalIgnoreCase))
         {
@@ -241,17 +248,43 @@ public static class Program
             return 2;
         }
 
-        UnityJsonRpcClient client = new(new JsonRpcClientConfig
+        clientFactory ??= config => new UnityJsonRpcClient(config);
+
+        UnityJsonRpcClient client = clientFactory(new JsonRpcClientConfig
         {
             Endpoint = endpoint,
             Token = token,
             TimeoutSeconds = timeoutSeconds
         });
 
-        JsonNode? result = await client.CallAsync(method, paramObject, CancellationToken.None);
-        string output = result?.ToJsonString(JsonOptions) ?? "null";
-        Console.WriteLine(output);
-        return 0;
+        try
+        {
+            JsonNode? result = await client.CallAsync(method, paramObject, CancellationToken.None);
+            string output = result?.ToJsonString(JsonOptions) ?? "null";
+            Console.WriteLine(output);
+            return 0;
+        }
+        catch (RpcErrorException ex)
+        {
+            JsonObject errorNode = new()
+            {
+                ["code"] = ex.Code,
+                ["message"] = ex.RpcMessage
+            };
+
+            if (ex.DataNode != null)
+            {
+                errorNode["data"] = ex.DataNode.DeepClone();
+            }
+
+            Console.Error.WriteLine(errorNode.ToJsonString(JsonOptions));
+            return 1;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex.Message);
+            return 1;
+        }
     }
 
     private static Dictionary<string, string> ParseOptions(string[] args)

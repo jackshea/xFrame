@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace xFrame.Runtime.Networking.AgentBridge.Commands
 {
     public sealed class ListCommandsHandler : IAgentRpcCommandHandler
@@ -8,7 +11,13 @@ namespace xFrame.Runtime.Networking.AgentBridge.Commands
 
         public AgentRpcExecutionResult Execute(JsonRpcRequest request, AgentRpcContext context)
         {
-            return AgentRpcExecutionResult.Success(new { commands = context.Registry.GetMethods() });
+            var commands = new HashSet<string>(context.Registry.GetMethods(), StringComparer.Ordinal);
+            if (context.Options.EnableReflectionBridge)
+            {
+                commands.Add("unity.reflect.invoke");
+            }
+
+            return AgentRpcExecutionResult.Success(new { commands });
         }
     }
 }

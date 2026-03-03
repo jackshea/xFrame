@@ -4,9 +4,9 @@
 
 **Goal:** 让 OpenCode 通过 WebSocket(JSON-RPC 2.0) 与 Unity Editor 建立连接，并可安全调用 Unity 代码。
 
-**Architecture:** Runtime 层提供协议与路由核心，Editor 层用 Fleck 承载传输通道与连接生命周期。默认白名单命令路由，开发模式可启用受限反射调用。通过仓库内 Skill 与 Python CLI 统一 OpenCode 调用入口。
+**Architecture:** Runtime 层提供协议与路由核心，Editor 层用 Fleck 承载传输通道与连接生命周期。默认白名单命令路由，开发模式可启用受限反射调用。通过仓库内 Skill 与 C# CLI 统一 OpenCode 调用入口。
 
-**Tech Stack:** Unity 2021.3, C#, Fleck, VContainer, NUnit(EditMode), Python 3
+**Tech Stack:** Unity 2021.3, C#, Fleck, VContainer, NUnit(EditMode), .NET 8
 
 ---
 
@@ -126,20 +126,22 @@ Expected: PASS
 Run: `dotnet test "xFrame.EditModeTests.csproj" --filter AgentBridge`  
 Expected: PASS 或明确记录环境限制。
 
-### Task 6: 提供 OpenCode Agent Skill 与客户端脚本
+### Task 6: 提供 OpenCode Agent Skill 与 C# 客户端
 
 **Files:**
 - Create: `skills/unity-rpc/SKILL.md`
-- Create: `scripts/agent/unity_rpc_client.py`
-- Create: `scripts/agent/test_unity_rpc_client.py`
+- Create: `scripts/agent/UnityRpcClient/Program.cs`
+- Create: `scripts/agent/UnityRpcClient/UnityRpcClient.csproj`
+- Create: `scripts/agent/UnityRpcClient.Tests/UnityRpcClientTests.cs`
+- Create: `scripts/agent/UnityRpcClient.Tests/UnityRpcClient.Tests.csproj`
 
-**Step 1: Write failing Python tests**
+**Step 1: Write failing xUnit tests**
 
 - 覆盖参数解析、请求封装、错误响应处理。
 
 **Step 2: Verify RED**
 
-Run: `python -m unittest scripts/agent/test_unity_rpc_client.py`  
+Run: `dotnet test scripts/agent/UnityRpcClient.Tests/UnityRpcClient.Tests.csproj`  
 Expected: FAIL
 
 **Step 3: Implement minimal code**
@@ -148,7 +150,7 @@ Expected: FAIL
 
 **Step 4: Verify GREEN**
 
-Run: `python -m unittest scripts/agent/test_unity_rpc_client.py`  
+Run: `dotnet test scripts/agent/UnityRpcClient.Tests/UnityRpcClient.Tests.csproj`  
 Expected: PASS
 
 ### Task 7: 回归验证与文档补充
@@ -160,11 +162,11 @@ Expected: PASS
 **Step 1: Run focused tests**
 
 - `dotnet test "xFrame.EditModeTests.csproj" --filter AgentBridge`
-- `python -m unittest scripts/agent/test_unity_rpc_client.py`
+- `dotnet test scripts/agent/UnityRpcClient.Tests/UnityRpcClient.Tests.csproj`
 
 **Step 2: Run quick sanity checks**
 
-- `python -m py_compile scripts/agent/unity_rpc_client.py`
+- `dotnet build scripts/agent/UnityRpcClient/UnityRpcClient.csproj`
 
 **Step 3: Record results**
 

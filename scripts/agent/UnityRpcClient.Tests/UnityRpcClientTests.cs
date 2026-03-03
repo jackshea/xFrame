@@ -59,6 +59,29 @@ public sealed class UnityRpcClientTests
         Assert.Equal(2, exitCode);
     }
 
+    [Fact]
+    public async Task RunAsync_WhenRpcError_ShouldReturnErrorCode()
+    {
+        FakeTransport fake = new(
+        [
+            """{"jsonrpc":"2.0","id":"1","result":{"pong":true}}""",
+            """{"jsonrpc":"2.0","id":"2","error":{"code":-32601,"message":"Method not found"}}"""
+        ]);
+
+        int exitCode = await Program.RunAsync(
+        [
+            "call",
+            "--endpoint", "ws://127.0.0.1:17777",
+            "--token", "abc",
+            "--method", "agent.unknown",
+            "--params", "{}"
+        ],
+        config => new UnityJsonRpcClient(config, (_, _) => fake));
+
+        Assert.Equal(1, exitCode);
+        Assert.True(fake.Closed);
+    }
+
     private sealed class FakeTransport : ITransport
     {
         private readonly Queue<string> _responses;

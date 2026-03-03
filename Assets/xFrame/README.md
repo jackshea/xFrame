@@ -181,6 +181,7 @@ LRU（最近最少使用）缓存实现。
 - Runtime 提供 JSON-RPC 路由与命令：`Assets/xFrame/Runtime/Networking/AgentBridge/`
 - Editor 基于 Fleck 提供 WebSocket Host：`Assets/xFrame/Editor/AgentBridge/`
 - 默认端点：`ws://127.0.0.1:17777`
+- Fleck 收到请求后会切回 Unity 主线程执行业务命令（默认超时 5000ms）
 - 默认命令：
   - `agent.ping`
   - `agent.authenticate`
