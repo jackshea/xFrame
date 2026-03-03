@@ -47,6 +47,13 @@ ExportedObj/
 *.opendb
 *.VC.db
 
+# Agent bridge dotnet scripts
+scripts/agent/**/bin/
+scripts/agent/**/obj/
+scripts/agent/__pycache__/
+!scripts/agent/UnityRpcClient/UnityRpcClient.csproj
+!scripts/agent/UnityRpcClient.Tests/UnityRpcClient.Tests.csproj
+
 # Unity3D generated meta files
 *.pidb.meta
 *.pdb.meta

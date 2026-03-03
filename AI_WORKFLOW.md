@@ -98,6 +98,6 @@ python scripts/ai/validate.py suite --platform EditMode --unity "C:\\Program Fil
 当改动 `Assets/xFrame/Runtime/Networking/AgentBridge` 或 `Assets/xFrame/Editor/AgentBridge` 时，额外执行：
 
 ```bash
-python -m unittest scripts/agent/test_unity_rpc_client.py
-python -m py_compile scripts/agent/unity_rpc_client.py
+dotnet test scripts/agent/UnityRpcClient.Tests/UnityRpcClient.Tests.csproj
+dotnet build scripts/agent/UnityRpcClient/UnityRpcClient.csproj
 ```
