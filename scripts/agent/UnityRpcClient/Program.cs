@@ -185,6 +185,11 @@ public sealed class UnityJsonRpcClient
 
 public static class Program
 {
+    private const string EndpointEnvVar = "UNITY_RPC_ENDPOINT";
+    private const string HostEnvVar = "UNITY_RPC_HOST";
+    private const string PortEnvVar = "UNITY_RPC_PORT";
+    private const string TokenEnvVar = "UNITY_RPC_TOKEN";
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
@@ -217,10 +222,23 @@ public static class Program
             return 2;
         }
 
-        if (!options.TryGetValue("--endpoint", out string? endpoint) ||
-            !options.TryGetValue("--token", out string? token) ||
-            !options.TryGetValue("--method", out string? method))
+        string? endpoint = ResolveEndpoint(options);
+        string? token = ResolveOptionOrEnv(options, "--token", TokenEnvVar);
+
+        if (!options.TryGetValue("--method", out string? method) ||
+            string.IsNullOrWhiteSpace(endpoint) ||
+            string.IsNullOrWhiteSpace(token))
         {
+            if (string.IsNullOrWhiteSpace(endpoint))
+            {
+                Console.Error.WriteLine("missing endpoint: pass --endpoint or set UNITY_RPC_ENDPOINT (or UNITY_RPC_HOST)");
+            }
+
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                Console.Error.WriteLine("missing token: pass --token or set UNITY_RPC_TOKEN");
+            }
+
             PrintUsage();
             return 2;
         }
@@ -311,10 +329,46 @@ public static class Program
         return options;
     }
 
+    private static string? ResolveOptionOrEnv(Dictionary<string, string> options, string optionKey, string envKey)
+    {
+        if (options.TryGetValue(optionKey, out string? optionValue) && !string.IsNullOrWhiteSpace(optionValue))
+        {
+            return optionValue;
+        }
+
+        string? envValue = Environment.GetEnvironmentVariable(envKey);
+        return string.IsNullOrWhiteSpace(envValue) ? null : envValue.Trim();
+    }
+
+    private static string? ResolveEndpoint(Dictionary<string, string> options)
+    {
+        string? endpoint = ResolveOptionOrEnv(options, "--endpoint", EndpointEnvVar);
+        if (!string.IsNullOrWhiteSpace(endpoint))
+        {
+            return endpoint;
+        }
+
+        string? host = Environment.GetEnvironmentVariable(HostEnvVar)?.Trim();
+        if (string.IsNullOrWhiteSpace(host))
+        {
+            return null;
+        }
+
+        string? portText = Environment.GetEnvironmentVariable(PortEnvVar)?.Trim();
+        int port = 17777;
+        if (!string.IsNullOrWhiteSpace(portText) && !int.TryParse(portText, out port))
+        {
+            port = 17777;
+        }
+
+        return $"ws://{host}:{port}";
+    }
+
     private static void PrintUsage()
     {
         Console.Error.WriteLine(
             "Usage: dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call " +
-            "--endpoint <ws://host:port> --token <token> --method <rpc.method> [--params <json>] [--timeout <seconds>]");
+            "--endpoint <ws://host:port> --token <token> --method <rpc.method> [--params <json>] [--timeout <seconds>]\n" +
+            "Env fallback: UNITY_RPC_ENDPOINT or UNITY_RPC_HOST(+UNITY_RPC_PORT), UNITY_RPC_TOKEN");
     }
 }

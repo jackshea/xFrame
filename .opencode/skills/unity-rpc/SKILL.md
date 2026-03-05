@@ -19,12 +19,35 @@ description: Use when you need to call Unity Agent Bridge(JSON-RPC 2.0 over WebS
 2. 客户端会先发送 `agent.ping`。
 3. 若返回未认证（`-32001`），客户端会自动执行 `agent.authenticate` 后重试业务方法。
 
+## 环境变量（推荐）
+
+- `UNITY_RPC_HOST`：Unity 运行主机 IP（例如 `10.22.61.131`）。
+- `UNITY_RPC_PORT`：Agent Bridge 端口（默认 `17777`，可选）。
+- `UNITY_RPC_TOKEN`：认证令牌（例如 `xframe-dev-token`）。
+- `UNITY_RPC_ENDPOINT`：完整地址（例如 `ws://10.22.61.131:17777`，设置后优先于 `UNITY_RPC_HOST`/`UNITY_RPC_PORT`）。
+
+设置示例：
+
+PowerShell：
+
+```powershell
+$env:UNITY_RPC_HOST = "10.22.61.131"
+$env:UNITY_RPC_PORT = "17777"
+$env:UNITY_RPC_TOKEN = "xframe-dev-token"
+```
+
+bash/zsh：
+
+```bash
+export UNITY_RPC_HOST="10.22.61.131"
+export UNITY_RPC_PORT="17777"
+export UNITY_RPC_TOKEN="xframe-dev-token"
+```
+
 ## 命令模板
 
 ```bash
 dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call \
-  --endpoint ws://10.22.61.131:17777 \
-  --token xframe-dev-token \
   --method unity.gameobject.find \
   --params '{"name":"Player"}'
 ```
@@ -42,8 +65,6 @@ dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call 
 
 ```bash
 dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call \
-  --endpoint ws://10.22.61.131:17777 \
-  --token xframe-dev-token \
   --method unity.tests.run \
   --params '{"mode":"EditMode"}'
 ```
@@ -52,8 +73,6 @@ dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call 
 
 ```bash
 dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call \
-  --endpoint ws://10.22.61.131:17777 \
-  --token xframe-dev-token \
   --method unity.tests.lastResult \
   --params '{}'
 ```

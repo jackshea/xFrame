@@ -72,6 +72,67 @@
 2) 再跑对应测试集（EditMode/PlayMode）。
 3) 最后跑全量（时间允许时）。
 
+### 5.1 通过 Unity Agent Bridge 执行单元测试（RPC）
+- 适用场景：已打开 Unity Editor 且 `xFrame/AgentBridge` 正在运行。
+- 客户端：`scripts/agent/UnityRpcClient/UnityRpcClient.csproj`。
+- 说明：客户端会先发 `agent.ping`，未认证时自动 `agent.authenticate` 后重试。
+
+环境变量约定（推荐）：
+- `UNITY_RPC_HOST`：Unity 运行主机 IP（例如 `10.22.61.131`）。
+- `UNITY_RPC_PORT`：Agent Bridge 端口（默认 `17777`，可选）。
+- `UNITY_RPC_TOKEN`：认证令牌（例如 `xframe-dev-token`）。
+- `UNITY_RPC_ENDPOINT`：完整地址（例如 `ws://10.22.61.131:17777`，设置后优先于 `UNITY_RPC_HOST`/`UNITY_RPC_PORT`）。
+
+设置环境变量示例：
+
+PowerShell（当前会话）：
+
+```powershell
+$env:UNITY_RPC_HOST = "10.22.61.131"
+$env:UNITY_RPC_PORT = "17777"
+$env:UNITY_RPC_TOKEN = "xframe-dev-token"
+```
+
+PowerShell（持久化到当前用户）：
+
+```powershell
+[System.Environment]::SetEnvironmentVariable("UNITY_RPC_HOST", "10.22.61.131", "User")
+[System.Environment]::SetEnvironmentVariable("UNITY_RPC_PORT", "17777", "User")
+[System.Environment]::SetEnvironmentVariable("UNITY_RPC_TOKEN", "xframe-dev-token", "User")
+```
+
+bash/zsh（当前会话）：
+
+```bash
+export UNITY_RPC_HOST="10.22.61.131"
+export UNITY_RPC_PORT="17777"
+export UNITY_RPC_TOKEN="xframe-dev-token"
+```
+
+执行 EditMode 单元测试：
+
+```bash
+dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call \
+  --method unity.tests.run \
+  --params '{"mode":"EditMode"}'
+```
+
+查询最近一次测试结果：
+
+```bash
+dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call \
+  --method unity.tests.lastResult \
+  --params '{}'
+```
+
+按名称过滤（示例）：
+
+```bash
+dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call \
+  --method unity.tests.run \
+  --params '{"mode":"EditMode","filter":"SchedulerServiceTests"}'
+```
+
 ## 6. Agent 执行建议
 - 先查同模块实现，再改代码。
 - 采用小步修改与小步验证。

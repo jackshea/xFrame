@@ -193,7 +193,10 @@ LRU（最近最少使用）缓存实现。
 OpenCode 侧可使用：
 
 ```bash
-dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call --endpoint ws://127.0.0.1:17777 --token xframe-dev-token --method agent.commands --params '{}'
+export UNITY_RPC_HOST="127.0.0.1"
+export UNITY_RPC_PORT="17777"
+export UNITY_RPC_TOKEN="xframe-dev-token"
+dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call --method agent.commands --params '{}'
 ```
 
 ### Platform（平台特定工具）
