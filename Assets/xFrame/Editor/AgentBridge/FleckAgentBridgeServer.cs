@@ -16,6 +16,7 @@ namespace xFrame.Editor.AgentBridge
     {
         private readonly AgentBridgeOptions _options;
         private readonly IXLogger _logger;
+        private readonly IAgentBridgeEndpointPersistence _endpointPersistence;
         private readonly AgentRpcRouter _router;
         private EditorMainThreadDispatcher _dispatcher;
         private readonly List<IWebSocketConnection> _connections = new();
@@ -24,12 +25,15 @@ namespace xFrame.Editor.AgentBridge
 
         private WebSocketServer _server;
 
-        public FleckAgentBridgeServer(AgentBridgeOptions options = null)
+        public FleckAgentBridgeServer(AgentBridgeOptions options = null, IXLogger logger = null, IAgentBridgeEndpointPersistence endpointPersistence = null)
         {
             _options = options ?? new AgentBridgeOptions();
-            _logger = new XLogManager().GetLogger("AgentBridge");
+            _logger = logger ?? new XLogManager().GetLogger("AgentBridge");
+            _endpointPersistence = endpointPersistence ?? new AgentBridgeEndpointPersistence();
             _dispatcher = new EditorMainThreadDispatcher();
             _dispatchTimeout = TimeSpan.FromMilliseconds(Math.Max(100, _options.MainThreadTimeoutMs));
+
+            LoadPersistedEndpoint();
 
             var registry = new AgentCommandRegistry();
             registry.Register(new PingCommandHandler());
@@ -37,13 +41,52 @@ namespace xFrame.Editor.AgentBridge
             registry.Register(new ListCommandsHandler());
             registry.Register(new FindGameObjectCommandHandler());
             registry.Register(new InvokeComponentCommandHandler());
+            registry.Register(new EditorExecuteMenuCommandHandler());
+            registry.Register(new EditorRunTestsCommandHandler());
+            registry.Register(new EditorRunTestsCommandHandler.LastResultHandler());
 
-            _router = new AgentRpcRouter(_options, registry);
+            _router = new AgentRpcRouter(_options, registry, logger: _logger);
         }
 
         public bool IsRunning => _server != null;
 
         public string Endpoint => $"ws://{_options.Host}:{_options.Port}";
+
+        public bool SetEndpoint(string host, int port, out string error)
+        {
+            error = null;
+            if (!AgentBridgeOptions.ValidateEndpoint(host, port, out error))
+            {
+                _logger.Warning($"AgentBridge endpoint rejected. host={host}, port={port}, error={error}");
+                return false;
+            }
+
+            host = host.Trim();
+            if (_options.IsSameEndpoint(host, port))
+            {
+                _logger.Info($"AgentBridge endpoint unchanged. endpoint={Endpoint}");
+                return true;
+            }
+
+            if (!_endpointPersistence.TrySave(host, port, out error))
+            {
+                _logger.Warning($"AgentBridge endpoint save failed. host={host}, port={port}, error={error}");
+                return false;
+            }
+
+            _options.Host = host;
+            _options.Port = port;
+
+            _logger.Info($"AgentBridge endpoint updated. endpoint={Endpoint}");
+            if (IsRunning)
+            {
+                _logger.Info("AgentBridge restarting for endpoint change.");
+                Stop();
+                Start();
+            }
+
+            return true;
+        }
 
         public void Start()
         {
@@ -71,7 +114,7 @@ namespace xFrame.Editor.AgentBridge
                             _connections.Add(socket);
                         }
 
-                        _logger.Info($"AgentBridge connected: {socket.ConnectionInfo.ClientIpAddress}");
+                        _logger.Info($"AgentBridge connection opened. endpoint={Endpoint}, connectionId={socket.ConnectionInfo.Id}, clientIp={socket.ConnectionInfo.ClientIpAddress}");
                     };
 
                     socket.OnClose = () =>
@@ -82,12 +125,12 @@ namespace xFrame.Editor.AgentBridge
                         }
 
                         _router.RemoveContext(socket.ConnectionInfo.Id.ToString());
-                        _logger.Info("AgentBridge connection closed.");
+                        _logger.Info($"AgentBridge connection closed. endpoint={Endpoint}, connectionId={socket.ConnectionInfo.Id}");
                     };
 
                     socket.OnError = ex =>
                     {
-                        _logger.Error("AgentBridge socket error.", ex);
+                        _logger.Error($"AgentBridge socket error. endpoint={Endpoint}, connectionId={socket.ConnectionInfo.Id}", ex);
                     };
 
                     socket.OnMessage = message =>
@@ -160,6 +203,25 @@ namespace xFrame.Editor.AgentBridge
             {
                 _logger.Error("AgentBridge request handling failed.", ex);
                 return BuildInternalErrorResponse(message, ex);
+            }
+        }
+
+        private void LoadPersistedEndpoint()
+        {
+            var loadResult = _endpointPersistence.Load(out var host, out var port, out var error);
+            if (loadResult == AgentBridgeEndpointLoadResult.Loaded)
+            {
+                _options.Host = host;
+                _options.Port = port;
+                _logger.Info($"AgentBridge endpoint loaded from persistence. endpoint=ws://{host}:{port}");
+                return;
+            }
+
+            if (loadResult == AgentBridgeEndpointLoadResult.Invalid)
+            {
+                _options.Host = AgentBridgeOptions.DefaultHost;
+                _options.Port = AgentBridgeOptions.DefaultPort;
+                _logger.Warning($"AgentBridge persisted endpoint is invalid, fallback to default. error={error}, endpoint=ws://{_options.Host}:{_options.Port}");
             }
         }
 

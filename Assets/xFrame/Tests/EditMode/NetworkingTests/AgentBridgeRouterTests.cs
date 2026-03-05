@@ -1,3 +1,4 @@
+using System;
 using NUnit.Framework;
 using UnityEngine;
 using xFrame.Runtime.Networking.AgentBridge;
@@ -29,6 +30,8 @@ namespace xFrame.Tests
             _registry.Register(new ListCommandsHandler());
             _registry.Register(new FindGameObjectCommandHandler());
             _registry.Register(new InvokeComponentCommandHandler());
+            _registry.Register(new TestEditorExecuteMenuHandler());
+            _registry.Register(new TestRunTestsHandler());
 
             _router = new AgentRpcRouter(_options, _registry);
         }
@@ -39,7 +42,7 @@ namespace xFrame.Tests
             var obj = GameObject.Find("AgentBridgeTestObject");
             if (obj != null)
             {
-                Object.DestroyImmediate(obj);
+                UnityEngine.Object.DestroyImmediate(obj);
             }
         }
 
@@ -70,6 +73,26 @@ namespace xFrame.Tests
 
             StringAssert.Contains("agent.ping", response);
             StringAssert.Contains("unity.component.invoke", response);
+            StringAssert.Contains("unity.editor.executeMenu", response);
+            StringAssert.Contains("unity.tests.run", response);
+        }
+
+        [Test]
+        public void Handle_ExecuteMenuWithInvalidParams_ShouldReturnInvalidParams()
+        {
+            _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}", "cm1");
+            var response = _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"unity.editor.executeMenu\",\"params\":{}}", "cm1");
+
+            StringAssert.Contains("\"code\":-32602", response);
+        }
+
+        [Test]
+        public void Handle_RunTestsWithInvalidMode_ShouldReturnInvalidParams()
+        {
+            _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}", "ct1");
+            var response = _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"unity.tests.run\",\"params\":{\"mode\":\"UnknownMode\"}}", "ct1");
+
+            StringAssert.Contains("\"code\":-32602", response);
         }
 
         [Test]
@@ -135,6 +158,62 @@ namespace xFrame.Tests
         public static string TestStatic()
         {
             return "ok";
+        }
+
+        private sealed class TestEditorExecuteMenuHandler : IAgentRpcCommandHandler
+        {
+            public string Method => "unity.editor.executeMenu";
+
+            public bool RequiresAuthentication => true;
+
+            public AgentRpcExecutionResult Execute(JsonRpcRequest request, AgentRpcContext context)
+            {
+                var paramsText = request.Params?.ToString();
+                if (string.IsNullOrWhiteSpace(paramsText))
+                {
+                    return AgentRpcExecutionResult.Failure(AgentRpcErrorCodes.InvalidParams, "params must be object.");
+                }
+
+                const string menuPathToken = "\"menuPath\"";
+                if (!paramsText.Contains(menuPathToken, StringComparison.Ordinal))
+                {
+                    return AgentRpcExecutionResult.Failure(AgentRpcErrorCodes.InvalidParams, "menuPath is required.");
+                }
+
+                var menuPath = "mock-menu";
+                if (string.IsNullOrWhiteSpace(menuPath))
+                {
+                    return AgentRpcExecutionResult.Failure(AgentRpcErrorCodes.InvalidParams, "menuPath is required.");
+                }
+
+                return AgentRpcExecutionResult.Success(new { executed = true, menuPath });
+            }
+        }
+
+        private sealed class TestRunTestsHandler : IAgentRpcCommandHandler
+        {
+            public string Method => "unity.tests.run";
+
+            public bool RequiresAuthentication => true;
+
+            public AgentRpcExecutionResult Execute(JsonRpcRequest request, AgentRpcContext context)
+            {
+                var paramsText = request.Params?.ToString();
+                if (string.IsNullOrWhiteSpace(paramsText))
+                {
+                    return AgentRpcExecutionResult.Failure(AgentRpcErrorCodes.InvalidParams, "params must be object.");
+                }
+
+                var containsMode = paramsText.Contains("\"mode\"", StringComparison.Ordinal);
+                var containsEditMode = paramsText.Contains("\"EditMode\"", StringComparison.Ordinal);
+                var containsPlayMode = paramsText.Contains("\"PlayMode\"", StringComparison.Ordinal);
+                if (containsMode && !containsEditMode && !containsPlayMode)
+                {
+                    return AgentRpcExecutionResult.Failure(AgentRpcErrorCodes.InvalidParams, "mode must be EditMode or PlayMode.");
+                }
+
+                return AgentRpcExecutionResult.Success(new { started = true });
+            }
         }
     }
 }

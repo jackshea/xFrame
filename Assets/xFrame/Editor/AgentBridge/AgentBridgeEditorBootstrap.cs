@@ -10,6 +10,10 @@ namespace xFrame.Editor.AgentBridge
         private static FleckAgentBridgeServer _server;
         private static readonly IXLogger Logger = new XLogManager().GetLogger("AgentBridge");
 
+        public static bool IsRunning => _server != null && _server.IsRunning;
+
+        public static string Endpoint => _server?.Endpoint;
+
         static AgentBridgeEditorBootstrap()
         {
             EditorApplication.delayCall += EnsureStarted;
@@ -17,7 +21,6 @@ namespace xFrame.Editor.AgentBridge
             EditorApplication.quitting += StopSilently;
         }
 
-        [MenuItem("xFrame/AgentBridge/Start")]
         public static void EnsureStarted()
         {
             if (_server != null)
@@ -39,22 +42,29 @@ namespace xFrame.Editor.AgentBridge
             }
         }
 
-        [MenuItem("xFrame/AgentBridge/Start", true)]
-        private static bool ValidateStart()
-        {
-            return _server == null;
-        }
-
-        [MenuItem("xFrame/AgentBridge/Stop")]
         public static void Stop()
         {
             StopCore(false);
         }
 
-        [MenuItem("xFrame/AgentBridge/Stop", true)]
-        private static bool ValidateStop()
+        public static bool SetEndpoint(string host, int port, out string error)
         {
-            return _server != null;
+            error = null;
+
+            if (_server == null)
+            {
+                var persistence = new Runtime.Networking.AgentBridge.AgentBridgeEndpointPersistence();
+                if (!persistence.TrySave(host, port, out error))
+                {
+                    Logger.Warning($"AgentBridge endpoint save rejected. host={host}, port={port}, error={error}");
+                    return false;
+                }
+
+                Logger.Info($"AgentBridge endpoint persisted. endpoint=ws://{host?.Trim()}:{port}");
+                return true;
+            }
+
+            return _server.SetEndpoint(host, port, out error);
         }
 
         private static void StopSilently()
