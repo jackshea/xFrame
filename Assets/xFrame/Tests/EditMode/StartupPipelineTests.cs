@@ -280,9 +280,9 @@ namespace xFrame.Tests.EditMode
 
             var firstRunTask = orchestrator.RunAsync(BootEnvironment.DevFull, CancellationToken.None);
 
-            Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            Assert.Throws<InvalidOperationException>(() =>
             {
-                await orchestrator.RunAsync(BootEnvironment.DevFull, CancellationToken.None);
+                orchestrator.RunAsync(BootEnvironment.DevFull, CancellationToken.None).GetAwaiter().GetResult();
             });
 
             firstRunTask.GetAwaiter().GetResult();

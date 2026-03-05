@@ -71,7 +71,7 @@ namespace xFrame.Runtime.Unity.Startup
 
             StartupOrchestratorHost.Configure(
                 installer: _installer,
-                view: _view ?? NullStartupView.Instance);
+                view: (IStartupView)_view ?? NullStartupView.Instance);
 
             _orchestrator = StartupOrchestratorHost.GetOrCreate();
         }
