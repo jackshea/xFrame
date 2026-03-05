@@ -29,6 +29,8 @@ namespace xFrame.Runtime.Networking
             builder.Register<ListCommandsHandler>(Lifetime.Singleton).AsSelf().As<IAgentRpcCommandHandler>();
             builder.Register<FindGameObjectCommandHandler>(Lifetime.Singleton).AsSelf().As<IAgentRpcCommandHandler>();
             builder.Register<InvokeComponentCommandHandler>(Lifetime.Singleton).AsSelf().As<IAgentRpcCommandHandler>();
+            builder.Register<StartupRunCommandHandler>(Lifetime.Singleton).AsSelf().As<IAgentRpcCommandHandler>();
+            builder.Register<StartupStopCommandHandler>(Lifetime.Singleton).AsSelf().As<IAgentRpcCommandHandler>();
         }
     }
 }

@@ -127,6 +127,31 @@ namespace xFrame.Runtime.Startup
     }
 
     /// <summary>
+    /// 空启动视图，适用于无 UI 启动。
+    /// </summary>
+    public sealed class NullStartupView : IStartupView
+    {
+        public static readonly NullStartupView Instance = new NullStartupView();
+
+        private NullStartupView()
+        {
+        }
+
+        public void ShowLoading(string message, float progress)
+        {
+        }
+
+        public Task<bool> ShowErrorDialogAsync(string message, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(false);
+        }
+
+        public void HideLoading()
+        {
+        }
+    }
+
+    /// <summary>
     /// 启动任务接口。
     /// </summary>
     public interface IStartupTask
@@ -483,11 +508,26 @@ namespace xFrame.Runtime.Startup
     }
 
     /// <summary>
-    /// 启动任务注册安装器。
+    /// 启动任务安装器（纯 C#）。
     /// </summary>
-    public interface IStartupTaskRegistryInstaller
+    public interface IStartupTaskInstaller
     {
         void Install(StartupTaskRegistry registry);
+    }
+
+    /// <summary>
+    /// 启动任务注册安装器（兼容旧接口）。
+    /// </summary>
+    public interface IStartupTaskRegistryInstaller : IStartupTaskInstaller
+    {
+    }
+
+    /// <summary>
+    /// 启动配置提供器。
+    /// </summary>
+    public interface IStartupProfileProvider
+    {
+        StartupProfile GetProfile(BootEnvironment environment);
     }
 
     /// <summary>
@@ -506,6 +546,19 @@ namespace xFrame.Runtime.Startup
         public IReadOnlyList<StartupTaskKey> TaskKeys { get; }
 
         public static StartupProfile Create(BootEnvironment environment)
+        {
+            return CodeStartupProfileProvider.Default.GetProfile(environment);
+        }
+    }
+
+    /// <summary>
+    /// 代码化启动配置提供器。
+    /// </summary>
+    public sealed class CodeStartupProfileProvider : IStartupProfileProvider
+    {
+        public static readonly CodeStartupProfileProvider Default = new CodeStartupProfileProvider();
+
+        public StartupProfile GetProfile(BootEnvironment environment)
         {
             switch (environment)
             {
@@ -594,6 +647,328 @@ namespace xFrame.Runtime.Startup
     }
 
     /// <summary>
+    /// 默认启动任务安装器（纯 C#）。
+    /// </summary>
+    public sealed class DefaultStartupTaskInstaller : IStartupTaskInstaller
+    {
+        public void Install(StartupTaskRegistry registry)
+        {
+            if (registry == null)
+            {
+                throw new ArgumentNullException(nameof(registry));
+            }
+
+            registry.Register(StartupTaskKey.InitLogger, () => CreateTask(StartupTaskKey.InitLogger, 1f));
+            registry.Register(StartupTaskKey.LoadLocalConfig, () => CreateTask(StartupTaskKey.LoadLocalConfig, 1f));
+            registry.Register(StartupTaskKey.CheckUpdate, () => CreateTask(StartupTaskKey.CheckUpdate, 1f));
+            registry.Register(StartupTaskKey.SdkInit, () => CreateTask(StartupTaskKey.SdkInit, 1f));
+            registry.Register(StartupTaskKey.NetworkConnect, () => CreateTask(StartupTaskKey.NetworkConnect, 1f));
+            registry.Register(StartupTaskKey.MockLogin, () => CreateTask(StartupTaskKey.MockLogin, 0.5f));
+            registry.Register(StartupTaskKey.LoadTestBattleScene, () => CreateTask(StartupTaskKey.LoadTestBattleScene, 0.5f));
+            registry.Register(StartupTaskKey.EnterLobby, () => CreateTask(StartupTaskKey.EnterLobby, 1f));
+        }
+
+        private static IStartupTask CreateTask(StartupTaskKey taskKey, float weight)
+        {
+            return new DelegateStartupTask(
+                taskKey.ToString(),
+                weight,
+                (_, _) => Task.FromResult(StartupTaskResult.Success()));
+        }
+    }
+
+    /// <summary>
+    /// 启动任务执行约束。
+    /// </summary>
+    public static class StartupTaskConstraints
+    {
+        private static readonly HashSet<StartupTaskKey> HeadlessBlockedTaskKeys = new HashSet<StartupTaskKey>
+        {
+            StartupTaskKey.LoadTestBattleScene,
+            StartupTaskKey.EnterLobby
+        };
+
+        public static bool RequiresPlayMode(StartupTaskKey taskKey)
+        {
+            return HeadlessBlockedTaskKeys.Contains(taskKey);
+        }
+
+        public static IReadOnlyList<StartupTaskKey> GetHeadlessBlockedTasks(StartupProfile profile)
+        {
+            if (profile == null)
+            {
+                throw new ArgumentNullException(nameof(profile));
+            }
+
+            var blocked = new List<StartupTaskKey>();
+            for (var i = 0; i < profile.TaskKeys.Count; i++)
+            {
+                var taskKey = profile.TaskKeys[i];
+                if (HeadlessBlockedTaskKeys.Contains(taskKey))
+                {
+                    blocked.Add(taskKey);
+                }
+            }
+
+            return blocked;
+        }
+    }
+
+    /// <summary>
+    /// 启动编排状态。
+    /// </summary>
+    public enum StartupOrchestratorState
+    {
+        Idle = 0,
+        Running = 1,
+        Stopping = 2,
+        Stopped = 3
+    }
+
+    /// <summary>
+    /// 启动编排器接口。
+    /// </summary>
+    public interface IStartupOrchestrator
+    {
+        StartupOrchestratorState State { get; }
+
+        Task<StartupPipelineResult> RunAsync(BootEnvironment environment, CancellationToken cancellationToken);
+
+        Task<StartupPipelineResult> RunAsync(StartupProfile profile, CancellationToken cancellationToken);
+
+        Task ShutdownAsync(CancellationToken cancellationToken);
+    }
+
+    /// <summary>
+    /// 默认启动编排器。
+    /// </summary>
+    public sealed class StartupOrchestrator : IStartupOrchestrator, IDisposable
+    {
+        private readonly StartupTaskRegistry _registry;
+        private readonly IStartupTaskInstaller _installer;
+        private readonly IStartupProfileProvider _profileProvider;
+        private readonly IStartupView _view;
+        private readonly SemaphoreSlim _stateLock = new SemaphoreSlim(1, 1);
+
+        private CancellationTokenSource _runningTokenSource;
+        private Task<StartupPipelineResult> _runningTask;
+        private bool _installed;
+
+        public StartupOrchestrator(
+            StartupTaskRegistry registry,
+            IStartupTaskInstaller installer = null,
+            IStartupProfileProvider profileProvider = null,
+            IStartupView view = null)
+        {
+            _registry = registry ?? throw new ArgumentNullException(nameof(registry));
+            _installer = installer;
+            _profileProvider = profileProvider ?? CodeStartupProfileProvider.Default;
+            _view = view ?? NullStartupView.Instance;
+            State = StartupOrchestratorState.Idle;
+        }
+
+        public StartupOrchestratorState State { get; private set; }
+
+        public Task<StartupPipelineResult> RunAsync(BootEnvironment environment, CancellationToken cancellationToken)
+        {
+            var profile = _profileProvider.GetProfile(environment);
+            return RunAsync(profile, cancellationToken);
+        }
+
+        public async Task<StartupPipelineResult> RunAsync(StartupProfile profile, CancellationToken cancellationToken)
+        {
+            if (profile == null)
+            {
+                throw new ArgumentNullException(nameof(profile));
+            }
+
+            Task<StartupPipelineResult> runningTask;
+            await _stateLock.WaitAsync(cancellationToken);
+            try
+            {
+                if (State == StartupOrchestratorState.Running || State == StartupOrchestratorState.Stopping)
+                {
+                    throw new InvalidOperationException("启动流程正在执行中，不能重复启动。");
+                }
+
+                EnsureInstalled();
+                var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                _runningTokenSource = linkedTokenSource;
+
+                var pipeline = StartupPipelineFactory.Create(profile, _registry, _view);
+                _runningTask = ExecutePipelineAsync(pipeline, linkedTokenSource.Token);
+                runningTask = _runningTask;
+                State = StartupOrchestratorState.Running;
+            }
+            finally
+            {
+                _stateLock.Release();
+            }
+
+            try
+            {
+                return await runningTask;
+            }
+            finally
+            {
+                await FinalizeRunAsync(runningTask);
+            }
+        }
+
+        public async Task ShutdownAsync(CancellationToken cancellationToken)
+        {
+            Task<StartupPipelineResult> runningTask;
+
+            await _stateLock.WaitAsync(cancellationToken);
+            try
+            {
+                if (_runningTask == null)
+                {
+                    State = StartupOrchestratorState.Stopped;
+                    return;
+                }
+
+                State = StartupOrchestratorState.Stopping;
+                _runningTokenSource?.Cancel();
+                runningTask = _runningTask;
+            }
+            finally
+            {
+                _stateLock.Release();
+            }
+
+            try
+            {
+                await runningTask;
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            finally
+            {
+                await _stateLock.WaitAsync(cancellationToken);
+                try
+                {
+                    if (ReferenceEquals(_runningTask, runningTask))
+                    {
+                        _runningTask = null;
+                        _runningTokenSource?.Dispose();
+                        _runningTokenSource = null;
+                    }
+
+                    State = StartupOrchestratorState.Stopped;
+                }
+                finally
+                {
+                    _stateLock.Release();
+                }
+            }
+        }
+
+        public void Dispose()
+        {
+            _runningTokenSource?.Dispose();
+            _stateLock.Dispose();
+        }
+
+        private void EnsureInstalled()
+        {
+            if (_installed)
+            {
+                return;
+            }
+
+            _installer?.Install(_registry);
+            _installed = true;
+        }
+
+        private async Task FinalizeRunAsync(Task<StartupPipelineResult> completedTask)
+        {
+            await _stateLock.WaitAsync();
+            try
+            {
+                if (!ReferenceEquals(_runningTask, completedTask))
+                {
+                    return;
+                }
+
+                _runningTask = null;
+                _runningTokenSource?.Dispose();
+                _runningTokenSource = null;
+                State = StartupOrchestratorState.Stopped;
+            }
+            finally
+            {
+                _stateLock.Release();
+            }
+        }
+
+        private static async Task<StartupPipelineResult> ExecutePipelineAsync(StartupPipeline pipeline, CancellationToken cancellationToken)
+        {
+            try
+            {
+                return await pipeline.RunAsync(cancellationToken);
+            }
+            catch (OperationCanceledException ex)
+            {
+                return StartupPipelineResult.Failed(
+                    string.Empty,
+                    StartupTaskResult.Failed("Cancelled", "启动流程已取消", true, ex),
+                    true);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 启动编排共享入口。
+    /// </summary>
+    public static class StartupOrchestratorHost
+    {
+        private static readonly object SyncRoot = new object();
+
+        private static StartupTaskRegistry _registry = new StartupTaskRegistry();
+        private static IStartupTaskInstaller _installer = new DefaultStartupTaskInstaller();
+        private static IStartupProfileProvider _profileProvider = CodeStartupProfileProvider.Default;
+        private static IStartupView _view = NullStartupView.Instance;
+        private static IStartupOrchestrator _orchestrator;
+
+        public static void Configure(
+            IStartupTaskInstaller installer = null,
+            IStartupProfileProvider profileProvider = null,
+            IStartupView view = null,
+            StartupTaskRegistry registry = null)
+        {
+            lock (SyncRoot)
+            {
+                _registry = registry ?? new StartupTaskRegistry();
+                _installer = installer ?? new DefaultStartupTaskInstaller();
+                _profileProvider = profileProvider ?? CodeStartupProfileProvider.Default;
+                _view = view ?? NullStartupView.Instance;
+
+                if (_orchestrator is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+
+                _orchestrator = null;
+            }
+        }
+
+        public static IStartupOrchestrator GetOrCreate()
+        {
+            lock (SyncRoot)
+            {
+                if (_orchestrator == null)
+                {
+                    _orchestrator = new StartupOrchestrator(_registry, _installer, _profileProvider, _view);
+                }
+
+                return _orchestrator;
+            }
+        }
+    }
+
+    /// <summary>
     /// 启动流程工厂。
     /// </summary>
     public static class StartupPipelineFactory
@@ -621,14 +996,19 @@ namespace xFrame.Runtime.Startup
             return builder.Build();
         }
 
-        public static StartupPipeline Create(BootEnvironment environment, StartupTaskRegistry registry, IStartupView view = null)
+        public static StartupPipeline Create(
+            BootEnvironment environment,
+            StartupTaskRegistry registry,
+            IStartupView view = null,
+            IStartupProfileProvider profileProvider = null)
         {
             if (registry == null)
             {
                 throw new ArgumentNullException(nameof(registry));
             }
 
-            var profile = StartupProfile.Create(environment);
+            var provider = profileProvider ?? CodeStartupProfileProvider.Default;
+            var profile = provider.GetProfile(environment);
             return Create(profile, registry, view);
         }
     }
@@ -647,11 +1027,25 @@ namespace xFrame.Runtime.Startup
 
         public StartupPipeline Create(BootEnvironment environment, IStartupTaskRegistryInstaller installer, IStartupView view)
         {
+            return Create(environment, installer as IStartupTaskInstaller, view, null);
+        }
+
+        public StartupPipeline Create(
+            BootEnvironment environment,
+            IStartupTaskInstaller installer,
+            IStartupView view,
+            IStartupProfileProvider profileProvider = null)
+        {
             installer?.Install(_registry);
-            return StartupPipelineFactory.Create(environment, _registry, view);
+            return StartupPipelineFactory.Create(environment, _registry, view, profileProvider);
         }
 
         public StartupPipeline Create(StartupProfile profile, IStartupTaskRegistryInstaller installer, IStartupView view)
+        {
+            return Create(profile, installer as IStartupTaskInstaller, view);
+        }
+
+        public StartupPipeline Create(StartupProfile profile, IStartupTaskInstaller installer, IStartupView view)
         {
             if (profile == null)
             {

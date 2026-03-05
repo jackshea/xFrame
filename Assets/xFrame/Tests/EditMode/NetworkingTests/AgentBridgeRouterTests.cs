@@ -1,8 +1,11 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using UnityEngine;
 using xFrame.Runtime.Networking.AgentBridge;
 using xFrame.Runtime.Networking.AgentBridge.Commands;
+using xFrame.Runtime.Startup;
 
 namespace xFrame.Tests
 {
@@ -12,6 +15,7 @@ namespace xFrame.Tests
         private AgentBridgeOptions _options;
         private AgentCommandRegistry _registry;
         private AgentRpcRouter _router;
+        private TestStartupOrchestrator _startupOrchestrator;
 
         [SetUp]
         public void SetUp()
@@ -25,11 +29,14 @@ namespace xFrame.Tests
             };
 
             _registry = new AgentCommandRegistry();
+            _startupOrchestrator = new TestStartupOrchestrator();
             _registry.Register(new PingCommandHandler());
             _registry.Register(new AuthenticateCommandHandler());
             _registry.Register(new ListCommandsHandler());
             _registry.Register(new FindGameObjectCommandHandler());
             _registry.Register(new InvokeComponentCommandHandler());
+            _registry.Register(new StartupRunCommandHandler(_startupOrchestrator, new CodeStartupProfileProvider(), () => true));
+            _registry.Register(new StartupStopCommandHandler(_startupOrchestrator));
             _registry.Register(new TestEditorExecuteMenuHandler());
             _registry.Register(new TestRunTestsHandler());
 
@@ -73,8 +80,54 @@ namespace xFrame.Tests
 
             StringAssert.Contains("agent.ping", response);
             StringAssert.Contains("unity.component.invoke", response);
+            StringAssert.Contains("startup.run", response);
+            StringAssert.Contains("startup.stop", response);
             StringAssert.Contains("unity.editor.executeMenu", response);
             StringAssert.Contains("unity.tests.run", response);
+        }
+
+        [Test]
+        public void Handle_StartupRun_ShouldSucceed()
+        {
+            _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}", "s1");
+
+            var response = _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"startup.run\",\"params\":{\"environment\":\"DevFull\"}}", "s1");
+
+            StringAssert.Contains("\"success\":true", response);
+            StringAssert.Contains("\"environment\":\"DevFull\"", response);
+            Assert.That(_startupOrchestrator.RunCalledCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Handle_StartupStop_ShouldSucceed()
+        {
+            _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}", "s2");
+
+            var response = _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"startup.stop\",\"params\":{}}", "s2");
+
+            StringAssert.Contains("\"stopped\":true", response);
+            Assert.That(_startupOrchestrator.StopCalledCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Handle_StartupRun_NonPlayModeWithUnsupportedTasks_ShouldReturnInvalidParams()
+        {
+            var registry = new AgentCommandRegistry();
+            var startupOrchestrator = new TestStartupOrchestrator();
+            registry.Register(new AuthenticateCommandHandler());
+            registry.Register(new StartupRunCommandHandler(
+                startupOrchestrator,
+                new FixedProfileProvider(new StartupProfile("HeadlessInvalid", new[] { StartupTaskKey.EnterLobby })),
+                () => false));
+
+            var router = new AgentRpcRouter(_options, registry);
+            router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}", "s3");
+
+            var response = router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"startup.run\",\"params\":{\"environment\":\"DevFull\"}}", "s3");
+
+            StringAssert.Contains("\"code\":-32602", response);
+            StringAssert.Contains("EnterLobby", response);
+            Assert.That(startupOrchestrator.RunCalledCount, Is.EqualTo(0));
         }
 
         [Test]
@@ -213,6 +266,51 @@ namespace xFrame.Tests
                 }
 
                 return AgentRpcExecutionResult.Success(new { started = true });
+            }
+        }
+
+        private sealed class TestStartupOrchestrator : IStartupOrchestrator
+        {
+            public int RunCalledCount { get; private set; }
+
+            public int StopCalledCount { get; private set; }
+
+            public StartupOrchestratorState State { get; private set; } = StartupOrchestratorState.Idle;
+
+            public Task<StartupPipelineResult> RunAsync(BootEnvironment environment, CancellationToken cancellationToken)
+            {
+                RunCalledCount++;
+                State = StartupOrchestratorState.Running;
+                return Task.FromResult(StartupPipelineResult.Succeeded());
+            }
+
+            public Task<StartupPipelineResult> RunAsync(StartupProfile profile, CancellationToken cancellationToken)
+            {
+                RunCalledCount++;
+                State = StartupOrchestratorState.Running;
+                return Task.FromResult(StartupPipelineResult.Succeeded());
+            }
+
+            public Task ShutdownAsync(CancellationToken cancellationToken)
+            {
+                StopCalledCount++;
+                State = StartupOrchestratorState.Stopped;
+                return Task.CompletedTask;
+            }
+        }
+
+        private sealed class FixedProfileProvider : IStartupProfileProvider
+        {
+            private readonly StartupProfile _profile;
+
+            public FixedProfileProvider(StartupProfile profile)
+            {
+                _profile = profile;
+            }
+
+            public StartupProfile GetProfile(BootEnvironment environment)
+            {
+                return _profile;
             }
         }
     }

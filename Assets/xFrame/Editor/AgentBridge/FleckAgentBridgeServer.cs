@@ -41,6 +41,8 @@ namespace xFrame.Editor.AgentBridge
             registry.Register(new ListCommandsHandler());
             registry.Register(new FindGameObjectCommandHandler());
             registry.Register(new InvokeComponentCommandHandler());
+            registry.Register(new StartupRunCommandHandler());
+            registry.Register(new StartupStopCommandHandler());
             registry.Register(new EditorExecuteMenuCommandHandler());
             registry.Register(new EditorRunTestsCommandHandler());
             registry.Register(new EditorRunTestsCommandHandler.LastResultHandler());

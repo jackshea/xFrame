@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -240,6 +241,80 @@ namespace xFrame.Tests.EditMode
             Assert.IsTrue(executed);
         }
 
+        [Test]
+        public void CodeStartupProfileProvider_Release_ShouldMatchExpectedTaskOrder()
+        {
+            var provider = new CodeStartupProfileProvider();
+
+            var profile = provider.GetProfile(BootEnvironment.Release);
+
+            Assert.That(profile.Name, Is.EqualTo(nameof(BootEnvironment.Release)));
+            CollectionAssert.AreEqual(
+                new[]
+                {
+                    StartupTaskKey.InitLogger,
+                    StartupTaskKey.LoadLocalConfig,
+                    StartupTaskKey.CheckUpdate,
+                    StartupTaskKey.SdkInit,
+                    StartupTaskKey.NetworkConnect,
+                    StartupTaskKey.EnterLobby
+                },
+                profile.TaskKeys.ToArray());
+        }
+
+        [Test]
+        public void StartupOrchestrator_RunAsync_WhenAlreadyRunning_ShouldThrow()
+        {
+            var registry = new StartupTaskRegistry();
+            registry.Register(StartupTaskKey.InitLogger, () => new FakeStartupTask(
+                "LongTask",
+                1f,
+                async token =>
+                {
+                    await Task.Delay(TimeSpan.FromMilliseconds(200), token);
+                    return StartupTaskResult.Success();
+                }));
+
+            var provider = new FixedProfileProvider(new StartupProfile("Test", new[] { StartupTaskKey.InitLogger }));
+            var orchestrator = new StartupOrchestrator(registry, profileProvider: provider);
+
+            var firstRunTask = orchestrator.RunAsync(BootEnvironment.DevFull, CancellationToken.None);
+
+            Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                await orchestrator.RunAsync(BootEnvironment.DevFull, CancellationToken.None);
+            });
+
+            firstRunTask.GetAwaiter().GetResult();
+        }
+
+        [Test]
+        public void StartupOrchestrator_ShutdownAsync_ShouldCancelRunningPipeline()
+        {
+            var registry = new StartupTaskRegistry();
+            registry.Register(StartupTaskKey.InitLogger, () => new FakeStartupTask(
+                "CancellableTask",
+                1f,
+                async token =>
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(2), token);
+                    return StartupTaskResult.Success();
+                }));
+
+            var provider = new FixedProfileProvider(new StartupProfile("Test", new[] { StartupTaskKey.InitLogger }));
+            var orchestrator = new StartupOrchestrator(registry, profileProvider: provider);
+
+            var runTask = orchestrator.RunAsync(BootEnvironment.DevFull, CancellationToken.None);
+            Task.Delay(50).GetAwaiter().GetResult();
+
+            orchestrator.ShutdownAsync(CancellationToken.None).GetAwaiter().GetResult();
+            var result = runTask.GetAwaiter().GetResult();
+
+            Assert.That(result.IsSuccess, Is.False);
+            Assert.That(result.IsCancelled, Is.True);
+            Assert.That(orchestrator.State, Is.EqualTo(StartupOrchestratorState.Stopped));
+        }
+
         private static Func<IStartupTask> CreateTask(StartupTaskKey key, List<StartupTaskKey> executionOrder)
         {
             return () => new FakeStartupTask(key.ToString(), 1f, _ =>
@@ -247,6 +322,21 @@ namespace xFrame.Tests.EditMode
                 executionOrder.Add(key);
                 return Task.FromResult(StartupTaskResult.Success());
             });
+        }
+
+        private sealed class FixedProfileProvider : IStartupProfileProvider
+        {
+            private readonly StartupProfile _profile;
+
+            public FixedProfileProvider(StartupProfile profile)
+            {
+                _profile = profile;
+            }
+
+            public StartupProfile GetProfile(BootEnvironment environment)
+            {
+                return _profile;
+            }
         }
 
         private sealed class FakeInstaller : IStartupTaskRegistryInstaller

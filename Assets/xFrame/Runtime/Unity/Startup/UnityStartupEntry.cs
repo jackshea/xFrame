@@ -18,12 +18,13 @@ namespace xFrame.Runtime.Unity.Startup
         [SerializeField] private UnityStartupView _view;
         [SerializeField] private UnityStartupInstallerBase _installer;
 
-        private readonly StartupTaskRegistry _registry = new StartupTaskRegistry();
+        private IStartupOrchestrator _orchestrator;
         private CancellationTokenSource _lifetimeTokenSource;
 
         private void Awake()
         {
             _lifetimeTokenSource = new CancellationTokenSource();
+            EnsureOrchestrator();
         }
 
         private async void Start()
@@ -38,9 +39,8 @@ namespace xFrame.Runtime.Unity.Startup
 
         public async Task<StartupPipelineResult> RunAsync()
         {
-            var launcher = new StartupPipelineLauncher(_registry);
-            var pipeline = launcher.Create(_environment, _installer, _view);
-            return await pipeline.RunAsync(_lifetimeTokenSource.Token);
+            EnsureOrchestrator();
+            return await _orchestrator.RunAsync(_environment, _lifetimeTokenSource.Token);
         }
 
         private void OnDestroy()
@@ -51,8 +51,29 @@ namespace xFrame.Runtime.Unity.Startup
             }
 
             _lifetimeTokenSource.Cancel();
+
+            if (_orchestrator != null)
+            {
+                _orchestrator.ShutdownAsync(CancellationToken.None).GetAwaiter().GetResult();
+                _orchestrator = null;
+            }
+
             _lifetimeTokenSource.Dispose();
             _lifetimeTokenSource = null;
+        }
+
+        private void EnsureOrchestrator()
+        {
+            if (_orchestrator != null)
+            {
+                return;
+            }
+
+            StartupOrchestratorHost.Configure(
+                installer: _installer,
+                view: _view ?? NullStartupView.Instance);
+
+            _orchestrator = StartupOrchestratorHost.GetOrCreate();
         }
     }
 }
