@@ -3,13 +3,13 @@ using System;
 namespace xFrame.Runtime.ObjectPool
 {
     /// <summary>
-    /// 对象池工厂类
-    /// 提供便捷的对象池创建方法
+    ///     对象池工厂类
+    ///     提供便捷的对象池创建方法
     /// </summary>
     public static class ObjectPoolFactory
     {
         /// <summary>
-        /// 创建一个基本的对象池
+        ///     创建一个基本的对象池
         /// </summary>
         /// <typeparam name="T">池化对象的类型</typeparam>
         /// <param name="createFunc">对象创建函数</param>
@@ -25,7 +25,7 @@ namespace xFrame.Runtime.ObjectPool
         }
 
         /// <summary>
-        /// 创建一个带有回调的对象池
+        ///     创建一个带有回调的对象池
         /// </summary>
         /// <typeparam name="T">池化对象的类型</typeparam>
         /// <param name="createFunc">对象创建函数</param>
@@ -47,8 +47,8 @@ namespace xFrame.Runtime.ObjectPool
         }
 
         /// <summary>
-        /// 创建一个支持重置接口的对象池
-        /// 自动为实现了IPoolable接口的对象添加重置回调
+        ///     创建一个支持重置接口的对象池
+        ///     自动为实现了IPoolable接口的对象添加重置回调
         /// </summary>
         /// <typeparam name="T">池化对象的类型，必须实现IPoolable接口</typeparam>
         /// <param name="createFunc">对象创建函数</param>
@@ -70,8 +70,8 @@ namespace xFrame.Runtime.ObjectPool
         }
 
         /// <summary>
-        /// 创建一个默认构造函数的对象池
-        /// 适用于有无参构造函数的类型
+        ///     创建一个默认构造函数的对象池
+        ///     适用于有无参构造函数的类型
         /// </summary>
         /// <typeparam name="T">池化对象的类型，必须有无参构造函数</typeparam>
         /// <param name="maxSize">池的最大容量，-1表示无限制</param>
@@ -85,7 +85,7 @@ namespace xFrame.Runtime.ObjectPool
         }
 
         /// <summary>
-        /// 创建一个默认构造函数且支持重置接口的对象池
+        ///     创建一个默认构造函数且支持重置接口的对象池
         /// </summary>
         /// <typeparam name="T">池化对象的类型，必须有无参构造函数且实现IPoolable接口</typeparam>
         /// <param name="maxSize">池的最大容量，-1表示无限制</param>

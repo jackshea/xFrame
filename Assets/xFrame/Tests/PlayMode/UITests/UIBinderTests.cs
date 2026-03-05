@@ -1,22 +1,20 @@
 using System.Collections;
 using NUnit.Framework;
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.TestTools;
 using TMPro;
+using UnityEngine;
+using UnityEngine.TestTools;
+using UnityEngine.UI;
 using xFrame.Runtime.UI;
 
 namespace xFrame.Tests.PlayMode.UITests
 {
     /// <summary>
-    /// UIBinder绑定辅助工具的PlayMode测试
-    /// 需要在PlayMode下测试，因为涉及Unity组件的交互
+    ///     UIBinder绑定辅助工具的PlayMode测试
+    ///     需要在PlayMode下测试，因为涉及Unity组件的交互
     /// </summary>
     [TestFixture]
     public class UIBinderTests
     {
-        private GameObject _testRoot;
-
         [SetUp]
         public void SetUp()
         {
@@ -72,16 +70,13 @@ namespace xFrame.Tests.PlayMode.UITests
         [TearDown]
         public void TearDown()
         {
-            if (_testRoot != null)
-            {
-                Object.Destroy(_testRoot);
-            }
+            if (_testRoot != null) Object.Destroy(_testRoot);
         }
 
-        #region FindChild测试
+        private GameObject _testRoot;
 
         /// <summary>
-        /// 测试查找直接子对象
+        ///     测试查找直接子对象
         /// </summary>
         [Test]
         public void FindChild_DirectChild_ShouldReturnTransform()
@@ -92,7 +87,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试查找嵌套路径
+        ///     测试查找嵌套路径
         /// </summary>
         [Test]
         public void FindChild_NestedPath_ShouldReturnTransform()
@@ -103,7 +98,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试查找不存在的路径
+        ///     测试查找不存在的路径
         /// </summary>
         [Test]
         public void FindChild_NonExistingPath_ShouldReturnNull()
@@ -113,7 +108,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试null根节点
+        ///     测试null根节点
         /// </summary>
         [Test]
         public void FindChild_NullRoot_ShouldReturnNull()
@@ -124,7 +119,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试空路径
+        ///     测试空路径
         /// </summary>
         [Test]
         public void FindChild_EmptyPath_ShouldReturnNull()
@@ -134,7 +129,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试null路径
+        ///     测试null路径
         /// </summary>
         [Test]
         public void FindChild_NullPath_ShouldReturnNull()
@@ -143,12 +138,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.IsNull(result, "null路径应返回null");
         }
 
-        #endregion
-
-        #region FindComponent测试
-
         /// <summary>
-        /// 测试查找组件
+        ///     测试查找组件
         /// </summary>
         [Test]
         public void FindComponent_ExistingComponent_ShouldReturnComponent()
@@ -158,7 +149,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试查找不存在的组件
+        ///     测试查找不存在的组件
         /// </summary>
         [Test]
         public void FindComponent_NonExistingPath_ShouldReturnNull()
@@ -168,7 +159,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试查找错误类型的组件
+        ///     测试查找错误类型的组件
         /// </summary>
         [Test]
         public void FindComponent_WrongType_ShouldReturnNull()
@@ -177,12 +168,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.IsNull(image, "错误类型应返回null");
         }
 
-        #endregion
-
-        #region FindChildRecursive测试
-
         /// <summary>
-        /// 测试递归查找直接子对象
+        ///     测试递归查找直接子对象
         /// </summary>
         [Test]
         public void FindChildRecursive_DirectChild_ShouldReturnTransform()
@@ -192,7 +179,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试递归查找深层子对象
+        ///     测试递归查找深层子对象
         /// </summary>
         [Test]
         public void FindChildRecursive_DeepChild_ShouldReturnTransform()
@@ -203,7 +190,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试递归查找不存在的对象
+        ///     测试递归查找不存在的对象
         /// </summary>
         [Test]
         public void FindChildRecursive_NonExisting_ShouldReturnNull()
@@ -213,7 +200,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试递归查找null根节点
+        ///     测试递归查找null根节点
         /// </summary>
         [Test]
         public void FindChildRecursive_NullRoot_ShouldReturnNull()
@@ -224,7 +211,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试递归查找空名称
+        ///     测试递归查找空名称
         /// </summary>
         [Test]
         public void FindChildRecursive_EmptyName_ShouldReturnNull()
@@ -233,12 +220,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.IsNull(result, "空名称应返回null");
         }
 
-        #endregion
-
-        #region FindComponentRecursive测试
-
         /// <summary>
-        /// 测试递归查找组件
+        ///     测试递归查找组件
         /// </summary>
         [Test]
         public void FindComponentRecursive_ExistingComponent_ShouldReturnComponent()
@@ -248,7 +231,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试递归查找不存在的组件
+        ///     测试递归查找不存在的组件
         /// </summary>
         [Test]
         public void FindComponentRecursive_NonExisting_ShouldReturnNull()
@@ -257,12 +240,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.IsNull(button, "不存在的对象应返回null");
         }
 
-        #endregion
-
-        #region BindButton测试
-
         /// <summary>
-        /// 测试绑定Button点击事件
+        ///     测试绑定Button点击事件
         /// </summary>
         [UnityTest]
         public IEnumerator BindButton_ShouldBindClickEvent()
@@ -280,7 +259,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试绑定Button到不存在的路径
+        ///     测试绑定Button到不存在的路径
         /// </summary>
         [Test]
         public void BindButton_NonExistingPath_ShouldReturnNull()
@@ -290,7 +269,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试绑定Button时回调为null
+        ///     测试绑定Button时回调为null
         /// </summary>
         [Test]
         public void BindButton_NullCallback_ShouldReturnButton()
@@ -299,12 +278,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.IsNotNull(button, "即使回调为null也应返回Button");
         }
 
-        #endregion
-
-        #region BindToggle测试
-
         /// <summary>
-        /// 测试绑定Toggle值改变事件
+        ///     测试绑定Toggle值改变事件
         /// </summary>
         [UnityTest]
         public IEnumerator BindToggle_ShouldBindValueChangedEvent()
@@ -321,12 +296,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.IsTrue(receivedValue, "值改变回调应被触发");
         }
 
-        #endregion
-
-        #region BindSlider测试
-
         /// <summary>
-        /// 测试绑定Slider值改变事件
+        ///     测试绑定Slider值改变事件
         /// </summary>
         [UnityTest]
         public IEnumerator BindSlider_ShouldBindValueChangedEvent()
@@ -343,12 +314,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.AreEqual(0.5f, receivedValue, 0.001f, "值改变回调应被触发");
         }
 
-        #endregion
-
-        #region SetText测试
-
         /// <summary>
-        /// 测试设置文本
+        ///     测试设置文本
         /// </summary>
         [Test]
         public void SetText_ValidPath_ShouldSetText()
@@ -360,7 +327,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试设置文本到不存在的路径
+        ///     测试设置文本到不存在的路径
         /// </summary>
         [Test]
         public void SetText_NonExistingPath_ShouldReturnNull()
@@ -369,12 +336,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.IsNull(text, "不存在的路径应返回null");
         }
 
-        #endregion
-
-        #region GetText测试
-
         /// <summary>
-        /// 测试获取文本
+        ///     测试获取文本
         /// </summary>
         [Test]
         public void GetText_ValidPath_ShouldReturnText()
@@ -388,7 +351,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试获取不存在路径的文本
+        ///     测试获取不存在路径的文本
         /// </summary>
         [Test]
         public void GetText_NonExistingPath_ShouldReturnEmpty()
@@ -397,12 +360,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.AreEqual(string.Empty, result, "不存在的路径应返回空字符串");
         }
 
-        #endregion
-
-        #region SetSprite测试
-
         /// <summary>
-        /// 测试设置图片
+        ///     测试设置图片
         /// </summary>
         [Test]
         public void SetSprite_ValidPath_ShouldSetSprite()
@@ -418,7 +377,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试设置图片到不存在的路径
+        ///     测试设置图片到不存在的路径
         /// </summary>
         [Test]
         public void SetSprite_NonExistingPath_ShouldReturnNull()
@@ -427,12 +386,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.IsNull(image, "不存在的路径应返回null");
         }
 
-        #endregion
-
-        #region SetColor测试
-
         /// <summary>
-        /// 测试设置颜色
+        ///     测试设置颜色
         /// </summary>
         [Test]
         public void SetColor_ValidPath_ShouldSetColor()
@@ -444,12 +399,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.AreEqual(color, image.color, "颜色应被设置");
         }
 
-        #endregion
-
-        #region SetFillAmount测试
-
         /// <summary>
-        /// 测试设置填充量
+        ///     测试设置填充量
         /// </summary>
         [Test]
         public void SetFillAmount_ValidPath_ShouldSetFillAmount()
@@ -460,12 +411,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.AreEqual(0.5f, image.fillAmount, 0.001f, "填充量应被设置");
         }
 
-        #endregion
-
-        #region SetActive测试
-
         /// <summary>
-        /// 测试设置对象可见性
+        ///     测试设置对象可见性
         /// </summary>
         [Test]
         public void SetActive_ValidPath_ShouldSetVisibility()
@@ -480,7 +427,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试设置不存在路径的可见性
+        ///     测试设置不存在路径的可见性
         /// </summary>
         [Test]
         public void SetActive_NonExistingPath_ShouldNotThrow()
@@ -488,12 +435,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.DoesNotThrow(() => _testRoot.transform.SetActive("NonExisting", false));
         }
 
-        #endregion
-
-        #region SetCanvasGroupVisible测试
-
         /// <summary>
-        /// 测试设置CanvasGroup可见性
+        ///     测试设置CanvasGroup可见性
         /// </summary>
         [Test]
         public void SetCanvasGroupVisible_ValidPath_ShouldSetVisibility()
@@ -509,7 +452,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试设置CanvasGroup可见性为true
+        ///     测试设置CanvasGroup可见性为true
         /// </summary>
         [Test]
         public void SetCanvasGroupVisible_True_ShouldSetVisible()
@@ -524,7 +467,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试设置CanvasGroup可见但不可交互
+        ///     测试设置CanvasGroup可见但不可交互
         /// </summary>
         [Test]
         public void SetCanvasGroupVisible_VisibleNotInteractable_ShouldWork()
@@ -537,7 +480,5 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.IsFalse(canvasGroup.interactable, "应不可交互");
             Assert.IsFalse(canvasGroup.blocksRaycasts, "应不阻挡射线");
         }
-
-        #endregion
     }
 }

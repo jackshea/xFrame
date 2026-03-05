@@ -4,7 +4,7 @@ namespace Fleck
 {
     public class ConnectionNotAvailableException : Exception
     {
-        public ConnectionNotAvailableException() : base()
+        public ConnectionNotAvailableException()
         {
         }
 

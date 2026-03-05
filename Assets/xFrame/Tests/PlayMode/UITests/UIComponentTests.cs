@@ -7,13 +7,11 @@ using xFrame.Runtime.UI;
 namespace xFrame.Tests.PlayMode.UITests
 {
     /// <summary>
-    /// UIComponent组件基类的PlayMode测试
+    ///     UIComponent组件基类的PlayMode测试
     /// </summary>
     [TestFixture]
     public class UIComponentTests
     {
-        private GameObject _testRoot;
-
         [SetUp]
         public void SetUp()
         {
@@ -23,16 +21,13 @@ namespace xFrame.Tests.PlayMode.UITests
         [TearDown]
         public void TearDown()
         {
-            if (_testRoot != null)
-            {
-                Object.Destroy(_testRoot);
-            }
+            if (_testRoot != null) Object.Destroy(_testRoot);
         }
 
-        #region 组件创建测试
+        private GameObject _testRoot;
 
         /// <summary>
-        /// 测试组件创建时自动生成ComponentId
+        ///     测试组件创建时自动生成ComponentId
         /// </summary>
         [UnityTest]
         public IEnumerator Awake_ShouldGenerateComponentId()
@@ -48,7 +43,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试组件创建时自动添加CanvasGroup
+        ///     测试组件创建时自动添加CanvasGroup
         /// </summary>
         [UnityTest]
         public IEnumerator Awake_ShouldAddCanvasGroup()
@@ -64,7 +59,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试组件创建时已有CanvasGroup不重复添加
+        ///     测试组件创建时已有CanvasGroup不重复添加
         /// </summary>
         [UnityTest]
         public IEnumerator Awake_ExistingCanvasGroup_ShouldNotDuplicate()
@@ -80,12 +75,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.AreEqual(1, canvasGroups.Length, "不应重复添加CanvasGroup");
         }
 
-        #endregion
-
-        #region 初始化测试
-
         /// <summary>
-        /// 测试组件初始化
+        ///     测试组件初始化
         /// </summary>
         [UnityTest]
         public IEnumerator Initialize_ShouldSetIsInitialized()
@@ -101,7 +92,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试组件重复初始化
+        ///     测试组件重复初始化
         /// </summary>
         [UnityTest]
         public IEnumerator Initialize_CalledTwice_ShouldOnlyInitializeOnce()
@@ -115,12 +106,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.AreEqual(1, component.InitializeCount, "应只初始化一次");
         }
 
-        #endregion
-
-        #region 显示/隐藏测试
-
         /// <summary>
-        /// 测试组件显示
+        ///     测试组件显示
         /// </summary>
         [UnityTest]
         public IEnumerator Show_ShouldSetIsVisible()
@@ -136,7 +123,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试组件隐藏
+        ///     测试组件隐藏
         /// </summary>
         [UnityTest]
         public IEnumerator Hide_ShouldSetIsVisibleFalse()
@@ -153,7 +140,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试重复显示
+        ///     测试重复显示
         /// </summary>
         [UnityTest]
         public IEnumerator Show_CalledTwice_ShouldOnlyShowOnce()
@@ -169,7 +156,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试重复隐藏
+        ///     测试重复隐藏
         /// </summary>
         [UnityTest]
         public IEnumerator Hide_CalledTwice_ShouldOnlyHideOnce()
@@ -186,7 +173,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试SetVisible方法
+        ///     测试SetVisible方法
         /// </summary>
         [UnityTest]
         public IEnumerator SetVisible_ShouldToggleVisibility()
@@ -203,12 +190,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.IsFalse(component.IsVisible, "SetVisible(false)应隐藏组件");
         }
 
-        #endregion
-
-        #region 数据设置测试
-
         /// <summary>
-        /// 测试设置数据
+        ///     测试设置数据
         /// </summary>
         [UnityTest]
         public IEnumerator SetData_ShouldCallOnSetData()
@@ -222,12 +205,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.AreEqual("TestData", component.ReceivedData, "数据应被正确传递");
         }
 
-        #endregion
-
-        #region 刷新测试
-
         /// <summary>
-        /// 测试刷新组件
+        ///     测试刷新组件
         /// </summary>
         [UnityTest]
         public IEnumerator Refresh_ShouldCallOnRefresh()
@@ -241,12 +220,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.AreEqual(1, component.RefreshCount, "Refresh应被调用");
         }
 
-        #endregion
-
-        #region 重置测试
-
         /// <summary>
-        /// 测试重置组件
+        ///     测试重置组件
         /// </summary>
         [UnityTest]
         public IEnumerator Reset_ShouldResetState()
@@ -261,12 +236,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.IsFalse(component.IsVisible, "重置后IsVisible应为false");
         }
 
-        #endregion
-
-        #region 销毁测试
-
         /// <summary>
-        /// 测试销毁组件
+        ///     测试销毁组件
         /// </summary>
         [UnityTest]
         public IEnumerator DestroyComponent_ShouldResetIsInitialized()
@@ -280,12 +251,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.IsFalse(component.IsInitialized, "销毁后IsInitialized应为false");
         }
 
-        #endregion
-
-        #region 交互性测试
-
         /// <summary>
-        /// 测试设置交互性
+        ///     测试设置交互性
         /// </summary>
         [UnityTest]
         public IEnumerator SetInteractable_ShouldSetCanvasGroupInteractable()
@@ -306,12 +273,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.IsTrue(canvasGroup.blocksRaycasts, "应阻挡射线");
         }
 
-        #endregion
-
-        #region 泛型组件测试
-
         /// <summary>
-        /// 测试泛型组件设置数据
+        ///     测试泛型组件设置数据
         /// </summary>
         [UnityTest]
         public IEnumerator GenericComponent_SetData_ShouldSetCurrentData()
@@ -327,7 +290,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试泛型组件HasData
+        ///     测试泛型组件HasData
         /// </summary>
         [UnityTest]
         public IEnumerator GenericComponent_HasData_ShouldReturnCorrectly()
@@ -344,7 +307,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试泛型组件重置时清空数据
+        ///     测试泛型组件重置时清空数据
         /// </summary>
         [UnityTest]
         public IEnumerator GenericComponent_Reset_ShouldClearData()
@@ -360,7 +323,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试泛型组件设置错误类型数据
+        ///     测试泛型组件设置错误类型数据
         /// </summary>
         [UnityTest]
         public IEnumerator GenericComponent_SetData_WrongType_ShouldLogWarning()
@@ -371,17 +334,13 @@ namespace xFrame.Tests.PlayMode.UITests
             component.Initialize();
 
             // 通过基类方法设置错误类型数据
-            ((UIComponent)component).SetData("wrong type");
+            component.SetData("wrong type");
 
             Assert.IsFalse(component.HasData(), "错误类型数据不应被设置");
         }
 
-        #endregion
-
-        #region 辅助方法
-
         /// <summary>
-        /// 创建测试组件
+        ///     创建测试组件
         /// </summary>
         private T CreateTestComponent<T>() where T : UIComponent
         {
@@ -390,19 +349,15 @@ namespace xFrame.Tests.PlayMode.UITests
             return go.AddComponent<T>();
         }
 
-        #endregion
-
-        #region 测试辅助类
-
         /// <summary>
-        /// 基础测试组件
+        ///     基础测试组件
         /// </summary>
         private class TestUIComponent : UIComponent
         {
         }
 
         /// <summary>
-        /// 带计数器的测试组件
+        ///     带计数器的测试组件
         /// </summary>
         private class TestUIComponentWithCounter : UIComponent
         {
@@ -437,7 +392,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 带数据的测试组件
+        ///     带数据的测试组件
         /// </summary>
         private class TestUIComponentWithData : UIComponent
         {
@@ -451,7 +406,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试数据类
+        ///     测试数据类
         /// </summary>
         private class TestData
         {
@@ -460,12 +415,10 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 泛型测试组件
+        ///     泛型测试组件
         /// </summary>
         private class TestGenericUIComponent : UIComponent<TestData>
         {
         }
-
-        #endregion
     }
 }

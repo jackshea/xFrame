@@ -1,18 +1,17 @@
+using System;
 using NUnit.Framework;
 using xFrame.Runtime.UI;
 
 namespace xFrame.Tests.EditMode.UITests
 {
     /// <summary>
-    /// UILayer枚举和扩展方法的单元测试
+    ///     UILayer枚举和扩展方法的单元测试
     /// </summary>
     [TestFixture]
     public class UILayerTests
     {
-        #region UILayer枚举值测试
-
         /// <summary>
-        /// 测试UILayer枚举值是否正确定义
+        ///     测试UILayer枚举值是否正确定义
         /// </summary>
         [Test]
         public void UILayer_EnumValues_ShouldBeCorrectlyDefined()
@@ -25,21 +24,17 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试UILayer枚举值数量
+        ///     测试UILayer枚举值数量
         /// </summary>
         [Test]
         public void UILayer_EnumCount_ShouldBeFive()
         {
-            var values = System.Enum.GetValues(typeof(UILayer));
+            var values = Enum.GetValues(typeof(UILayer));
             Assert.AreEqual(5, values.Length, "UILayer应有5个枚举值");
         }
 
-        #endregion
-
-        #region GetBaseSortOrder扩展方法测试
-
         /// <summary>
-        /// 测试Background层的基础SortOrder
+        ///     测试Background层的基础SortOrder
         /// </summary>
         [Test]
         public void GetBaseSortOrder_Background_ShouldReturnZero()
@@ -49,7 +44,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试Normal层的基础SortOrder
+        ///     测试Normal层的基础SortOrder
         /// </summary>
         [Test]
         public void GetBaseSortOrder_Normal_ShouldReturn1000()
@@ -59,7 +54,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试Popup层的基础SortOrder
+        ///     测试Popup层的基础SortOrder
         /// </summary>
         [Test]
         public void GetBaseSortOrder_Popup_ShouldReturn2000()
@@ -69,7 +64,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试System层的基础SortOrder
+        ///     测试System层的基础SortOrder
         /// </summary>
         [Test]
         public void GetBaseSortOrder_System_ShouldReturn3000()
@@ -79,7 +74,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试Top层的基础SortOrder
+        ///     测试Top层的基础SortOrder
         /// </summary>
         [Test]
         public void GetBaseSortOrder_Top_ShouldReturn4000()
@@ -89,7 +84,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试所有层级的SortOrder递增关系
+        ///     测试所有层级的SortOrder递增关系
         /// </summary>
         [Test]
         public void GetBaseSortOrder_AllLayers_ShouldBeInAscendingOrder()
@@ -107,7 +102,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试层级间隔是否为1000
+        ///     测试层级间隔是否为1000
         /// </summary>
         [Test]
         public void GetBaseSortOrder_LayerGap_ShouldBe1000()
@@ -119,12 +114,8 @@ namespace xFrame.Tests.EditMode.UITests
             Assert.AreEqual(1000, gap, "层级间隔应为1000");
         }
 
-        #endregion
-
-        #region GetCanvasName扩展方法测试
-
         /// <summary>
-        /// 测试Background层的Canvas名称
+        ///     测试Background层的Canvas名称
         /// </summary>
         [Test]
         public void GetCanvasName_Background_ShouldReturnCorrectName()
@@ -134,7 +125,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试Normal层的Canvas名称
+        ///     测试Normal层的Canvas名称
         /// </summary>
         [Test]
         public void GetCanvasName_Normal_ShouldReturnCorrectName()
@@ -144,7 +135,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试Popup层的Canvas名称
+        ///     测试Popup层的Canvas名称
         /// </summary>
         [Test]
         public void GetCanvasName_Popup_ShouldReturnCorrectName()
@@ -154,7 +145,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试System层的Canvas名称
+        ///     测试System层的Canvas名称
         /// </summary>
         [Test]
         public void GetCanvasName_System_ShouldReturnCorrectName()
@@ -164,7 +155,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试Top层的Canvas名称
+        ///     测试Top层的Canvas名称
         /// </summary>
         [Test]
         public void GetCanvasName_Top_ShouldReturnCorrectName()
@@ -174,19 +165,17 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试所有层级的Canvas名称格式
+        ///     测试所有层级的Canvas名称格式
         /// </summary>
         [Test]
         public void GetCanvasName_AllLayers_ShouldFollowNamingConvention()
         {
-            foreach (UILayer layer in System.Enum.GetValues(typeof(UILayer)))
+            foreach (UILayer layer in Enum.GetValues(typeof(UILayer)))
             {
                 var name = layer.GetCanvasName();
                 Assert.IsTrue(name.StartsWith("Canvas_"), $"Canvas名称应以'Canvas_'开头: {name}");
                 Assert.IsTrue(name.Contains(layer.ToString()), $"Canvas名称应包含层级名称: {name}");
             }
         }
-
-        #endregion
     }
 }

@@ -3,11 +3,12 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Serialization;
 
 namespace MessagePack
 {
     /// <summary>
-    /// An exception thrown during serializing an object graph or deserializing a messagepack sequence.
+    ///     An exception thrown during serializing an object graph or deserializing a messagepack sequence.
     /// </summary>
     [Serializable]
 #if MESSAGEPACK_INTERNAL
@@ -15,17 +16,17 @@ namespace MessagePack
 #else
     public
 #endif
-    class MessagePackSerializationException : Exception
+        class MessagePackSerializationException : Exception
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="MessagePackSerializationException"/> class.
+        ///     Initializes a new instance of the <see cref="MessagePackSerializationException" /> class.
         /// </summary>
         public MessagePackSerializationException()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MessagePackSerializationException"/> class.
+        ///     Initializes a new instance of the <see cref="MessagePackSerializationException" /> class.
         /// </summary>
         /// <param name="message">The exception message.</param>
         public MessagePackSerializationException(string? message)
@@ -34,7 +35,7 @@ namespace MessagePack
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MessagePackSerializationException"/> class.
+        ///     Initializes a new instance of the <see cref="MessagePackSerializationException" /> class.
         /// </summary>
         /// <param name="message">The exception message.</param>
         /// <param name="inner">The inner exception.</param>
@@ -44,18 +45,22 @@ namespace MessagePack
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MessagePackSerializationException"/> class.
+        ///     Initializes a new instance of the <see cref="MessagePackSerializationException" /> class.
         /// </summary>
         /// <param name="info">Serialization info.</param>
         /// <param name="context">Serialization context.</param>
         protected MessagePackSerializationException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context)
+            SerializationInfo info,
+            StreamingContext context)
             : base(info, context)
         {
         }
 
         [DoesNotReturn]
-        internal static Exception ThrowUnexpectedNilWhileDeserializing<T>() => throw new MessagePackSerializationException("Unexpected nil encountered while deserializing " + typeof(T).FullName);
+        internal static Exception ThrowUnexpectedNilWhileDeserializing<T>()
+        {
+            throw new MessagePackSerializationException("Unexpected nil encountered while deserializing " +
+                                                        typeof(T).FullName);
+        }
     }
 }

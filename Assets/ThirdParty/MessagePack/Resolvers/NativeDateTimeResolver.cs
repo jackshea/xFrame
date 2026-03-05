@@ -13,12 +13,12 @@ namespace MessagePack.Resolvers
     public sealed class NativeDateTimeResolver : IFormatterResolver
     {
         /// <summary>
-        /// The singleton instance that can be used.
+        ///     The singleton instance that can be used.
         /// </summary>
         public static readonly NativeDateTimeResolver Instance;
 
         /// <summary>
-        /// A <see cref="MessagePackSerializerOptions"/> instance with this formatter pre-configured.
+        ///     A <see cref="MessagePackSerializerOptions" /> instance with this formatter pre-configured.
         /// </summary>
         public static readonly MessagePackSerializerOptions Options;
 
@@ -55,18 +55,11 @@ namespace MessagePack.Internal
     {
         internal static object? GetFormatter(Type t)
         {
-            if (t == typeof(DateTime))
-            {
-                return NativeDateTimeFormatter.Instance;
-            }
-            else if (t == typeof(DateTime?))
-            {
-                return new StaticNullableFormatter<DateTime>(NativeDateTimeFormatter.Instance);
-            }
-            else if (t == typeof(DateTime[]))
-            {
-                return NativeDateTimeArrayFormatter.Instance;
-            }
+            if (t == typeof(DateTime)) return NativeDateTimeFormatter.Instance;
+
+            if (t == typeof(DateTime?)) return new StaticNullableFormatter<DateTime>(NativeDateTimeFormatter.Instance);
+
+            if (t == typeof(DateTime[])) return NativeDateTimeArrayFormatter.Instance;
 
             return null;
         }

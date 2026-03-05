@@ -3,8 +3,8 @@ using System.Text;
 namespace xFrame.Runtime.Logging
 {
     /// <summary>
-    /// 默认日志格式化器
-    /// 提供标准的日志格式化功能，包含时间戳、线程ID、模块名、等级等信息
+    ///     默认日志格式化器
+    ///     提供标准的日志格式化功能，包含时间戳、线程ID、模块名、等级等信息
     /// </summary>
     public class DefaultLogFormatter : ILogFormatter
     {
@@ -13,7 +13,7 @@ namespace xFrame.Runtime.Logging
         private readonly bool _includeThreadId;
 
         /// <summary>
-        /// 构造函数
+        ///     构造函数
         /// </summary>
         /// <param name="dateTimeFormat">时间格式</param>
         /// <param name="includeThreadId">是否包含线程ID</param>
@@ -28,7 +28,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 格式化日志条目
+        ///     格式化日志条目
         /// </summary>
         /// <param name="entry">日志条目</param>
         /// <returns>格式化后的日志字符串</returns>
@@ -82,7 +82,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 获取日志等级的字符串表示
+        ///     获取日志等级的字符串表示
         /// </summary>
         /// <param name="level">日志等级</param>
         /// <returns>等级字符串</returns>

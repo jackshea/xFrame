@@ -3,16 +3,16 @@ using System;
 namespace xFrame.Runtime.Scheduler
 {
     /// <summary>
-    /// 延迟执行任务
-    /// 在指定延迟时间后执行一次回调
+    ///     延迟执行任务
+    ///     在指定延迟时间后执行一次回调
     /// </summary>
     public class DelayedTask : ScheduledTask
     {
-        private float _delaySeconds;
+        private readonly float _delaySeconds;
         private float _elapsedTime;
 
         /// <summary>
-        /// 构造函数
+        ///     构造函数
         /// </summary>
         /// <param name="delaySeconds">延迟时间（秒）</param>
         /// <param name="callback">回调函数</param>
@@ -29,7 +29,7 @@ namespace xFrame.Runtime.Scheduler
         }
 
         /// <summary>
-        /// 更新任务
+        ///     更新任务
         /// </summary>
         /// <param name="deltaTime">受时间缩放影响的增量时间</param>
         /// <param name="unscaledDeltaTime">不受时间缩放影响的增量时间</param>
@@ -45,14 +45,11 @@ namespace xFrame.Runtime.Scheduler
             var dt = UseTimeScale ? deltaTime : unscaledDeltaTime;
             _elapsedTime += dt;
 
-            if (_elapsedTime >= _delaySeconds)
-            {
-                Execute();
-            }
+            if (_elapsedTime >= _delaySeconds) Execute();
         }
 
         /// <summary>
-        /// 任务取消时的回调
+        ///     任务取消时的回调
         /// </summary>
         protected override void OnCancel()
         {

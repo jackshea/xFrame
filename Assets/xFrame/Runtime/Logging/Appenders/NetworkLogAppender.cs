@@ -9,8 +9,8 @@ using UnityEngine;
 namespace xFrame.Runtime.Logging.Appenders
 {
     /// <summary>
-    /// 网络日志输出器
-    /// 将日志通过HTTP发送到远程服务器
+    ///     网络日志输出器
+    ///     将日志通过HTTP发送到远程服务器
     /// </summary>
     public class NetworkLogAppender : ILogAppender
     {
@@ -23,7 +23,7 @@ namespace xFrame.Runtime.Logging.Appenders
         private volatile bool _disposed;
 
         /// <summary>
-        /// 构造函数
+        ///     构造函数
         /// </summary>
         /// <param name="endpoint">远程日志服务器端点</param>
         /// <param name="formatter">日志格式化器</param>
@@ -40,22 +40,22 @@ namespace xFrame.Runtime.Logging.Appenders
         }
 
         /// <summary>
-        /// 输出器名称
+        ///     输出器名称
         /// </summary>
         public string Name => "Network";
 
         /// <summary>
-        /// 是否启用该输出器
+        ///     是否启用该输出器
         /// </summary>
         public bool IsEnabled { get; set; } = true;
 
         /// <summary>
-        /// 最小日志等级过滤
+        ///     最小日志等级过滤
         /// </summary>
         public LogLevel MinLevel { get; set; } = LogLevel.Error;
 
         /// <summary>
-        /// 写入日志条目
+        ///     写入日志条目
         /// </summary>
         /// <param name="entry">日志条目</param>
         public void WriteLog(LogEntry entry)
@@ -75,7 +75,7 @@ namespace xFrame.Runtime.Logging.Appenders
         }
 
         /// <summary>
-        /// 刷新缓冲区
+        ///     刷新缓冲区
         /// </summary>
         public void Flush()
         {
@@ -83,7 +83,7 @@ namespace xFrame.Runtime.Logging.Appenders
         }
 
         /// <summary>
-        /// 释放资源
+        ///     释放资源
         /// </summary>
         public void Dispose()
         {
@@ -114,7 +114,7 @@ namespace xFrame.Runtime.Logging.Appenders
         }
 
         /// <summary>
-        /// 定时刷新日志队列
+        ///     定时刷新日志队列
         /// </summary>
         /// <param name="state">定时器状态</param>
         private async void FlushLogs(object state)
@@ -159,7 +159,7 @@ namespace xFrame.Runtime.Logging.Appenders
         }
 
         /// <summary>
-        /// 异步发送日志到服务器
+        ///     异步发送日志到服务器
         /// </summary>
         /// <param name="logs">日志内容</param>
         /// <returns>发送任务</returns>

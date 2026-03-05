@@ -6,16 +6,16 @@ using xFrame.Runtime.Logging;
 namespace xFrame.Runtime.Persistence.Migration
 {
     /// <summary>
-    /// 数据迁移管理器
-    /// 管理数据版本迁移器，支持链式迁移
+    ///     数据迁移管理器
+    ///     管理数据版本迁移器，支持链式迁移
     /// </summary>
     public class MigrationManager
     {
-        private readonly Dictionary<Type, List<IDataMigrator>> _migrators = new();
         private readonly IXLogger _logger;
+        private readonly Dictionary<Type, List<IDataMigrator>> _migrators = new();
 
         /// <summary>
-        /// 创建迁移管理器
+        ///     创建迁移管理器
         /// </summary>
         public MigrationManager()
         {
@@ -23,7 +23,7 @@ namespace xFrame.Runtime.Persistence.Migration
         }
 
         /// <summary>
-        /// 注册数据迁移器
+        ///     注册数据迁移器
         /// </summary>
         /// <typeparam name="T">目标数据类型</typeparam>
         /// <param name="migrator">迁移器实例</param>
@@ -33,16 +33,13 @@ namespace xFrame.Runtime.Persistence.Migration
         }
 
         /// <summary>
-        /// 注册数据迁移器
+        ///     注册数据迁移器
         /// </summary>
         /// <param name="targetType">目标数据类型</param>
         /// <param name="migrator">迁移器实例</param>
         public void RegisterMigrator(Type targetType, IDataMigrator migrator)
         {
-            if (migrator == null)
-            {
-                throw new ArgumentNullException(nameof(migrator));
-            }
+            if (migrator == null) throw new ArgumentNullException(nameof(migrator));
 
             if (!_migrators.TryGetValue(targetType, out var list))
             {
@@ -65,7 +62,7 @@ namespace xFrame.Runtime.Persistence.Migration
         }
 
         /// <summary>
-        /// 注销数据迁移器
+        ///     注销数据迁移器
         /// </summary>
         /// <typeparam name="T">目标数据类型</typeparam>
         /// <param name="fromVersion">源版本号</param>
@@ -76,23 +73,17 @@ namespace xFrame.Runtime.Persistence.Migration
         }
 
         /// <summary>
-        /// 注销数据迁移器
+        ///     注销数据迁移器
         /// </summary>
         /// <param name="targetType">目标数据类型</param>
         /// <param name="fromVersion">源版本号</param>
         /// <returns>是否成功注销</returns>
         public bool UnregisterMigrator(Type targetType, int fromVersion)
         {
-            if (!_migrators.TryGetValue(targetType, out var list))
-            {
-                return false;
-            }
+            if (!_migrators.TryGetValue(targetType, out var list)) return false;
 
             var migrator = list.FirstOrDefault(m => m.FromVersion == fromVersion);
-            if (migrator == null)
-            {
-                return false;
-            }
+            if (migrator == null) return false;
 
             list.Remove(migrator);
             _logger.Debug($"注销迁移器: {targetType.Name} v{fromVersion}");
@@ -100,7 +91,7 @@ namespace xFrame.Runtime.Persistence.Migration
         }
 
         /// <summary>
-        /// 执行数据迁移
+        ///     执行数据迁移
         /// </summary>
         /// <typeparam name="T">目标数据类型</typeparam>
         /// <param name="jsonData">原始JSON数据</param>
@@ -113,7 +104,7 @@ namespace xFrame.Runtime.Persistence.Migration
         }
 
         /// <summary>
-        /// 执行数据迁移
+        ///     执行数据迁移
         /// </summary>
         /// <param name="targetType">目标数据类型</param>
         /// <param name="jsonData">原始JSON数据</param>
@@ -169,7 +160,7 @@ namespace xFrame.Runtime.Persistence.Migration
         }
 
         /// <summary>
-        /// 检查是否可以从指定版本迁移到目标版本
+        ///     检查是否可以从指定版本迁移到目标版本
         /// </summary>
         /// <typeparam name="T">目标数据类型</typeparam>
         /// <param name="fromVersion">源版本号</param>
@@ -181,7 +172,7 @@ namespace xFrame.Runtime.Persistence.Migration
         }
 
         /// <summary>
-        /// 检查是否可以从指定版本迁移到目标版本
+        ///     检查是否可以从指定版本迁移到目标版本
         /// </summary>
         /// <param name="targetType">目标数据类型</param>
         /// <param name="fromVersion">源版本号</param>
@@ -189,24 +180,15 @@ namespace xFrame.Runtime.Persistence.Migration
         /// <returns>是否可以迁移</returns>
         public bool CanMigrate(Type targetType, int fromVersion, int toVersion)
         {
-            if (fromVersion >= toVersion)
-            {
-                return true;
-            }
+            if (fromVersion >= toVersion) return true;
 
-            if (!_migrators.TryGetValue(targetType, out var list) || list.Count == 0)
-            {
-                return false;
-            }
+            if (!_migrators.TryGetValue(targetType, out var list) || list.Count == 0) return false;
 
             var currentVersion = fromVersion;
             while (currentVersion < toVersion)
             {
                 var migrator = list.FirstOrDefault(m => m.FromVersion == currentVersion);
-                if (migrator == null)
-                {
-                    return false;
-                }
+                if (migrator == null) return false;
 
                 currentVersion = migrator.ToVersion;
             }
@@ -215,7 +197,7 @@ namespace xFrame.Runtime.Persistence.Migration
         }
 
         /// <summary>
-        /// 获取指定类型的所有迁移器
+        ///     获取指定类型的所有迁移器
         /// </summary>
         /// <typeparam name="T">目标数据类型</typeparam>
         /// <returns>迁移器列表</returns>
@@ -225,22 +207,19 @@ namespace xFrame.Runtime.Persistence.Migration
         }
 
         /// <summary>
-        /// 获取指定类型的所有迁移器
+        ///     获取指定类型的所有迁移器
         /// </summary>
         /// <param name="targetType">目标数据类型</param>
         /// <returns>迁移器列表</returns>
         public IReadOnlyList<IDataMigrator> GetMigrators(Type targetType)
         {
-            if (_migrators.TryGetValue(targetType, out var list))
-            {
-                return list.AsReadOnly();
-            }
+            if (_migrators.TryGetValue(targetType, out var list)) return list.AsReadOnly();
 
             return Array.Empty<IDataMigrator>();
         }
 
         /// <summary>
-        /// 清除所有迁移器
+        ///     清除所有迁移器
         /// </summary>
         public void Clear()
         {

@@ -5,16 +5,15 @@ using VContainer;
 namespace xFrame.Runtime.ResourceManager
 {
     /// <summary>
-    /// AssetManager使用示例
-    /// 演示如何在不引用Addressable命名空间的情况下使用资源管理功能
+    ///     AssetManager使用示例
+    ///     演示如何在不引用Addressable命名空间的情况下使用资源管理功能
     /// </summary>
     public class AssetManagerExample : MonoBehaviour
     {
-        [Inject]
-        private IAssetManager _assetManager;
+        [Inject] private IAssetManager _assetManager;
 
         /// <summary>
-        /// Unity Start方法 - 演示各种用法
+        ///     Unity Start方法 - 演示各种用法
         /// </summary>
         private async void Start()
         {
@@ -51,7 +50,7 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 示例：同步加载资源
+        ///     示例：同步加载资源
         /// </summary>
         public void ExampleSyncLoad()
         {
@@ -74,7 +73,7 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 示例：异步加载资源
+        ///     示例：异步加载资源
         /// </summary>
         public async Task ExampleAsyncLoad()
         {
@@ -96,7 +95,7 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 示例：预加载资源
+        ///     示例：预加载资源
         /// </summary>
         public async Task ExamplePreload()
         {
@@ -113,7 +112,7 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 示例：检查资源缓存状态
+        ///     示例：检查资源缓存状态
         /// </summary>
         public void ExampleCheckCache()
         {
@@ -127,7 +126,7 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 示例：批量释放资源
+        ///     示例：批量释放资源
         /// </summary>
         public void ExampleBatchRelease()
         {
@@ -144,7 +143,7 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 示例：非泛型方式加载资源
+        ///     示例：非泛型方式加载资源
         /// </summary>
         public void ExampleNonGenericLoad()
         {

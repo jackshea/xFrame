@@ -13,9 +13,9 @@ using xFrame.Runtime.UI.Events;
 namespace xFrame.Runtime.UI
 {
     /// <summary>
-    /// UI管理器实现
-    /// 负责所有UI的加载、显示、隐藏、销毁等管理
-    /// 单例模式，通过 UIManager.Instance 访问
+    ///     UI管理器实现
+    ///     负责所有UI的加载、显示、隐藏、销毁等管理
+    ///     单例模式，通过 UIManager.Instance 访问
     /// </summary>
     public class UIManager : MonoBehaviour, IUIManager
     {
@@ -37,7 +37,7 @@ namespace xFrame.Runtime.UI
         private readonly Dictionary<Type, Queue<UIView>> _uiPools = new();
 
         /// <summary>
-        /// 资源管理器
+        ///     资源管理器
         /// </summary>
         private IAssetManager _assetManager;
 
@@ -48,7 +48,7 @@ namespace xFrame.Runtime.UI
         private Transform _uiRoot;
 
         /// <summary>
-        /// 单例实例
+        ///     单例实例
         /// </summary>
         public static UIManager Instance
         {
@@ -73,7 +73,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// Unity Awake生命周期
+        ///     Unity Awake生命周期
         /// </summary>
         private void Awake()
         {
@@ -94,7 +94,7 @@ namespace xFrame.Runtime.UI
         #region Unity生命周期
 
         /// <summary>
-        /// 当对象被销毁时清理资源
+        ///     当对象被销毁时清理资源
         /// </summary>
         private void OnDestroy()
         {
@@ -124,7 +124,7 @@ namespace xFrame.Runtime.UI
         #endregion
 
         /// <summary>
-        /// 初始化资源管理器
+        ///     初始化资源管理器
         /// </summary>
         private void InitializeAssetManager()
         {
@@ -162,7 +162,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 初始化UI根节点和各层级Canvas
+        ///     初始化UI根节点和各层级Canvas
         /// </summary>
         private void InitializeUIRoot()
         {
@@ -173,7 +173,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 创建指定层级的Canvas
+        ///     创建指定层级的Canvas
         /// </summary>
         private void CreateLayerCanvas(UILayer layer)
         {
@@ -195,7 +195,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 释放UI预制体资源
+        ///     释放UI预制体资源
         /// </summary>
         private void ReleaseUIPrefab(UIView uiView)
         {
@@ -212,7 +212,7 @@ namespace xFrame.Runtime.UI
         #region 打开UI
 
         /// <summary>
-        /// 异步打开UI
+        ///     异步打开UI
         /// </summary>
         public async Task<T> OpenAsync<T>(object data = null) where T : UIView
         {
@@ -220,7 +220,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 异步打开UI（通过类型）
+        ///     异步打开UI（通过类型）
         /// </summary>
         public async Task<UIView> OpenAsync(Type uiType, object data = null)
         {
@@ -251,10 +251,7 @@ namespace xFrame.Runtime.UI
             uiInstance.transform.SetParent(parentTransform, false);
 
             // 如果是模态窗口，创建遮罩
-            if (uiInstance is UIWindow window && window.IsModal)
-            {
-                CreateWindowMask(window, parentTransform);
-            }
+            if (uiInstance is UIWindow window && window.IsModal) CreateWindowMask(window, parentTransform);
 
             // 调用生命周期
             uiInstance.InternalOnCreate();
@@ -286,7 +283,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 获取或创建UI实例
+        ///     获取或创建UI实例
         /// </summary>
         private async Task<UIView> GetOrCreateUIInstance(Type uiType)
         {
@@ -315,8 +312,8 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 异步加载UI预制体
-        /// 使用IAssetManager加载资源
+        ///     异步加载UI预制体
+        ///     使用IAssetManager加载资源
         /// </summary>
         private async Task<GameObject> LoadUIPrefabAsync(Type uiType)
         {
@@ -360,7 +357,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 更新Canvas排序顺序
+        ///     更新Canvas排序顺序
         /// </summary>
         private void UpdateCanvasSortOrder(UIView uiView)
         {
@@ -377,7 +374,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 为模态窗口创建遮罩
+        ///     为模态窗口创建遮罩
         /// </summary>
         /// <param name="window">窗口实例</param>
         /// <param name="parentTransform">父节点</param>
@@ -420,7 +417,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 销毁窗口遮罩
+        ///     销毁窗口遮罩
         /// </summary>
         /// <param name="window">窗口实例</param>
         private void DestroyWindowMask(UIWindow window)
@@ -434,7 +431,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 遮罩点击事件处理
+        ///     遮罩点击事件处理
         /// </summary>
         /// <param name="window">关联的窗口</param>
         private void OnMaskClicked(UIWindow window)
@@ -451,7 +448,7 @@ namespace xFrame.Runtime.UI
         #region 关闭UI
 
         /// <summary>
-        /// 关闭指定类型的UI
+        ///     关闭指定类型的UI
         /// </summary>
         public void Close<T>() where T : UIView
         {
@@ -459,7 +456,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 关闭指定实例的UI
+        ///     关闭指定实例的UI
         /// </summary>
         public void Close(UIView view)
         {
@@ -469,7 +466,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 关闭指定类型的UI
+        ///     关闭指定类型的UI
         /// </summary>
         public void Close(Type uiType)
         {
@@ -509,10 +506,7 @@ namespace xFrame.Runtime.UI
             }
 
             // 如果是模态窗口，销毁遮罩
-            if (uiInstance is UIWindow window && window.MaskObject != null)
-            {
-                DestroyWindowMask(window);
-            }
+            if (uiInstance is UIWindow window && window.MaskObject != null) DestroyWindowMask(window);
 
             // 调用关闭生命周期
             uiInstance.InternalOnClose();
@@ -541,7 +535,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 关闭所有UI
+        ///     关闭所有UI
         /// </summary>
         public void CloseAll(UILayer? layer = null)
         {
@@ -553,7 +547,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 将UI实例返回到对象池
+        ///     将UI实例返回到对象池
         /// </summary>
         private void ReturnToPool(UIView uiInstance)
         {
@@ -570,7 +564,7 @@ namespace xFrame.Runtime.UI
         #region 查询UI
 
         /// <summary>
-        /// 获取已打开的UI实例
+        ///     获取已打开的UI实例
         /// </summary>
         public T Get<T>() where T : UIView
         {
@@ -578,7 +572,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 获取已打开的UI实例（通过类型）
+        ///     获取已打开的UI实例（通过类型）
         /// </summary>
         public UIView Get(Type uiType)
         {
@@ -587,7 +581,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 检查指定类型的UI是否已打开
+        ///     检查指定类型的UI是否已打开
         /// </summary>
         public bool IsOpen<T>() where T : UIView
         {
@@ -595,7 +589,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 检查指定类型的UI是否已打开
+        ///     检查指定类型的UI是否已打开
         /// </summary>
         public bool IsOpen(Type uiType)
         {
@@ -607,7 +601,7 @@ namespace xFrame.Runtime.UI
         #region 导航栈
 
         /// <summary>
-        /// 返回上一个UI（栈管理）
+        ///     返回上一个UI（栈管理）
         /// </summary>
         public void Back()
         {
@@ -629,7 +623,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 检查是否可以返回
+        ///     检查是否可以返回
         /// </summary>
         public bool CanGoBack()
         {
@@ -637,7 +631,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 清空导航栈
+        ///     清空导航栈
         /// </summary>
         public void ClearNavigationStack()
         {
@@ -653,7 +647,7 @@ namespace xFrame.Runtime.UI
         #region 预加载
 
         /// <summary>
-        /// 预加载UI资源
+        ///     预加载UI资源
         /// </summary>
         public async Task PreloadAsync<T>() where T : UIView
         {
@@ -661,7 +655,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 预加载UI资源（通过类型）
+        ///     预加载UI资源（通过类型）
         /// </summary>
         public async Task PreloadAsync(Type uiType)
         {
@@ -699,7 +693,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 预加载多个UI资源
+        ///     预加载多个UI资源
         /// </summary>
         public async Task PreloadBatchAsync(params Type[] uiTypes)
         {
@@ -715,7 +709,7 @@ namespace xFrame.Runtime.UI
         #region 资源管理
 
         /// <summary>
-        /// 释放未使用的UI资源
+        ///     释放未使用的UI资源
         /// </summary>
         public void ReleaseUnusedResources()
         {
@@ -728,7 +722,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 清理所有缓存的UI资源
+        ///     清理所有缓存的UI资源
         /// </summary>
         public void ClearAllUIResources()
         {
@@ -759,7 +753,7 @@ namespace xFrame.Runtime.UI
         #region 工具方法
 
         /// <summary>
-        /// 设置指定层级的交互性
+        ///     设置指定层级的交互性
         /// </summary>
         public void SetLayerInteractable(UILayer layer, bool interactable)
         {
@@ -777,7 +771,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 获取指定层级当前打开的UI数量
+        ///     获取指定层级当前打开的UI数量
         /// </summary>
         public int GetOpenUICount(UILayer layer)
         {
@@ -789,7 +783,7 @@ namespace xFrame.Runtime.UI
         #region 事件通知
 
         /// <summary>
-        /// 发送UI打开事件
+        ///     发送UI打开事件
         /// </summary>
         /// <param name="uiType">UI类型</param>
         /// <param name="view">UI实例</param>
@@ -805,7 +799,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 发送UI关闭事件
+        ///     发送UI关闭事件
         /// </summary>
         /// <param name="uiType">UI类型</param>
         /// <param name="layer">UI层级</param>
@@ -821,7 +815,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 发送UI层级变化事件
+        ///     发送UI层级变化事件
         /// </summary>
         /// <param name="layer">变化的层级</param>
         private void RaiseUILayerChangedEvent(UILayer layer)
@@ -832,7 +826,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 发送UI导航事件
+        ///     发送UI导航事件
         /// </summary>
         /// <param name="fromType">来源UI类型</param>
         /// <param name="toType">目标UI类型</param>

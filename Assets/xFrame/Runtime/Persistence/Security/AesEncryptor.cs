@@ -6,30 +6,22 @@ using System.Text;
 namespace xFrame.Runtime.Persistence.Security
 {
     /// <summary>
-    /// AES加密器实现
-    /// 使用AES-256-CBC模式进行数据加密
+    ///     AES加密器实现
+    ///     使用AES-256-CBC模式进行数据加密
     /// </summary>
     public class AesEncryptor : IEncryptor
     {
-        private readonly byte[] _key;
         private readonly byte[] _iv;
+        private readonly byte[] _key;
 
         /// <summary>
-        /// 加密器名称
-        /// </summary>
-        public string Name => "AES";
-
-        /// <summary>
-        /// 使用密钥字符串创建AES加密器
+        ///     使用密钥字符串创建AES加密器
         /// </summary>
         /// <param name="password">密钥字符串</param>
         /// <param name="salt">盐值（可选，默认使用固定盐值）</param>
         public AesEncryptor(string password, string salt = null)
         {
-            if (string.IsNullOrEmpty(password))
-            {
-                throw new ArgumentNullException(nameof(password), "密钥不能为空");
-            }
+            if (string.IsNullOrEmpty(password)) throw new ArgumentNullException(nameof(password), "密钥不能为空");
 
             // 使用PBKDF2从密码派生密钥
             var saltBytes = string.IsNullOrEmpty(salt)
@@ -38,41 +30,37 @@ namespace xFrame.Runtime.Persistence.Security
 
             using var deriveBytes = new Rfc2898DeriveBytes(password, saltBytes, 10000);
             _key = deriveBytes.GetBytes(32); // AES-256需要32字节密钥
-            _iv = deriveBytes.GetBytes(16);  // AES需要16字节IV
+            _iv = deriveBytes.GetBytes(16); // AES需要16字节IV
         }
 
         /// <summary>
-        /// 使用原始密钥和IV创建AES加密器
+        ///     使用原始密钥和IV创建AES加密器
         /// </summary>
         /// <param name="key">32字节密钥</param>
         /// <param name="iv">16字节IV</param>
         public AesEncryptor(byte[] key, byte[] iv)
         {
-            if (key == null || key.Length != 32)
-            {
-                throw new ArgumentException("密钥必须为32字节", nameof(key));
-            }
+            if (key == null || key.Length != 32) throw new ArgumentException("密钥必须为32字节", nameof(key));
 
-            if (iv == null || iv.Length != 16)
-            {
-                throw new ArgumentException("IV必须为16字节", nameof(iv));
-            }
+            if (iv == null || iv.Length != 16) throw new ArgumentException("IV必须为16字节", nameof(iv));
 
             _key = key;
             _iv = iv;
         }
 
         /// <summary>
-        /// 加密数据
+        ///     加密器名称
+        /// </summary>
+        public string Name => "AES";
+
+        /// <summary>
+        ///     加密数据
         /// </summary>
         /// <param name="plainData">明文数据</param>
         /// <returns>加密后的数据</returns>
         public byte[] Encrypt(byte[] plainData)
         {
-            if (plainData == null || plainData.Length == 0)
-            {
-                return plainData;
-            }
+            if (plainData == null || plainData.Length == 0) return plainData;
 
             using var aes = Aes.Create();
             aes.Key = _key;
@@ -91,16 +79,13 @@ namespace xFrame.Runtime.Persistence.Security
         }
 
         /// <summary>
-        /// 解密数据
+        ///     解密数据
         /// </summary>
         /// <param name="cipherData">密文数据</param>
         /// <returns>解密后的数据</returns>
         public byte[] Decrypt(byte[] cipherData)
         {
-            if (cipherData == null || cipherData.Length == 0)
-            {
-                return cipherData;
-            }
+            if (cipherData == null || cipherData.Length == 0) return cipherData;
 
             using var aes = Aes.Create();
             aes.Key = _key;

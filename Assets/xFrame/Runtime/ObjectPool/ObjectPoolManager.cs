@@ -4,8 +4,8 @@ using System.Collections.Generic;
 namespace xFrame.Runtime.ObjectPool
 {
     /// <summary>
-    /// 对象池管理器
-    /// 用于统一管理多个对象池实例
+    ///     对象池管理器
+    ///     用于统一管理多个对象池实例
     /// </summary>
     public class ObjectPoolManager : IDisposable
     {
@@ -15,7 +15,7 @@ namespace xFrame.Runtime.ObjectPool
         private bool _disposed;
 
         /// <summary>
-        /// 构造函数
+        ///     构造函数
         /// </summary>
         /// <param name="threadSafe">是否启用线程安全</param>
         public ObjectPoolManager(bool threadSafe = false)
@@ -28,7 +28,7 @@ namespace xFrame.Runtime.ObjectPool
         }
 
         /// <summary>
-        /// 销毁对象池管理器，释放所有资源
+        ///     销毁对象池管理器，释放所有资源
         /// </summary>
         public void Dispose()
         {
@@ -40,7 +40,7 @@ namespace xFrame.Runtime.ObjectPool
         }
 
         /// <summary>
-        /// 注册一个对象池
+        ///     注册一个对象池
         /// </summary>
         /// <typeparam name="T">池化对象的类型</typeparam>
         /// <param name="pool">对象池实例</param>
@@ -63,7 +63,7 @@ namespace xFrame.Runtime.ObjectPool
         }
 
         /// <summary>
-        /// 获取指定类型的对象池
+        ///     获取指定类型的对象池
         /// </summary>
         /// <typeparam name="T">池化对象的类型</typeparam>
         /// <returns>对象池实例，如果不存在则返回null</returns>
@@ -87,7 +87,7 @@ namespace xFrame.Runtime.ObjectPool
         }
 
         /// <summary>
-        /// 获取或创建指定类型的对象池
+        ///     获取或创建指定类型的对象池
         /// </summary>
         /// <typeparam name="T">池化对象的类型</typeparam>
         /// <param name="createFunc">对象创建函数</param>
@@ -105,7 +105,7 @@ namespace xFrame.Runtime.ObjectPool
         }
 
         /// <summary>
-        /// 获取或创建默认构造函数的对象池
+        ///     获取或创建默认构造函数的对象池
         /// </summary>
         /// <typeparam name="T">池化对象的类型，必须有无参构造函数</typeparam>
         /// <param name="maxSize">池的最大容量</param>
@@ -122,7 +122,7 @@ namespace xFrame.Runtime.ObjectPool
         }
 
         /// <summary>
-        /// 从指定类型的对象池中获取对象
+        ///     从指定类型的对象池中获取对象
         /// </summary>
         /// <typeparam name="T">池化对象的类型</typeparam>
         /// <returns>池化对象实例，如果池不存在则返回null</returns>
@@ -133,7 +133,7 @@ namespace xFrame.Runtime.ObjectPool
         }
 
         /// <summary>
-        /// 将对象释放回对应类型的对象池
+        ///     将对象释放回对应类型的对象池
         /// </summary>
         /// <typeparam name="T">池化对象的类型</typeparam>
         /// <param name="obj">要释放的对象</param>
@@ -147,7 +147,7 @@ namespace xFrame.Runtime.ObjectPool
         }
 
         /// <summary>
-        /// 预热指定类型的对象池
+        ///     预热指定类型的对象池
         /// </summary>
         /// <typeparam name="T">池化对象的类型</typeparam>
         /// <param name="count">要预创建的对象数量</param>
@@ -158,7 +158,7 @@ namespace xFrame.Runtime.ObjectPool
         }
 
         /// <summary>
-        /// 清空指定类型的对象池
+        ///     清空指定类型的对象池
         /// </summary>
         /// <typeparam name="T">池化对象的类型</typeparam>
         public void Clear<T>() where T : class
@@ -168,7 +168,7 @@ namespace xFrame.Runtime.ObjectPool
         }
 
         /// <summary>
-        /// 清空所有对象池
+        ///     清空所有对象池
         /// </summary>
         public void ClearAll()
         {
@@ -184,7 +184,7 @@ namespace xFrame.Runtime.ObjectPool
         }
 
         /// <summary>
-        /// 内部清空所有对象池的实现
+        ///     内部清空所有对象池的实现
         /// </summary>
         private void ClearAllInternal()
         {
@@ -196,7 +196,7 @@ namespace xFrame.Runtime.ObjectPool
         }
 
         /// <summary>
-        /// 检查管理器是否已被销毁
+        ///     检查管理器是否已被销毁
         /// </summary>
         private void ThrowIfDisposed()
         {

@@ -5,14 +5,14 @@ using xFrame.Runtime.ObjectPool;
 namespace xFrame.Tests
 {
     /// <summary>
-    /// 对象池系统单元测试
-    /// 测试对象池的核心功能和边界情况
+    ///     对象池系统单元测试
+    ///     测试对象池的核心功能和边界情况
     /// </summary>
     [TestFixture]
     public class ObjectPoolTests
     {
         /// <summary>
-        /// 测试用的简单类
+        ///     测试用的简单类
         /// </summary>
         private class TestObject
         {
@@ -27,7 +27,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 实现IPoolable接口的测试类
+        ///     实现IPoolable接口的测试类
         /// </summary>
         private class PoolableTestObject : IPoolable
         {
@@ -56,7 +56,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试基本的获取和释放功能
+        ///     测试基本的获取和释放功能
         /// </summary>
         [Test]
         public void TestBasicGetAndRelease()
@@ -83,7 +83,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试对象池的容量限制
+        ///     测试对象池的容量限制
         /// </summary>
         [Test]
         public void TestMaxSizeLimit()
@@ -117,7 +117,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试预热功能
+        ///     测试预热功能
         /// </summary>
         [Test]
         public void TestWarmUp()
@@ -137,7 +137,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试带容量限制的预热
+        ///     测试带容量限制的预热
         /// </summary>
         [Test]
         public void TestWarmUpWithMaxSize()
@@ -151,7 +151,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试清空功能
+        ///     测试清空功能
         /// </summary>
         [Test]
         public void TestClear()
@@ -176,7 +176,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试回调函数
+        ///     测试回调函数
         /// </summary>
         [Test]
         public void TestCallbacks()
@@ -212,7 +212,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试IPoolable接口支持
+        ///     测试IPoolable接口支持
         /// </summary>
         [Test]
         public void TestPoolableInterface()
@@ -238,7 +238,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试默认构造函数的对象池
+        ///     测试默认构造函数的对象池
         /// </summary>
         [Test]
         public void TestDefaultConstructorPool()
@@ -258,7 +258,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试防止重复释放
+        ///     测试防止重复释放
         /// </summary>
         [Test]
         public void TestPreventDuplicateRelease()
@@ -275,7 +275,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试空对象释放
+        ///     测试空对象释放
         /// </summary>
         [Test]
         public void TestReleaseNullObject()
@@ -288,7 +288,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试对象池销毁
+        ///     测试对象池销毁
         /// </summary>
         [Test]
         public void TestPoolDispose()

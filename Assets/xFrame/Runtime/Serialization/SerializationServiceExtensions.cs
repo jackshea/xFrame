@@ -3,12 +3,12 @@ using VContainer;
 namespace xFrame.Runtime.Serialization
 {
     /// <summary>
-    /// 序列化模块的VContainer注册扩展方法
+    ///     序列化模块的VContainer注册扩展方法
     /// </summary>
     public static class SerializationServiceExtensions
     {
         /// <summary>
-        /// 注册序列化模块到VContainer容器
+        ///     注册序列化模块到VContainer容器
         /// </summary>
         /// <param name="builder">容器构建器</param>
         public static void RegisterSerializationModule(this IContainerBuilder builder)
@@ -28,7 +28,7 @@ namespace xFrame.Runtime.Serialization
         }
 
         /// <summary>
-        /// 注册自定义序列化器到VContainer容器
+        ///     注册自定义序列化器到VContainer容器
         /// </summary>
         /// <typeparam name="TSerializer">序列化器类型</typeparam>
         /// <param name="builder">容器构建器</param>

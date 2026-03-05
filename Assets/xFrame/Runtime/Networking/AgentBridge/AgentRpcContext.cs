@@ -1,7 +1,7 @@
 namespace xFrame.Runtime.Networking.AgentBridge
 {
     /// <summary>
-    /// 单连接上下文。
+    ///     单连接上下文。
     /// </summary>
     public sealed class AgentRpcContext
     {
@@ -23,6 +23,10 @@ namespace xFrame.Runtime.Networking.AgentBridge
 
     public sealed class AgentRpcExecutionResult
     {
+        public object Result { get; private set; }
+
+        public JsonRpcError Error { get; private set; }
+
         public static AgentRpcExecutionResult Success(object result)
         {
             return new AgentRpcExecutionResult { Result = result };
@@ -40,9 +44,5 @@ namespace xFrame.Runtime.Networking.AgentBridge
                 }
             };
         }
-
-        public object Result { get; private set; }
-
-        public JsonRpcError Error { get; private set; }
     }
 }

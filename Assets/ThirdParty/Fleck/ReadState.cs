@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace Fleck
@@ -9,8 +8,10 @@ namespace Fleck
         {
             Data = new List<byte>();
         }
-        public List<byte> Data { get; private set; }
+
+        public List<byte> Data { get; }
         public FrameType? FrameType { get; set; }
+
         public void Clear()
         {
             Data.Clear();
@@ -18,4 +19,3 @@ namespace Fleck
         }
     }
 }
-

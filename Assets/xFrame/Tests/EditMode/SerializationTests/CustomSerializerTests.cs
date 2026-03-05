@@ -6,14 +6,20 @@ using xFrame.Runtime.Serialization;
 namespace xFrame.Tests.SerializationTests
 {
     /// <summary>
-    /// 自定义序列化器测试
-    /// 演示如何实现和测试自定义序列化器
+    ///     自定义序列化器测试
+    ///     演示如何实现和测试自定义序列化器
     /// </summary>
     [TestFixture]
     public class CustomSerializerTests
     {
+        [SetUp]
+        public void SetUp()
+        {
+            _serializerManager = new SerializerManager();
+        }
+
         /// <summary>
-        /// 测试用的简单数据类
+        ///     测试用的简单数据类
         /// </summary>
         [Serializable]
         private class TestData
@@ -23,13 +29,13 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 自定义的Base64包装序列化器
-        /// 将JSON序列化结果转换为Base64编码
+        ///     自定义的Base64包装序列化器
+        ///     将JSON序列化结果转换为Base64编码
         /// </summary>
         private class Base64JsonSerializer : ISerializer
         {
             public const string SerializerName = "Base64Json";
-            private readonly JsonSerializer _innerSerializer = new JsonSerializer();
+            private readonly JsonSerializer _innerSerializer = new();
 
             public string Name => SerializerName;
 
@@ -78,12 +84,12 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 压缩序列化器示例（简化版，仅移除空格）
+        ///     压缩序列化器示例（简化版，仅移除空格）
         /// </summary>
         private class CompactJsonSerializer : ISerializer
         {
             public const string SerializerName = "CompactJson";
-            private readonly JsonSerializer _innerSerializer = new JsonSerializer();
+            private readonly JsonSerializer _innerSerializer = new();
 
             public string Name => SerializerName;
 
@@ -127,16 +133,8 @@ namespace xFrame.Tests.SerializationTests
 
         private ISerializerManager _serializerManager;
 
-        [SetUp]
-        public void SetUp()
-        {
-            _serializerManager = new SerializerManager();
-        }
-
-        #region Base64序列化器测试
-
         /// <summary>
-        /// 测试Base64序列化器的名称
+        ///     测试Base64序列化器的名称
         /// </summary>
         [Test]
         public void Base64JsonSerializer_Name_ShouldBeCorrect()
@@ -150,7 +148,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试Base64序列化器的序列化
+        ///     测试Base64序列化器的序列化
         /// </summary>
         [Test]
         public void Base64JsonSerializer_Serialize_ShouldReturnBase64()
@@ -169,7 +167,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试Base64序列化器的往返
+        ///     测试Base64序列化器的往返
         /// </summary>
         [Test]
         public void Base64JsonSerializer_RoundTrip_ShouldWork()
@@ -189,7 +187,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试在SerializerManager中注册Base64序列化器
+        ///     测试在SerializerManager中注册Base64序列化器
         /// </summary>
         [Test]
         public void Base64JsonSerializer_RegisterAndUse_ShouldWork()
@@ -202,7 +200,8 @@ namespace xFrame.Tests.SerializationTests
 
             // Act
             var base64 = _serializerManager.SerializeToString(Base64JsonSerializer.SerializerName, data);
-            var restored = _serializerManager.DeserializeFromString<TestData>(Base64JsonSerializer.SerializerName, base64);
+            var restored =
+                _serializerManager.DeserializeFromString<TestData>(Base64JsonSerializer.SerializerName, base64);
 
             // Assert
             Assert.IsNotNull(restored);
@@ -211,7 +210,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试设置Base64序列化器为默认
+        ///     测试设置Base64序列化器为默认
         /// </summary>
         [Test]
         public void Base64JsonSerializer_SetAsDefault_ShouldWork()
@@ -233,12 +232,8 @@ namespace xFrame.Tests.SerializationTests
             Assert.AreEqual(data.Name, restored.Name);
         }
 
-        #endregion
-
-        #region Compact序列化器测试
-
         /// <summary>
-        /// 测试Compact序列化器的名称
+        ///     测试Compact序列化器的名称
         /// </summary>
         [Test]
         public void CompactJsonSerializer_Name_ShouldBeCorrect()
@@ -251,7 +246,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试Compact序列化器的往返
+        ///     测试Compact序列化器的往返
         /// </summary>
         [Test]
         public void CompactJsonSerializer_RoundTrip_ShouldWork()
@@ -270,12 +265,8 @@ namespace xFrame.Tests.SerializationTests
             Assert.AreEqual(original.Value, restored.Value);
         }
 
-        #endregion
-
-        #region 多序列化器协同测试
-
         /// <summary>
-        /// 测试多个自定义序列化器同时注册
+        ///     测试多个自定义序列化器同时注册
         /// </summary>
         [Test]
         public void MultipleCustomSerializers_RegisterAll_ShouldWork()
@@ -303,9 +294,12 @@ namespace xFrame.Tests.SerializationTests
             Assert.AreNotEqual(jsonResult, base64Result);
 
             // 但都能正确反序列化
-            var fromJson = _serializerManager.DeserializeFromString<TestData>(JsonSerializer.SerializerName, jsonResult);
-            var fromBase64 = _serializerManager.DeserializeFromString<TestData>(Base64JsonSerializer.SerializerName, base64Result);
-            var fromCompact = _serializerManager.DeserializeFromString<TestData>(CompactJsonSerializer.SerializerName, compactResult);
+            var fromJson =
+                _serializerManager.DeserializeFromString<TestData>(JsonSerializer.SerializerName, jsonResult);
+            var fromBase64 =
+                _serializerManager.DeserializeFromString<TestData>(Base64JsonSerializer.SerializerName, base64Result);
+            var fromCompact =
+                _serializerManager.DeserializeFromString<TestData>(CompactJsonSerializer.SerializerName, compactResult);
 
             Assert.AreEqual(data.Name, fromJson.Name);
             Assert.AreEqual(data.Name, fromBase64.Name);
@@ -313,7 +307,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试在不同序列化器之间切换
+        ///     测试在不同序列化器之间切换
         /// </summary>
         [Test]
         public void SwitchBetweenSerializers_ShouldWork()
@@ -345,12 +339,8 @@ namespace xFrame.Tests.SerializationTests
             Assert.AreNotEqual(json1, base64);
         }
 
-        #endregion
-
-        #region 边界条件测试
-
         /// <summary>
-        /// 测试自定义序列化器处理null
+        ///     测试自定义序列化器处理null
         /// </summary>
         [Test]
         public void CustomSerializer_HandleNull_ShouldWork()
@@ -366,7 +356,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试自定义序列化器处理空字符串
+        ///     测试自定义序列化器处理空字符串
         /// </summary>
         [Test]
         public void CustomSerializer_HandleEmptyString_ShouldWork()
@@ -382,7 +372,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试自定义序列化器处理空字节数组
+        ///     测试自定义序列化器处理空字节数组
         /// </summary>
         [Test]
         public void CustomSerializer_HandleEmptyBytes_ShouldWork()
@@ -396,7 +386,5 @@ namespace xFrame.Tests.SerializationTests
             // Assert
             Assert.IsNull(result);
         }
-
-        #endregion
     }
 }

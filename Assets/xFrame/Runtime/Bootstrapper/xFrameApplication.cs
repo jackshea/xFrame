@@ -1,60 +1,57 @@
-using System;
 using UnityEngine;
 using xFrame.Runtime.EventBus;
 
 namespace xFrame.Runtime
 {
     /// <summary>
-    /// xFrame应用程序
-    /// 作为游戏的主应用程序入口，管理游戏的生命周期和核心系统
+    ///     xFrame应用程序
+    ///     作为游戏的主应用程序入口，管理游戏的生命周期和核心系统
     /// </summary>
     public class xFrameApplication : MonoBehaviour
     {
         /// <summary>
-        /// 单例实例
+        ///     单例实例
         /// </summary>
         private static xFrameApplication _instance;
 
         /// <summary>
-        /// 框架启动器预制体
-        /// 如果不指定，将自动创建默认的xFrameBootstrapper
+        ///     框架启动器预制体
+        ///     如果不指定，将自动创建默认的xFrameBootstrapper
         /// </summary>
-        [SerializeField]
-        private xFrameBootstrapper bootstrapperPrefab;
+        [SerializeField] private xFrameBootstrapper bootstrapperPrefab;
 
         /// <summary>
-        /// 应用程序配置
+        ///     应用程序配置
         /// </summary>
-        [SerializeField]
-        private xFrameApplicationConfig applicationConfig;
+        [SerializeField] private xFrameApplicationConfig applicationConfig;
 
         /// <summary>
-        /// 框架启动器实例
+        ///     框架启动器实例
         /// </summary>
         private xFrameBootstrapper _bootstrapper;
 
         /// <summary>
-        /// 应用程序是否已初始化
+        ///     应用程序是否已初始化
         /// </summary>
         private bool _initialized;
 
         /// <summary>
-        /// 获取单例实例
+        ///     获取单例实例
         /// </summary>
-        public static xFrameApplication Instance => _instance;
+        public static xFrameApplication Instance => Instance;
 
         /// <summary>
-        /// 获取框架启动器
+        ///     获取框架启动器
         /// </summary>
         public xFrameBootstrapper Bootstrapper => _bootstrapper;
 
         /// <summary>
-        /// 获取应用程序配置
+        ///     获取应用程序配置
         /// </summary>
         public xFrameApplicationConfig Config => applicationConfig;
 
         /// <summary>
-        /// Unity Awake生命周期
+        ///     Unity Awake生命周期
         /// </summary>
         private void Awake()
         {
@@ -80,7 +77,7 @@ namespace xFrame.Runtime
         }
 
         /// <summary>
-        /// Unity Start生命周期
+        ///     Unity Start生命周期
         /// </summary>
         private void Start()
         {
@@ -89,7 +86,7 @@ namespace xFrame.Runtime
         }
 
         /// <summary>
-        /// Unity OnDestroy生命周期
+        ///     Unity OnDestroy生命周期
         /// </summary>
         private void OnDestroy()
         {
@@ -99,7 +96,7 @@ namespace xFrame.Runtime
         }
 
         /// <summary>
-        /// Unity OnApplicationQuit生命周期
+        ///     Unity OnApplicationQuit生命周期
         /// </summary>
         private void OnApplicationQuit()
         {
@@ -108,7 +105,7 @@ namespace xFrame.Runtime
         }
 
         /// <summary>
-        /// 初始化应用程序
+        ///     初始化应用程序
         /// </summary>
         private void Initialize()
         {
@@ -134,7 +131,7 @@ namespace xFrame.Runtime
         }
 
         /// <summary>
-        /// 创建框架启动器
+        ///     创建框架启动器
         /// </summary>
         private void CreateBootstrapper()
         {
@@ -162,7 +159,7 @@ namespace xFrame.Runtime
         }
 
         /// <summary>
-        /// 应用应用程序配置
+        ///     应用应用程序配置
         /// </summary>
         private void ApplyApplicationConfig()
         {
@@ -184,7 +181,7 @@ namespace xFrame.Runtime
         }
 
         /// <summary>
-        /// 演示基本日志功能
+        ///     演示基本日志功能
         /// </summary>
         private void DemonstrateBasicLogging()
         {

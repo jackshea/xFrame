@@ -30,7 +30,8 @@ namespace xFrame.Tests
             var logger = new CapturingLogger();
             var router = CreateRouter(logger);
 
-            var response = router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.ping\",\"params\":{}}", "c-log-2");
+            var response = router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.ping\",\"params\":{}}",
+                "c-log-2");
 
             Assert.That(response, Is.Not.Null.And.Not.Empty);
             Assert.That(logger.Messages, Has.Some.Contains("direction=receive"));
@@ -47,7 +48,8 @@ namespace xFrame.Tests
             registry.Register(new ThrowCommandHandler());
             var router = new AgentRpcRouter(options, registry, logger: logger);
 
-            var response = router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"test.throw\",\"params\":{}}", "c-log-3");
+            var response = router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"test.throw\",\"params\":{}}",
+                "c-log-3");
 
             Assert.That(response, Is.Not.Null.And.Not.Empty);
             Assert.That(logger.Messages, Has.Some.Contains("direction=error"));
@@ -76,15 +78,14 @@ namespace xFrame.Tests
 
         private sealed class CapturingLogger : IXLogger
         {
+            public List<string> Messages { get; } = new();
+
+            public List<LogLevel> Levels { get; } = new();
             public string ModuleName => "AgentBridgeTests";
 
             public bool IsEnabled { get; set; } = true;
 
             public LogLevel MinLevel { get; set; } = LogLevel.Debug;
-
-            public List<string> Messages { get; } = new();
-
-            public List<LogLevel> Levels { get; } = new();
 
             public void Verbose(string message)
             {
@@ -138,10 +139,7 @@ namespace xFrame.Tests
 
             private void Record(LogLevel level, string message)
             {
-                if (!IsLevelEnabled(level))
-                {
-                    return;
-                }
+                if (!IsLevelEnabled(level)) return;
 
                 Levels.Add(level);
                 Messages.Add(message);

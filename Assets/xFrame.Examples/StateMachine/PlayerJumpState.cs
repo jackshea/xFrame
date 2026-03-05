@@ -4,15 +4,15 @@ using xFrame.Runtime.StateMachine;
 namespace xFrame.Examples.StateMachine
 {
     /// <summary>
-    /// 玩家跳跃状态
+    ///     玩家跳跃状态
     /// </summary>
     public class PlayerJumpState : StateBase<PlayerContext>
     {
-        private float _jumpForce = 10f;
+        private readonly float _jumpForce = 10f;
         private Rigidbody _rigidbody;
 
         /// <summary>
-        /// 进入跳跃状态
+        ///     进入跳跃状态
         /// </summary>
         /// <param name="context">玩家上下文</param>
         public override void OnEnter(PlayerContext context)
@@ -31,7 +31,7 @@ namespace xFrame.Examples.StateMachine
         }
 
         /// <summary>
-        /// 更新跳跃状态
+        ///     更新跳跃状态
         /// </summary>
         /// <param name="context">玩家上下文</param>
         public override void OnUpdate(PlayerContext context)
@@ -46,7 +46,7 @@ namespace xFrame.Examples.StateMachine
         }
 
         /// <summary>
-        /// 退出跳跃状态
+        ///     退出跳跃状态
         /// </summary>
         /// <param name="context">玩家上下文</param>
         public override void OnExit(PlayerContext context)

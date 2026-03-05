@@ -4,12 +4,12 @@ using xFrame.Runtime.StateMachine;
 namespace xFrame.Examples.StateMachine
 {
     /// <summary>
-    /// 玩家死亡状态
+    ///     玩家死亡状态
     /// </summary>
     public class PlayerDeadState : StateBase<PlayerContext>
     {
         /// <summary>
-        /// 进入死亡状态
+        ///     进入死亡状态
         /// </summary>
         /// <param name="context">玩家上下文</param>
         public override void OnEnter(PlayerContext context)
@@ -21,7 +21,7 @@ namespace xFrame.Examples.StateMachine
         }
 
         /// <summary>
-        /// 更新死亡状态
+        ///     更新死亡状态
         /// </summary>
         /// <param name="context">玩家上下文</param>
         public override void OnUpdate(PlayerContext context)
@@ -31,7 +31,7 @@ namespace xFrame.Examples.StateMachine
         }
 
         /// <summary>
-        /// 退出死亡状态
+        ///     退出死亡状态
         /// </summary>
         /// <param name="context">玩家上下文</param>
         public override void OnExit(PlayerContext context)

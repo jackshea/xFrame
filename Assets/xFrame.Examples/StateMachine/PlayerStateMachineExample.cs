@@ -1,16 +1,16 @@
 using UnityEngine;
-using xFrame.Runtime.StateMachine;
 using xFrame.Runtime.EventBus;
+using xFrame.Runtime.StateMachine;
 
 namespace xFrame.Examples.StateMachine
 {
     /// <summary>
-    /// 玩家状态机使用示例
+    ///     玩家状态机使用示例
     /// </summary>
     public class PlayerStateMachineExample : MonoBehaviour
     {
-        private StateMachine<PlayerContext> _stateMachine;
         private PlayerContext _context;
+        private StateMachine<PlayerContext> _stateMachine;
 
         private void Start()
         {
@@ -43,8 +43,18 @@ namespace xFrame.Examples.StateMachine
             HandleStateTransitions();
         }
 
+        private void OnDestroy()
+        {
+            // 取消事件订阅
+            xFrameEventBus.UnsubscribeFrom<StateChangedEvent<PlayerContext>>(OnStateChanged);
+
+            // 清理状态机
+            _stateMachine?.Stop();
+            _stateMachine = null;
+        }
+
         /// <summary>
-        /// 处理状态转换
+        ///     处理状态转换
         /// </summary>
         private void HandleStateTransitions()
         {
@@ -56,10 +66,7 @@ namespace xFrame.Examples.StateMachine
             }
 
             // 如果在死亡状态，不处理其他转换
-            if (_stateMachine.CurrentStateType == typeof(PlayerDeadState))
-            {
-                return;
-            }
+            if (_stateMachine.CurrentStateType == typeof(PlayerDeadState)) return;
 
             // 跳跃输入
             if (Input.GetKeyDown(KeyCode.Space) && _context.IsGrounded)
@@ -69,47 +76,34 @@ namespace xFrame.Examples.StateMachine
             }
 
             // 移动输入
-            float horizontal = Input.GetAxis("Horizontal");
-            float vertical = Input.GetAxis("Vertical");
+            var horizontal = Input.GetAxis("Horizontal");
+            var vertical = Input.GetAxis("Vertical");
 
             if (Mathf.Abs(horizontal) > 0.1f || Mathf.Abs(vertical) > 0.1f)
             {
-                if (_stateMachine.CurrentStateType != typeof(PlayerMoveState) && 
+                if (_stateMachine.CurrentStateType != typeof(PlayerMoveState) &&
                     _stateMachine.CurrentStateType != typeof(PlayerJumpState))
-                {
                     _stateMachine.ChangeState<PlayerMoveState>();
-                }
             }
             else
             {
                 if (_stateMachine.CurrentStateType == typeof(PlayerMoveState))
-                {
                     _stateMachine.ChangeState<PlayerIdleState>();
-                }
             }
         }
 
         /// <summary>
-        /// 状态改变回调
+        ///     状态改变回调
         /// </summary>
         /// <param name="evt">状态改变事件</param>
         private void OnStateChanged(ref StateChangedEvent<PlayerContext> evt)
         {
-            Debug.Log($"[PlayerStateMachine] 状态改变: {evt.PreviousState?.GetType().Name} -> {evt.CurrentState?.GetType().Name}");
-        }
-
-        private void OnDestroy()
-        {
-            // 取消事件订阅
-            xFrameEventBus.UnsubscribeFrom<StateChangedEvent<PlayerContext>>(OnStateChanged);
-            
-            // 清理状态机
-            _stateMachine?.Stop();
-            _stateMachine = null;
+            Debug.Log(
+                $"[PlayerStateMachine] 状态改变: {evt.PreviousState?.GetType().Name} -> {evt.CurrentState?.GetType().Name}");
         }
 
         /// <summary>
-        /// 测试方法：减少生命值
+        ///     测试方法：减少生命值
         /// </summary>
         public void TakeDamage(float damage)
         {

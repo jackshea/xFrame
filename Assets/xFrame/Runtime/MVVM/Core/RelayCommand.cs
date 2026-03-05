@@ -3,12 +3,12 @@ using System;
 namespace xFrame.Runtime.MVVM.Core
 {
     /// <summary>
-    /// 无参数命令实现。
+    ///     无参数命令实现。
     /// </summary>
     public sealed class RelayCommand : ICommand
     {
-        private readonly Action _execute;
         private readonly Func<bool> _canExecute;
+        private readonly Action _execute;
 
         public RelayCommand(Action execute, Func<bool> canExecute = null)
         {
@@ -25,16 +25,13 @@ namespace xFrame.Runtime.MVVM.Core
 
         public void Execute()
         {
-            if (!CanExecute())
-            {
-                return;
-            }
+            if (!CanExecute()) return;
 
             _execute();
         }
 
         /// <summary>
-        /// 通知可执行状态变化。
+        ///     通知可执行状态变化。
         /// </summary>
         public void RaiseCanExecuteChanged()
         {

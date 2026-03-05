@@ -1,40 +1,17 @@
-using System;
-using NUnit.Framework;
-using xFrame.Runtime.EventBus;
 using GenericEventBus;
+using NUnit.Framework;
 using UnityEngine;
+using xFrame.Runtime.EventBus;
 
 namespace xFrame.Tests
 {
     /// <summary>
-    /// xFrame事件总线单元测试
-    /// 测试事件总线的核心功能,包括订阅、触发、优先级和消费等
+    ///     xFrame事件总线单元测试
+    ///     测试事件总线的核心功能,包括订阅、触发、优先级和消费等
     /// </summary>
     [TestFixture]
     public class xFrameEventBusTests
     {
-        /// <summary>
-        /// 测试用的简单事件
-        /// </summary>
-        private class TestEvent : IEvent
-        {
-            public string Message { get; set; }
-            public int Value { get; set; }
-        }
-
-        /// <summary>
-        /// 另一个测试事件类型
-        /// </summary>
-        private class AnotherTestEvent : IEvent
-        {
-            public bool Flag { get; set; }
-        }
-
-        private int _eventCallCount;
-        private string _lastMessage;
-        private int _lastValue;
-        private bool _lastFlag;
-
         [SetUp]
         public void SetUp()
         {
@@ -43,7 +20,7 @@ namespace xFrame.Tests
             _lastMessage = null;
             _lastValue = 0;
             _lastFlag = false;
-            
+
             // 清理所有监听器
             xFrameEventBus.ClearListeners<TestEvent>();
             xFrameEventBus.ClearListeners<AnotherTestEvent>();
@@ -57,10 +34,30 @@ namespace xFrame.Tests
             xFrameEventBus.ClearListeners<AnotherTestEvent>();
         }
 
-        #region 基础订阅和触发测试
+        /// <summary>
+        ///     测试用的简单事件
+        /// </summary>
+        private class TestEvent : IEvent
+        {
+            public string Message { get; set; }
+            public int Value { get; set; }
+        }
 
         /// <summary>
-        /// 测试基本的事件订阅和触发
+        ///     另一个测试事件类型
+        /// </summary>
+        private class AnotherTestEvent : IEvent
+        {
+            public bool Flag { get; set; }
+        }
+
+        private int _eventCallCount;
+        private string _lastMessage;
+        private int _lastValue;
+        private bool _lastFlag;
+
+        /// <summary>
+        ///     测试基本的事件订阅和触发
         /// </summary>
         [Test]
         public void SubscribeAndRaise_ShouldInvokeHandler()
@@ -79,14 +76,14 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试立即触发事件
+        ///     测试立即触发事件
         /// </summary>
         [Test]
         public void RaiseImmediately_ShouldInvokeHandler()
         {
             // Arrange
             GenericEventBus<IEvent>.EventHandler<TestEvent> handler = (ref TestEvent e) => OnTestEvent(ref e);
-            xFrameEventBus.SubscribeTo<TestEvent>(handler);
+            xFrameEventBus.SubscribeTo(handler);
             var testEvent = new TestEvent { Message = "Immediate", Value = 100 };
 
             // Act
@@ -99,14 +96,14 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试使用ref参数立即触发事件
+        ///     测试使用ref参数立即触发事件
         /// </summary>
         [Test]
         public void RaiseImmediately_WithRef_ShouldInvokeHandler()
         {
             // Arrange
             GenericEventBus<IEvent>.EventHandler<TestEvent> handler = (ref TestEvent e) => OnTestEvent(ref e);
-            xFrameEventBus.SubscribeTo<TestEvent>(handler);
+            xFrameEventBus.SubscribeTo(handler);
             var testEvent = new TestEvent { Message = "RefTest", Value = 200 };
 
             // Act
@@ -119,14 +116,14 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试取消订阅
+        ///     测试取消订阅
         /// </summary>
         [Test]
         public void Unsubscribe_ShouldStopInvokingHandler()
         {
             // Arrange
             GenericEventBus<IEvent>.EventHandler<TestEvent> handler = (ref TestEvent e) => OnTestEvent(ref e);
-            xFrameEventBus.SubscribeTo<TestEvent>(handler);
+            xFrameEventBus.SubscribeTo(handler);
             var testEvent = new TestEvent { Message = "Test", Value = 1 };
 
             // Act - 第一次触发
@@ -134,7 +131,7 @@ namespace xFrame.Tests
             Assert.AreEqual(1, _eventCallCount, "第一次应该被调用");
 
             // 取消订阅
-            xFrameEventBus.UnsubscribeFrom<TestEvent>(handler);
+            xFrameEventBus.UnsubscribeFrom(handler);
 
             // 第二次触发
             xFrameEventBus.Raise(testEvent);
@@ -144,17 +141,17 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试多个订阅者
+        ///     测试多个订阅者
         /// </summary>
         [Test]
         public void MultipleSubscribers_ShouldAllBeInvoked()
         {
             // Arrange
             int count1 = 0, count2 = 0, count3 = 0;
-            
-            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) => count1++);
-            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) => count2++);
-            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) => count3++);
+
+            xFrameEventBus.SubscribeTo((ref TestEvent e) => count1++);
+            xFrameEventBus.SubscribeTo((ref TestEvent e) => count2++);
+            xFrameEventBus.SubscribeTo((ref TestEvent e) => count3++);
 
             var testEvent = new TestEvent();
 
@@ -167,22 +164,18 @@ namespace xFrame.Tests
             Assert.AreEqual(1, count3, "第三个订阅者应该被调用");
         }
 
-        #endregion
-
-        #region 优先级测试
-
         /// <summary>
-        /// 测试事件处理器的优先级顺序
+        ///     测试事件处理器的优先级顺序
         /// </summary>
         [Test]
         public void Priority_ShouldDetermineInvocationOrder()
         {
             // Arrange
             var callOrder = "";
-            
-            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) => callOrder += "A", priority: 0);
-            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) => callOrder += "B", priority: 10);
-            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) => callOrder += "C", priority: 5);
+
+            xFrameEventBus.SubscribeTo((ref TestEvent e) => callOrder += "A");
+            xFrameEventBus.SubscribeTo((ref TestEvent e) => callOrder += "B", 10);
+            xFrameEventBus.SubscribeTo((ref TestEvent e) => callOrder += "C", 5);
 
             var testEvent = new TestEvent();
 
@@ -194,17 +187,17 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试相同优先级按订阅顺序调用
+        ///     测试相同优先级按订阅顺序调用
         /// </summary>
         [Test]
         public void SamePriority_ShouldInvokeInSubscriptionOrder()
         {
             // Arrange
             var callOrder = "";
-            
-            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) => callOrder += "1", priority: 0);
-            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) => callOrder += "2", priority: 0);
-            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) => callOrder += "3", priority: 0);
+
+            xFrameEventBus.SubscribeTo((ref TestEvent e) => callOrder += "1");
+            xFrameEventBus.SubscribeTo((ref TestEvent e) => callOrder += "2");
+            xFrameEventBus.SubscribeTo((ref TestEvent e) => callOrder += "3");
 
             var testEvent = new TestEvent();
 
@@ -215,32 +208,28 @@ namespace xFrame.Tests
             Assert.AreEqual("123", callOrder, "相同优先级应该按订阅顺序调用");
         }
 
-        #endregion
-
-        #region 事件消费测试
-
         /// <summary>
-        /// 测试消费当前事件
+        ///     测试消费当前事件
         /// </summary>
         [Test]
         public void ConsumeCurrentEvent_ShouldStopPropagation()
         {
             // Arrange
             int count1 = 0, count2 = 0, count3 = 0;
-            
-            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) => 
+
+            xFrameEventBus.SubscribeTo((ref TestEvent e) =>
             {
                 count1++;
                 xFrameEventBus.ConsumeCurrentEvent(); // 消费事件
-            }, priority: 10);
-            
-            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) => count2++, priority: 5);
-            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) => count3++, priority: 0);
+            }, 10);
+
+            xFrameEventBus.SubscribeTo((ref TestEvent e) => count2++, 5);
+            xFrameEventBus.SubscribeTo((ref TestEvent e) => count3++);
 
             var testEvent = new TestEvent();
 
             // Act
-            bool consumed = xFrameEventBus.Raise(testEvent);
+            var consumed = xFrameEventBus.Raise(testEvent);
 
             // Assert
             Assert.IsTrue(consumed, "事件应该被标记为已消费");
@@ -250,15 +239,15 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试CurrentEventIsConsumed属性
+        ///     测试CurrentEventIsConsumed属性
         /// </summary>
         [Test]
         public void CurrentEventIsConsumed_ShouldReflectConsumptionState()
         {
             // Arrange
-            bool wasConsumedInHandler = false;
-            
-            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) => 
+            var wasConsumedInHandler = false;
+
+            xFrameEventBus.SubscribeTo((ref TestEvent e) =>
             {
                 xFrameEventBus.ConsumeCurrentEvent();
                 wasConsumedInHandler = xFrameEventBus.CurrentEventIsConsumed;
@@ -273,24 +262,20 @@ namespace xFrame.Tests
             Assert.IsTrue(wasConsumedInHandler, "在处理器中应该能检测到事件已被消费");
         }
 
-        #endregion
-
-        #region 目标和来源测试
-
         /// <summary>
-        /// 测试带目标和来源的事件触发
+        ///     测试带目标和来源的事件触发
         /// </summary>
         [Test]
         public void RaiseWithTargetAndSource_ShouldInvokeTargetedHandler()
         {
             // Arrange
-            GameObject target = new GameObject("Target");
-            GameObject source = new GameObject("Source");
-            int callCount = 0;
+            var target = new GameObject("Target");
+            var source = new GameObject("Source");
+            var callCount = 0;
             GameObject receivedTarget = null;
             GameObject receivedSource = null;
 
-            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e, GameObject t, GameObject s) =>
+            xFrameEventBus.SubscribeTo((ref TestEvent e, GameObject t, GameObject s) =>
             {
                 callCount++;
                 receivedTarget = t;
@@ -313,22 +298,22 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试订阅特定目标的事件
+        ///     测试订阅特定目标的事件
         /// </summary>
         [Test]
         public void SubscribeToTarget_ShouldOnlyInvokeForSpecificTarget()
         {
             // Arrange
-            GameObject target1 = new GameObject("Target1");
-            GameObject target2 = new GameObject("Target2");
-            GameObject source = new GameObject("Source");
-            
+            var target1 = new GameObject("Target1");
+            var target2 = new GameObject("Target2");
+            var source = new GameObject("Source");
+
             int count1 = 0, count2 = 0;
 
-            xFrameEventBus.SubscribeToTarget<TestEvent>(target1, 
+            xFrameEventBus.SubscribeToTarget(target1,
                 (ref TestEvent e, GameObject t, GameObject s) => count1++);
-            
-            xFrameEventBus.SubscribeToTarget<TestEvent>(target2, 
+
+            xFrameEventBus.SubscribeToTarget(target2,
                 (ref TestEvent e, GameObject t, GameObject s) => count2++);
 
             var testEvent = new TestEvent();
@@ -347,22 +332,22 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试订阅特定来源的事件
+        ///     测试订阅特定来源的事件
         /// </summary>
         [Test]
         public void SubscribeToSource_ShouldOnlyInvokeForSpecificSource()
         {
             // Arrange
-            GameObject target = new GameObject("Target");
-            GameObject source1 = new GameObject("Source1");
-            GameObject source2 = new GameObject("Source2");
-            
+            var target = new GameObject("Target");
+            var source1 = new GameObject("Source1");
+            var source2 = new GameObject("Source2");
+
             int count1 = 0, count2 = 0;
 
-            xFrameEventBus.SubscribeToSource<TestEvent>(source1, 
+            xFrameEventBus.SubscribeToSource(source1,
                 (ref TestEvent e, GameObject t, GameObject s) => count1++);
-            
-            xFrameEventBus.SubscribeToSource<TestEvent>(source2, 
+
+            xFrameEventBus.SubscribeToSource(source2,
                 (ref TestEvent e, GameObject t, GameObject s) => count2++);
 
             var testEvent = new TestEvent();
@@ -381,20 +366,20 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试取消订阅特定目标
+        ///     测试取消订阅特定目标
         /// </summary>
         [Test]
         public void UnsubscribeFromTarget_ShouldStopInvokingHandler()
         {
             // Arrange
-            GameObject target = new GameObject("Target");
-            GameObject source = new GameObject("Source");
-            int callCount = 0;
+            var target = new GameObject("Target");
+            var source = new GameObject("Source");
+            var callCount = 0;
 
-            GenericEventBus<IEvent, GameObject>.TargetedEventHandler<TestEvent> handler = 
+            GenericEventBus<IEvent, GameObject>.TargetedEventHandler<TestEvent> handler =
                 (ref TestEvent e, GameObject t, GameObject s) => callCount++;
 
-            xFrameEventBus.SubscribeToTarget<TestEvent>(target, handler);
+            xFrameEventBus.SubscribeToTarget(target, handler);
 
             var testEvent = new TestEvent();
 
@@ -403,7 +388,7 @@ namespace xFrame.Tests
             Assert.AreEqual(1, callCount, "第一次应该被调用");
 
             // 取消订阅
-            xFrameEventBus.UnsubscribeFromTarget<TestEvent>(target, handler);
+            xFrameEventBus.UnsubscribeFromTarget(target, handler);
 
             // 第二次触发
             xFrameEventBus.Raise(testEvent, target, source);
@@ -417,20 +402,20 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试取消订阅特定来源
+        ///     测试取消订阅特定来源
         /// </summary>
         [Test]
         public void UnsubscribeFromSource_ShouldStopInvokingHandler()
         {
             // Arrange
-            GameObject target = new GameObject("Target");
-            GameObject source = new GameObject("Source");
-            int callCount = 0;
+            var target = new GameObject("Target");
+            var source = new GameObject("Source");
+            var callCount = 0;
 
-            GenericEventBus<IEvent, GameObject>.TargetedEventHandler<TestEvent> handler = 
+            GenericEventBus<IEvent, GameObject>.TargetedEventHandler<TestEvent> handler =
                 (ref TestEvent e, GameObject t, GameObject s) => callCount++;
 
-            xFrameEventBus.SubscribeToSource<TestEvent>(source, handler);
+            xFrameEventBus.SubscribeToSource(source, handler);
 
             var testEvent = new TestEvent();
 
@@ -439,7 +424,7 @@ namespace xFrame.Tests
             Assert.AreEqual(1, callCount, "第一次应该被调用");
 
             // 取消订阅
-            xFrameEventBus.UnsubscribeFromSource<TestEvent>(source, handler);
+            xFrameEventBus.UnsubscribeFromSource(source, handler);
 
             // 第二次触发
             xFrameEventBus.Raise(testEvent, target, source);
@@ -452,20 +437,16 @@ namespace xFrame.Tests
             GameObject.DestroyImmediate(source);
         }
 
-        #endregion
-
-        #region 状态检查测试
-
         /// <summary>
-        /// 测试IsEventBeingRaised属性
+        ///     测试IsEventBeingRaised属性
         /// </summary>
         [Test]
         public void IsEventBeingRaised_ShouldReflectEventState()
         {
             // Arrange
-            bool wasRaisingInHandler = false;
-            
-            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) => 
+            var wasRaisingInHandler = false;
+
+            xFrameEventBus.SubscribeTo((ref TestEvent e) =>
             {
                 wasRaisingInHandler = xFrameEventBus.IsEventBeingRaised;
             });
@@ -473,9 +454,9 @@ namespace xFrame.Tests
             var testEvent = new TestEvent();
 
             // Act
-            bool beforeRaise = xFrameEventBus.IsEventBeingRaised;
+            var beforeRaise = xFrameEventBus.IsEventBeingRaised;
             xFrameEventBus.Raise(testEvent);
-            bool afterRaise = xFrameEventBus.IsEventBeingRaised;
+            var afterRaise = xFrameEventBus.IsEventBeingRaised;
 
             // Assert
             Assert.IsFalse(beforeRaise, "触发前不应该有事件正在触发");
@@ -483,21 +464,17 @@ namespace xFrame.Tests
             Assert.IsFalse(afterRaise, "触发后不应该有事件正在触发");
         }
 
-        #endregion
-
-        #region 清理监听器测试
-
         /// <summary>
-        /// 测试清理所有监听器
+        ///     测试清理所有监听器
         /// </summary>
         [Test]
         public void ClearListeners_ShouldRemoveAllHandlers()
         {
             // Arrange
             int count1 = 0, count2 = 0;
-            
-            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) => count1++);
-            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) => count2++);
+
+            xFrameEventBus.SubscribeTo((ref TestEvent e) => count1++);
+            xFrameEventBus.SubscribeTo((ref TestEvent e) => count2++);
 
             var testEvent = new TestEvent();
 
@@ -518,17 +495,17 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试清理监听器只影响指定类型
+        ///     测试清理监听器只影响指定类型
         /// </summary>
         [Test]
         public void ClearListeners_ShouldOnlyAffectSpecificEventType()
         {
             // Arrange
-            int testEventCount = 0;
-            int anotherEventCount = 0;
-            
-            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) => testEventCount++);
-            xFrameEventBus.SubscribeTo<AnotherTestEvent>((ref AnotherTestEvent e) => anotherEventCount++);
+            var testEventCount = 0;
+            var anotherEventCount = 0;
+
+            xFrameEventBus.SubscribeTo((ref TestEvent e) => testEventCount++);
+            xFrameEventBus.SubscribeTo((ref AnotherTestEvent e) => anotherEventCount++);
 
             // Act
             xFrameEventBus.ClearListeners<TestEvent>();
@@ -541,22 +518,18 @@ namespace xFrame.Tests
             Assert.AreEqual(1, anotherEventCount, "AnotherTestEvent的监听器不应该被影响");
         }
 
-        #endregion
-
-        #region 不同事件类型隔离测试
-
         /// <summary>
-        /// 测试不同事件类型的订阅是隔离的
+        ///     测试不同事件类型的订阅是隔离的
         /// </summary>
         [Test]
         public void DifferentEventTypes_ShouldBeIsolated()
         {
             // Arrange
-            int testEventCount = 0;
-            int anotherEventCount = 0;
-            
-            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) => testEventCount++);
-            xFrameEventBus.SubscribeTo<AnotherTestEvent>((ref AnotherTestEvent e) => anotherEventCount++);
+            var testEventCount = 0;
+            var anotherEventCount = 0;
+
+            xFrameEventBus.SubscribeTo((ref TestEvent e) => testEventCount++);
+            xFrameEventBus.SubscribeTo((ref AnotherTestEvent e) => anotherEventCount++);
 
             // Act
             xFrameEventBus.Raise(new TestEvent());
@@ -568,12 +541,8 @@ namespace xFrame.Tests
             Assert.AreEqual(1, anotherEventCount, "AnotherTestEvent应该被触发1次");
         }
 
-        #endregion
-
-        #region 边界情况和高级测试
-
         /// <summary>
-        /// 测试事件参数可以被修改并传递给后续处理器
+        ///     测试事件参数可以被修改并传递给后续处理器
         /// </summary>
         [Test]
         public void EventParameterModification_ShouldPropagateToNextHandler()
@@ -582,16 +551,13 @@ namespace xFrame.Tests
             var capturedValue1 = 0;
             var capturedValue2 = 0;
 
-            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) =>
+            xFrameEventBus.SubscribeTo((ref TestEvent e) =>
             {
                 capturedValue1 = e.Value;
                 e.Value = 999; // 修改参数
-            }, priority: 10);
+            }, 10);
 
-            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) =>
-            {
-                capturedValue2 = e.Value;
-            }, priority: 5);
+            xFrameEventBus.SubscribeTo((ref TestEvent e) => { capturedValue2 = e.Value; }, 5);
 
             var testEvent = new TestEvent { Message = "Test", Value = 100 };
 
@@ -604,36 +570,36 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试嵌套事件触发
+        ///     测试嵌套事件触发
         /// </summary>
         [Test]
         public void NestedEventRaising_ShouldWorkCorrectly()
         {
             // Arrange
-            int outerCount = 0;
-            int innerCount = 0;
-            string executionOrder = "";
+            var outerCount = 0;
+            var innerCount = 0;
+            var executionOrder = "";
 
-            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) =>
+            xFrameEventBus.SubscribeTo((ref TestEvent e) =>
             {
                 outerCount++;
                 executionOrder += "O1";
 
                 // 在处理器内部触发另一个事件
                 xFrameEventBus.Raise(new AnotherTestEvent { Flag = true });
-            }, priority: 10);
+            }, 10);
 
-            xFrameEventBus.SubscribeTo<AnotherTestEvent>((ref AnotherTestEvent e) =>
+            xFrameEventBus.SubscribeTo((ref AnotherTestEvent e) =>
             {
                 innerCount++;
                 executionOrder += "I1";
             });
 
-            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) =>
+            xFrameEventBus.SubscribeTo((ref TestEvent e) =>
             {
                 outerCount++;
                 executionOrder += "O2";
-            }, priority: 0);
+            });
 
             // Act
             xFrameEventBus.Raise(new TestEvent());
@@ -645,19 +611,19 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试重复订阅同一处理器
+        ///     测试重复订阅同一处理器
         /// </summary>
         [Test]
         public void DuplicateSubscription_ShouldCallHandlerMultipleTimes()
         {
             // Arrange
-            int callCount = 0;
+            var callCount = 0;
             GenericEventBus<IEvent>.EventHandler<TestEvent> handler = (ref TestEvent e) => callCount++;
 
             // 重复订阅同一处理器
-            xFrameEventBus.SubscribeTo<TestEvent>(handler);
-            xFrameEventBus.SubscribeTo<TestEvent>(handler);
-            xFrameEventBus.SubscribeTo<TestEvent>(handler);
+            xFrameEventBus.SubscribeTo(handler);
+            xFrameEventBus.SubscribeTo(handler);
+            xFrameEventBus.SubscribeTo(handler);
 
             var testEvent = new TestEvent();
 
@@ -669,7 +635,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试取消不存在的处理器不应该抛出异常
+        ///     测试取消不存在的处理器不应该抛出异常
         /// </summary>
         [Test]
         public void UnsubscribeNonExistentHandler_ShouldNotThrow()
@@ -681,25 +647,22 @@ namespace xFrame.Tests
             // Act & Assert - 不应该抛出异常
             Assert.DoesNotThrow(() =>
             {
-                xFrameEventBus.UnsubscribeFrom<TestEvent>(handler);
+                xFrameEventBus.UnsubscribeFrom(handler);
                 xFrameEventBus.Raise(testEvent);
             }, "取消不存在的处理器不应该抛出异常");
         }
 
         /// <summary>
-        /// 测试大量订阅者的性能
+        ///     测试大量订阅者的性能
         /// </summary>
         [Test]
         public void LargeNumberOfSubscribers_ShouldPerformReasonably()
         {
             // Arrange
             const int subscriberCount = 1000;
-            int callCount = 0;
+            var callCount = 0;
 
-            for (int i = 0; i < subscriberCount; i++)
-            {
-                xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) => callCount++);
-            }
+            for (var i = 0; i < subscriberCount; i++) xFrameEventBus.SubscribeTo((ref TestEvent e) => callCount++);
 
             var testEvent = new TestEvent();
 
@@ -711,20 +674,20 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试在处理器中订阅新处理器会影响当前事件处理
+        ///     测试在处理器中订阅新处理器会影响当前事件处理
         /// </summary>
         [Test]
         public void SubscribeDuringEventProcessing_ShouldAffectCurrentEvent()
         {
             // Arrange
-            int initialCount = 0;
-            int newCount = 0;
+            var initialCount = 0;
+            var newCount = 0;
 
-            xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent e) =>
+            xFrameEventBus.SubscribeTo((ref TestEvent e) =>
             {
                 initialCount++;
                 // 在处理器中订阅新处理器
-                xFrameEventBus.SubscribeTo<TestEvent>((ref TestEvent ev) => newCount++);
+                xFrameEventBus.SubscribeTo((ref TestEvent ev) => newCount++);
             });
 
             var testEvent = new TestEvent();
@@ -743,22 +706,22 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试在处理器中取消订阅当前处理器
+        ///     测试在处理器中取消订阅当前处理器
         /// </summary>
         [Test]
         public void UnsubscribeSelfDuringProcessing_ShouldCompleteExecution()
         {
             // Arrange
-            int callCount = 0;
+            var callCount = 0;
             GenericEventBus<IEvent>.EventHandler<TestEvent> handler = null;
 
             handler = (ref TestEvent e) =>
             {
                 callCount++;
-                xFrameEventBus.UnsubscribeFrom<TestEvent>(handler);
+                xFrameEventBus.UnsubscribeFrom(handler);
             };
 
-            xFrameEventBus.SubscribeTo<TestEvent>(handler);
+            xFrameEventBus.SubscribeTo(handler);
             var testEvent = new TestEvent();
 
             // Act
@@ -773,24 +736,24 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试目标和来源同时匹配
+        ///     测试目标和来源同时匹配
         /// </summary>
         [Test]
         public void SubscribeToBothTargetAndSource_ShouldMatchCorrectly()
         {
             // Arrange
-            GameObject target = new GameObject("Target");
-            GameObject source = new GameObject("Source");
-            GameObject other = new GameObject("Other");
+            var target = new GameObject("Target");
+            var source = new GameObject("Source");
+            var other = new GameObject("Other");
 
-            int targetCount = 0;
-            int sourceCount = 0;
-            int bothCount = 0;
+            var targetCount = 0;
+            var sourceCount = 0;
+            var bothCount = 0;
 
-            xFrameEventBus.SubscribeToTarget<TestEvent>(target,
+            xFrameEventBus.SubscribeToTarget(target,
                 (ref TestEvent e, GameObject t, GameObject s) => targetCount++);
 
-            xFrameEventBus.SubscribeToSource<TestEvent>(source,
+            xFrameEventBus.SubscribeToSource(source,
                 (ref TestEvent e, GameObject t, GameObject s) => sourceCount++);
 
             var testEvent = new TestEvent();
@@ -817,18 +780,17 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试带有目标的立即触发事件
+        ///     测试带有目标的立即触发事件
         /// </summary>
         [Test]
         public void RaiseImmediatelyWithTargetAndSource_ShouldWork()
         {
             // Arrange
-            GameObject target = new GameObject("Target");
-            GameObject source = new GameObject("Source");
-            int callCount = 0;
+            var target = new GameObject("Target");
+            var source = new GameObject("Source");
+            var callCount = 0;
 
-            xFrameEventBus.SubscribeTo<TestEvent>(
-                (ref TestEvent e, GameObject t, GameObject s) => callCount++);
+            xFrameEventBus.SubscribeTo((ref TestEvent e, GameObject t, GameObject s) => callCount++);
 
             var testEvent = new TestEvent { Message = "Immediate" };
 
@@ -843,12 +805,8 @@ namespace xFrame.Tests
             GameObject.DestroyImmediate(source);
         }
 
-        #endregion
-
-        #region 辅助方法
-
         /// <summary>
-        /// 测试事件处理器
+        ///     测试事件处理器
         /// </summary>
         private void OnTestEvent(ref TestEvent e)
         {
@@ -858,14 +816,12 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 另一个测试事件处理器
+        ///     另一个测试事件处理器
         /// </summary>
         private void OnAnotherTestEvent(ref AnotherTestEvent e)
         {
             _eventCallCount++;
             _lastFlag = e.Flag;
         }
-
-        #endregion
     }
 }

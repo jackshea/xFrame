@@ -1,23 +1,19 @@
 using System;
 using NUnit.Framework;
 using VContainer;
-using VContainer.Unity;
-using xFrame.Runtime.DI;
 using xFrame.Runtime.Logging;
 
 namespace xFrame.Tests
 {
     /// <summary>
-    /// xFrameLifetimeScope unit tests
-    /// Tests dependency injection container configuration and service registration
+    ///     xFrameLifetimeScope unit tests
+    ///     Tests dependency injection container configuration and service registration
     /// </summary>
     [TestFixture]
     public class DITests
     {
-        private IObjectResolver _resolver;
-
         /// <summary>
-        /// Test setup
+        ///     Test setup
         /// </summary>
         [SetUp]
         public void SetUp()
@@ -37,19 +33,19 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// Test cleanup
+        ///     Test cleanup
         /// </summary>
         [TearDown]
         public void TearDown()
         {
-            (_resolver as IDisposable)?.Dispose();
+            _resolver?.Dispose();
             _resolver = null;
         }
 
-        #region Service Registration Tests
+        private IObjectResolver _resolver;
 
         /// <summary>
-        /// Test singleton service registration and resolution
+        ///     Test singleton service registration and resolution
         /// </summary>
         [Test]
         public void Singleton_ShouldResolveSameInstance()
@@ -65,7 +61,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// Test transient service registration and resolution
+        ///     Test transient service registration and resolution
         /// </summary>
         [Test]
         public void Transient_ShouldResolveDifferentInstances()
@@ -81,7 +77,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// Test scoped service registration and resolution
+        ///     Test scoped service registration and resolution
         /// </summary>
         [Test]
         public void Scoped_ShouldResolveDifferentInstances()
@@ -100,7 +96,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// Test service singleton within scope
+        ///     Test service singleton within scope
         /// </summary>
         [Test]
         public void Scoped_ShouldResolveSameInstanceWithinSameScope()
@@ -115,12 +111,8 @@ namespace xFrame.Tests
             Assert.AreSame(instance1, instance2, "Same scope should return same instance");
         }
 
-        #endregion
-
-        #region Dependency Injection Tests
-
         /// <summary>
-        /// Test constructor injection
+        ///     Test constructor injection
         /// </summary>
         [Test]
         public void ConstructorInjection_ShouldInjectDependencies()
@@ -135,7 +127,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// Test nested dependency injection
+        ///     Test nested dependency injection
         /// </summary>
         [Test]
         public void NestedDependencyInjection_ShouldWork()
@@ -151,38 +143,32 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// Test interface registration and resolution
+        ///     Test interface registration and resolution
         /// </summary>
         [Test]
         public void InterfaceRegistration_ShouldResolveImplementation()
         {
             // Arrange
-            ITestServiceA service = _resolver.Resolve<ITestServiceA>();
+            var service = _resolver.Resolve<ITestServiceA>();
 
             // Assert
             Assert.IsNotNull(service, "Interface should be resolved");
             Assert.IsInstanceOf<TestServiceA>(service, "Should resolve to correct implementation type");
         }
 
-        #endregion
-
-        #region Exception Handling Tests
-
         /// <summary>
-        /// Test resolving unregistered service should throw exception
+        ///     Test resolving unregistered service should throw exception
         /// </summary>
         [Test]
         public void ResolveUnregisteredService_ShouldThrowException()
         {
             // Act & Assert
-            Assert.Throws<VContainerException>(() =>
-            {
-                _resolver.Resolve<ITestServiceD>();
-            }, "Resolving unregistered service should throw exception");
+            Assert.Throws<VContainerException>(() => { _resolver.Resolve<ITestServiceD>(); },
+                "Resolving unregistered service should throw exception");
         }
 
         /// <summary>
-        /// Test try-resolve unregistered service should return null
+        ///     Test try-resolve unregistered service should return null
         /// </summary>
         [Test]
         public void TryResolveUnregisteredService_ShouldReturnNull()
@@ -196,7 +182,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// Test try-resolve registered service should return true
+        ///     Test try-resolve registered service should return true
         /// </summary>
         [Test]
         public void TryResolveRegisteredService_ShouldReturnTrue()
@@ -210,12 +196,8 @@ namespace xFrame.Tests
             Assert.IsInstanceOf<TestServiceA>(service, "Should resolve to correct implementation type");
         }
 
-        #endregion
-
-        #region Factory Method Tests
-
         /// <summary>
-        /// Test factory method registration and resolution
+        ///     Test factory method registration and resolution
         /// </summary>
         [Test]
         public void FactoryMethod_ShouldCreateNewInstance()
@@ -230,12 +212,8 @@ namespace xFrame.Tests
             Assert.AreNotSame(instance1, instance2, "Factory method should create different instances");
         }
 
-        #endregion
-
-        #region Scope Lifetime Tests
-
         /// <summary>
-        /// Test scope disposal
+        ///     Test scope disposal
         /// </summary>
         [Test]
         public void Scope_ShouldBeDisposable()
@@ -248,13 +226,13 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// Test scope nesting
+        ///     Test scope nesting
         /// </summary>
         [Test]
         public void NestedScopes_ShouldWork()
         {
             // Arrange
-            IObjectResolver outerResolver = _resolver;
+            var outerResolver = _resolver;
 
             using (var outerScope = outerResolver.CreateScope())
             {
@@ -274,21 +252,17 @@ namespace xFrame.Tests
             }
         }
 
-        #endregion
-
-        #region Test Interfaces
-
         /// <summary>
-        /// Test service A interface
+        ///     Test service A interface
         /// </summary>
         public interface ITestServiceA
         {
-            void DoSomething();
             ITestServiceB ServiceB { get; }
+            void DoSomething();
         }
 
         /// <summary>
-        /// Test service B interface
+        ///     Test service B interface
         /// </summary>
         public interface ITestServiceB
         {
@@ -296,7 +270,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// Test service C interface
+        ///     Test service C interface
         /// </summary>
         public interface ITestServiceC
         {
@@ -304,19 +278,15 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// Test service D interface (not registered)
+        ///     Test service D interface (not registered)
         /// </summary>
         public interface ITestServiceD
         {
             void DoSomething();
         }
 
-        #endregion
-
-        #region Test Implementation Classes
-
         /// <summary>
-        /// Mock logger for testing
+        ///     Mock logger for testing
         /// </summary>
         public class MockLogger : IXLogger
         {
@@ -324,52 +294,83 @@ namespace xFrame.Tests
             public bool IsEnabled { get; set; } = true;
             public LogLevel MinLevel { get; set; } = LogLevel.Debug;
 
-            public void Verbose(string message) { }
-            public void Debug(string message) { }
-            public void Info(string message) { }
-            public void Warning(string message) { }
-            public void Error(string message) { }
-            public void Error(string message, Exception exception) { }
-            public void Fatal(string message) { }
-            public void Fatal(string message, Exception exception) { }
-            public void Log(LogLevel level, string message, Exception exception = null) { }
-            public bool IsLevelEnabled(LogLevel level) => true;
+            public void Verbose(string message)
+            {
+            }
+
+            public void Debug(string message)
+            {
+            }
+
+            public void Info(string message)
+            {
+            }
+
+            public void Warning(string message)
+            {
+            }
+
+            public void Error(string message)
+            {
+            }
+
+            public void Error(string message, Exception exception)
+            {
+            }
+
+            public void Fatal(string message)
+            {
+            }
+
+            public void Fatal(string message, Exception exception)
+            {
+            }
+
+            public void Log(LogLevel level, string message, Exception exception = null)
+            {
+            }
+
+            public bool IsLevelEnabled(LogLevel level)
+            {
+                return true;
+            }
         }
 
         /// <summary>
-        /// Test service A implementation - transient
+        ///     Test service A implementation - transient
         /// </summary>
         public class TestServiceA : ITestServiceA
         {
-            private readonly IXLogger _logger;
-            public IXLogger Logger => _logger;
-            public ITestServiceB ServiceB { get; private set; }
-            public string Id { get; } = Guid.NewGuid().ToString();
-
             public TestServiceA(IXLogger logger, ITestServiceB serviceB)
             {
-                _logger = logger;
+                Logger = logger;
                 ServiceB = serviceB;
             }
 
+            public IXLogger Logger { get; }
+
+            public string Id { get; } = Guid.NewGuid().ToString();
+            public ITestServiceB ServiceB { get; }
+
             public void DoSomething()
             {
-                _logger.Info("ServiceA (" + Id + ") doing something");
+                Logger.Info("ServiceA (" + Id + ") doing something");
             }
         }
 
         /// <summary>
-        /// Test service B implementation - singleton
+        ///     Test service B implementation - singleton
         /// </summary>
         public class TestServiceB : ITestServiceB
         {
             private readonly IXLogger _logger;
-            public string Id { get; } = Guid.NewGuid().ToString();
 
             public TestServiceB(IXLogger logger)
             {
                 _logger = logger;
             }
+
+            public string Id { get; } = Guid.NewGuid().ToString();
 
             public void DoSomething()
             {
@@ -378,27 +379,25 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// Test service C implementation - scoped
+        ///     Test service C implementation - scoped
         /// </summary>
         public class TestServiceC : ITestServiceC
         {
-            private readonly IXLogger _logger;
-            public IXLogger Logger => _logger;
-            public ITestServiceA ServiceA { get; private set; }
-            public string Id { get; } = Guid.NewGuid().ToString();
-
             public TestServiceC(IXLogger logger, ITestServiceA serviceA)
             {
-                _logger = logger;
+                Logger = logger;
                 ServiceA = serviceA;
             }
 
+            public IXLogger Logger { get; }
+
+            public ITestServiceA ServiceA { get; }
+            public string Id { get; } = Guid.NewGuid().ToString();
+
             public void DoSomething()
             {
-                _logger.Info("ServiceC (" + Id + ") doing something");
+                Logger.Info("ServiceC (" + Id + ") doing something");
             }
         }
-
-        #endregion
     }
 }

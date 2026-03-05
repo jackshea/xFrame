@@ -4,33 +4,26 @@ using xFrame.Runtime.UI;
 namespace xFrame.Examples.UI
 {
     /// <summary>
-    /// Tab系统使用示例
-    /// 演示如何使用UITabContainer和UITabPage实现多页面切换
+    ///     Tab系统使用示例
+    ///     演示如何使用UITabContainer和UITabPage实现多页面切换
     /// </summary>
     public class TabSystemExample : MonoBehaviour
     {
-        [Header("示例1：基础Tab容器")]
-        [SerializeField]
+        [Header("示例1：基础Tab容器")] [SerializeField]
         private UITabContainer basicTabContainer;
 
-        [SerializeField]
-        private HomePage homePagePrefab;
+        [SerializeField] private HomePage homePagePrefab;
 
-        [SerializeField]
-        private InventoryPage inventoryPagePrefab;
+        [SerializeField] private InventoryPage inventoryPagePrefab;
 
-        [SerializeField]
-        private ShopPage shopPagePrefab;
+        [SerializeField] private ShopPage shopPagePrefab;
 
-        [Header("示例2：带按钮的Tab容器")]
-        [SerializeField]
+        [Header("示例2：带按钮的Tab容器")] [SerializeField]
         private UITabContainer advancedTabContainer;
 
-        [SerializeField]
-        private Transform buttonContainer;
+        [SerializeField] private Transform buttonContainer;
 
-        [SerializeField]
-        private UITabButton tabButtonPrefab;
+        [SerializeField] private UITabButton tabButtonPrefab;
 
         private void Start()
         {
@@ -45,8 +38,8 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 示例1：基础Tab容器使用
-        /// 注意：实际使用中应通过UIManager打开容器，这里仅演示API
+        ///     示例1：基础Tab容器使用
+        ///     注意：实际使用中应通过UIManager打开容器，这里仅演示API
         /// </summary>
         private void Example1_BasicTabContainer()
         {
@@ -78,8 +71,8 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 示例2：使用Builder模式构建容器
-        /// 注意：实际使用中应通过UIManager打开容器，这里仅演示API
+        ///     示例2：使用Builder模式构建容器
+        ///     注意：实际使用中应通过UIManager打开容器，这里仅演示API
         /// </summary>
         private void Example2_BuilderPattern()
         {
@@ -104,9 +97,9 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 示例3：子页面独立使用
-        /// 演示TabPage既可以在容器中使用，也可以独立使用
-        /// 注意：实际使用中应通过UIManager管理生命周期
+        ///     示例3：子页面独立使用
+        ///     演示TabPage既可以在容器中使用，也可以独立使用
+        ///     注意：实际使用中应通过UIManager管理生命周期
         /// </summary>
         private void Example3_StandalonePageUsage()
         {
@@ -134,7 +127,7 @@ namespace xFrame.Examples.UI
     #region 示例页面实现
 
     /// <summary>
-    /// 首页示例
+    ///     首页示例
     /// </summary>
     public class HomePage : UITabPage
     {
@@ -178,7 +171,7 @@ namespace xFrame.Examples.UI
     }
 
     /// <summary>
-    /// 背包页面示例
+    ///     背包页面示例
     /// </summary>
     public class InventoryPage : UITabPage
     {
@@ -207,7 +200,7 @@ namespace xFrame.Examples.UI
     }
 
     /// <summary>
-    /// 商店页面示例
+    ///     商店页面示例
     /// </summary>
     public class ShopPage : UITabPage
     {

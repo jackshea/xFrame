@@ -17,7 +17,7 @@ namespace xFrame.Runtime.Networking.AgentBridge
     }
 
     /// <summary>
-    /// Agent Bridge 端点配置持久化。
+    ///     Agent Bridge 端点配置持久化。
     /// </summary>
     public sealed class AgentBridgeEndpointPersistence : IAgentBridgeEndpointPersistence
     {
@@ -27,10 +27,7 @@ namespace xFrame.Runtime.Networking.AgentBridge
 
         public bool TrySave(string host, int port, out string error)
         {
-            if (!AgentBridgeOptions.ValidateEndpoint(host, port, out error))
-            {
-                return false;
-            }
+            if (!AgentBridgeOptions.ValidateEndpoint(host, port, out error)) return false;
 
             PlayerPrefs.SetString(HostKey, host.Trim());
             PlayerPrefs.SetInt(PortKey, port);
@@ -46,17 +43,12 @@ namespace xFrame.Runtime.Networking.AgentBridge
 
             var hasHost = PlayerPrefs.HasKey(HostKey);
             var hasPort = PlayerPrefs.HasKey(PortKey);
-            if (!hasHost && !hasPort)
-            {
-                return AgentBridgeEndpointLoadResult.NotFound;
-            }
+            if (!hasHost && !hasPort) return AgentBridgeEndpointLoadResult.NotFound;
 
             var storedHost = PlayerPrefs.GetString(HostKey, AgentBridgeOptions.DefaultHost);
             var storedPort = PlayerPrefs.GetInt(PortKey, AgentBridgeOptions.DefaultPort);
             if (!AgentBridgeOptions.ValidateEndpoint(storedHost, storedPort, out error))
-            {
                 return AgentBridgeEndpointLoadResult.Invalid;
-            }
 
             host = storedHost.Trim();
             port = storedPort;

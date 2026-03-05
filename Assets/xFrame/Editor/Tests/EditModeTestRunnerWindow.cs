@@ -9,7 +9,7 @@ using xFrame.Runtime.Logging;
 namespace xFrame.Editor.Tests
 {
     /// <summary>
-    /// 在已打开的 Unity Editor 内执行 EditMode 测试。
+    ///     在已打开的 Unity Editor 内执行 EditMode 测试。
     /// </summary>
     public class EditModeTestRunnerWindow : EditorWindow
     {
@@ -18,12 +18,6 @@ namespace xFrame.Editor.Tests
         private static readonly IXLogger Logger = new XLogManager().GetLogger("EditModeTests");
 
         private string _testFilter;
-
-        [MenuItem("xFrame/Tests/EditMode Runner")]
-        public static void ShowWindow()
-        {
-            GetWindow<EditModeTestRunnerWindow>("EditMode Runner");
-        }
 
         private void OnEnable()
         {
@@ -39,15 +33,9 @@ namespace xFrame.Editor.Tests
             _testFilter = EditorGUILayout.TextField("Test Filter", _testFilter ?? string.Empty);
 
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("Run All"))
-            {
-                RunTests(string.Empty);
-            }
+            if (GUILayout.Button("Run All")) RunTests(string.Empty);
 
-            if (GUILayout.Button("Run By Filter"))
-            {
-                RunTests(_testFilter);
-            }
+            if (GUILayout.Button("Run By Filter")) RunTests(_testFilter);
 
             EditorGUILayout.EndHorizontal();
 
@@ -55,9 +43,15 @@ namespace xFrame.Editor.Tests
             EditorGUILayout.LabelField("Filter 示例：", "xFrame.Tests.SchedulerTests.SchedulerServiceTests");
         }
 
+        [MenuItem("xFrame/Tests/EditMode Runner")]
+        public static void ShowWindow()
+        {
+            GetWindow<EditModeTestRunnerWindow>("EditMode Runner");
+        }
+
         private static string GetResultsPath()
         {
-            string projectRoot = Path.GetDirectoryName(Application.dataPath);
+            var projectRoot = Path.GetDirectoryName(Application.dataPath);
             return Path.Combine(projectRoot ?? ".", "Logs", "EditModeResults.xml");
         }
 
@@ -66,29 +60,26 @@ namespace xFrame.Editor.Tests
             _testFilter = testFilter ?? string.Empty;
             EditorPrefs.SetString(FilterPrefsKey, _testFilter);
 
-            Filter filter = new Filter
+            var filter = new Filter
             {
                 testMode = TestMode.EditMode
             };
 
-            if (!string.IsNullOrWhiteSpace(_testFilter))
-            {
-                filter.testNames = new[] { _testFilter };
-            }
+            if (!string.IsNullOrWhiteSpace(_testFilter)) filter.testNames = new[] { _testFilter };
 
-            string resultsPath = GetResultsPath();
+            var resultsPath = GetResultsPath();
             Directory.CreateDirectory(Path.GetDirectoryName(resultsPath) ?? "Logs");
 
-            var api = ScriptableObject.CreateInstance<TestRunnerApi>();
+            var api = CreateInstance<TestRunnerApi>();
             var callback = new EditModeTestResultCallback(api, resultsPath);
             api.RegisterCallbacks(callback);
 
-            var executionSettings = new ExecutionSettings(new[] { filter })
+            var executionSettings = new ExecutionSettings(filter)
             {
                 runSynchronously = true
             };
 
-            Logger.Info($"Start EditMode tests. Filter='{(_testFilter ?? string.Empty)}'");
+            Logger.Info($"Start EditMode tests. Filter='{_testFilter ?? string.Empty}'");
             api.Execute(executionSettings);
         }
 
@@ -111,11 +102,11 @@ namespace xFrame.Editor.Tests
             {
                 try
                 {
-                    int passCount = result?.PassCount ?? 0;
-                    int failCount = result?.FailCount ?? 0;
-                    int skipCount = result?.SkipCount ?? 0;
-                    int inconclusiveCount = result?.InconclusiveCount ?? 0;
-                    int totalCount = passCount + failCount + skipCount + inconclusiveCount;
+                    var passCount = result?.PassCount ?? 0;
+                    var failCount = result?.FailCount ?? 0;
+                    var skipCount = result?.SkipCount ?? 0;
+                    var inconclusiveCount = result?.InconclusiveCount ?? 0;
+                    var totalCount = passCount + failCount + skipCount + inconclusiveCount;
                     WriteSummaryResultFile(
                         _resultsPath,
                         totalCount,

@@ -6,16 +6,14 @@ using xFrame.Runtime.Persistence.Security;
 namespace xFrame.Tests.PersistenceTests
 {
     /// <summary>
-    /// 数据安全层单元测试
-    /// 测试加密器和校验器的功能
+    ///     数据安全层单元测试
+    ///     测试加密器和校验器的功能
     /// </summary>
     [TestFixture]
     public class SecurityTests
     {
-        #region NoEncryptor 测试
-
         /// <summary>
-        /// 测试NoEncryptor名称
+        ///     测试NoEncryptor名称
         /// </summary>
         [Test]
         public void NoEncryptor_Name_ShouldReturnNone()
@@ -25,7 +23,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试NoEncryptor加密返回原数据
+        ///     测试NoEncryptor加密返回原数据
         /// </summary>
         [Test]
         public void NoEncryptor_Encrypt_ShouldReturnSameData()
@@ -39,7 +37,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试NoEncryptor解密返回原数据
+        ///     测试NoEncryptor解密返回原数据
         /// </summary>
         [Test]
         public void NoEncryptor_Decrypt_ShouldReturnSameData()
@@ -52,12 +50,8 @@ namespace xFrame.Tests.PersistenceTests
             Assert.AreEqual(data, decrypted);
         }
 
-        #endregion
-
-        #region AesEncryptor 测试
-
         /// <summary>
-        /// 测试AesEncryptor名称
+        ///     测试AesEncryptor名称
         /// </summary>
         [Test]
         public void AesEncryptor_Name_ShouldReturnAES()
@@ -67,7 +61,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试AesEncryptor加密解密往返
+        ///     测试AesEncryptor加密解密往返
         /// </summary>
         [Test]
         public void AesEncryptor_EncryptDecrypt_ShouldPreserveData()
@@ -82,7 +76,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试AesEncryptor加密后数据不同
+        ///     测试AesEncryptor加密后数据不同
         /// </summary>
         [Test]
         public void AesEncryptor_Encrypt_ShouldProduceDifferentData()
@@ -97,7 +91,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试不同密钥产生不同加密结果
+        ///     测试不同密钥产生不同加密结果
         /// </summary>
         [Test]
         public void AesEncryptor_DifferentKeys_ShouldProduceDifferentResults()
@@ -113,7 +107,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试使用盐值的加密器
+        ///     测试使用盐值的加密器
         /// </summary>
         [Test]
         public void AesEncryptor_WithSalt_ShouldWork()
@@ -128,7 +122,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试空密钥抛出异常
+        ///     测试空密钥抛出异常
         /// </summary>
         [Test]
         public void AesEncryptor_NullPassword_ShouldThrow()
@@ -137,7 +131,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试空数据加密
+        ///     测试空数据加密
         /// </summary>
         [Test]
         public void AesEncryptor_EmptyData_ShouldReturnEmpty()
@@ -150,15 +144,15 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试使用原始密钥和IV
+        ///     测试使用原始密钥和IV
         /// </summary>
         [Test]
         public void AesEncryptor_WithRawKeyAndIv_ShouldWork()
         {
             var key = new byte[32];
             var iv = new byte[16];
-            for (int i = 0; i < 32; i++) key[i] = (byte)i;
-            for (int i = 0; i < 16; i++) iv[i] = (byte)(i + 100);
+            for (var i = 0; i < 32; i++) key[i] = (byte)i;
+            for (var i = 0; i < 16; i++) iv[i] = (byte)(i + 100);
 
             var encryptor = new AesEncryptor(key, iv);
             var data = Encoding.UTF8.GetBytes("Raw key test");
@@ -170,7 +164,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试无效密钥长度抛出异常
+        ///     测试无效密钥长度抛出异常
         /// </summary>
         [Test]
         public void AesEncryptor_InvalidKeyLength_ShouldThrow()
@@ -181,12 +175,8 @@ namespace xFrame.Tests.PersistenceTests
             Assert.Throws<ArgumentException>(() => new AesEncryptor(invalidKey, iv));
         }
 
-        #endregion
-
-        #region Sha256Validator 测试
-
         /// <summary>
-        /// 测试Sha256Validator名称
+        ///     测试Sha256Validator名称
         /// </summary>
         [Test]
         public void Sha256Validator_Name_ShouldReturnSHA256()
@@ -196,7 +186,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试Sha256Validator计算哈希
+        ///     测试Sha256Validator计算哈希
         /// </summary>
         [Test]
         public void Sha256Validator_ComputeHash_ShouldReturn32Bytes()
@@ -210,7 +200,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试Sha256Validator验证哈希
+        ///     测试Sha256Validator验证哈希
         /// </summary>
         [Test]
         public void Sha256Validator_VerifyHash_ShouldReturnTrue()
@@ -225,7 +215,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试Sha256Validator验证错误哈希
+        ///     测试Sha256Validator验证错误哈希
         /// </summary>
         [Test]
         public void Sha256Validator_VerifyHash_WrongHash_ShouldReturnFalse()
@@ -240,7 +230,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试相同数据产生相同哈希
+        ///     测试相同数据产生相同哈希
         /// </summary>
         [Test]
         public void Sha256Validator_SameData_ShouldProduceSameHash()
@@ -256,7 +246,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试不同数据产生不同哈希
+        ///     测试不同数据产生不同哈希
         /// </summary>
         [Test]
         public void Sha256Validator_DifferentData_ShouldProduceDifferentHash()
@@ -272,7 +262,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试空数据哈希
+        ///     测试空数据哈希
         /// </summary>
         [Test]
         public void Sha256Validator_EmptyData_ShouldReturnEmptyHash()
@@ -284,12 +274,8 @@ namespace xFrame.Tests.PersistenceTests
             Assert.IsEmpty(hash);
         }
 
-        #endregion
-
-        #region Crc32Validator 测试
-
         /// <summary>
-        /// 测试Crc32Validator名称
+        ///     测试Crc32Validator名称
         /// </summary>
         [Test]
         public void Crc32Validator_Name_ShouldReturnCRC32()
@@ -299,7 +285,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试Crc32Validator计算哈希
+        ///     测试Crc32Validator计算哈希
         /// </summary>
         [Test]
         public void Crc32Validator_ComputeHash_ShouldReturn4Bytes()
@@ -313,7 +299,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试Crc32Validator验证哈希
+        ///     测试Crc32Validator验证哈希
         /// </summary>
         [Test]
         public void Crc32Validator_VerifyHash_ShouldReturnTrue()
@@ -328,7 +314,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试Crc32Validator验证错误哈希
+        ///     测试Crc32Validator验证错误哈希
         /// </summary>
         [Test]
         public void Crc32Validator_VerifyHash_WrongHash_ShouldReturnFalse()
@@ -343,7 +329,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试相同数据产生相同CRC32
+        ///     测试相同数据产生相同CRC32
         /// </summary>
         [Test]
         public void Crc32Validator_SameData_ShouldProduceSameHash()
@@ -358,12 +344,8 @@ namespace xFrame.Tests.PersistenceTests
             Assert.AreEqual(hash1, hash2);
         }
 
-        #endregion
-
-        #region NoValidator 测试
-
         /// <summary>
-        /// 测试NoValidator名称
+        ///     测试NoValidator名称
         /// </summary>
         [Test]
         public void NoValidator_Name_ShouldReturnNone()
@@ -373,7 +355,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试NoValidator计算哈希返回空
+        ///     测试NoValidator计算哈希返回空
         /// </summary>
         [Test]
         public void NoValidator_ComputeHash_ShouldReturnEmpty()
@@ -387,7 +369,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试NoValidator验证始终返回true
+        ///     测试NoValidator验证始终返回true
         /// </summary>
         [Test]
         public void NoValidator_VerifyHash_ShouldAlwaysReturnTrue()
@@ -400,7 +382,5 @@ namespace xFrame.Tests.PersistenceTests
 
             Assert.IsTrue(result);
         }
-
-        #endregion
     }
 }

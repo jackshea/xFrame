@@ -6,37 +6,26 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace MessagePack.Unity.Editor
 {
     internal class MessagePackWindow : EditorWindow
     {
-        static MessagePackWindow window;
+        private static MessagePackWindow window;
+        private string dotnetVersion;
+        private bool installingMpc;
+        private bool invokingMpc;
 
-        bool processInitialized;
+        private bool isDotnetInstalled;
 
-        bool isDotnetInstalled;
-        string dotnetVersion;
+        private bool isInstalledMpc;
 
-        bool isInstalledMpc;
-        bool installingMpc;
-        bool invokingMpc;
+        private MpcArgument mpcArgument;
 
-        MpcArgument mpcArgument;
+        private bool processInitialized;
 
-        [MenuItem("Window/MessagePack/CodeGenerator")]
-        public static void OpenWindow()
-        {
-            if (window != null)
-            {
-                window.Close();
-            }
-
-            // will called OnEnable(singleton instance will be set).
-            GetWindow<MessagePackWindow>("MessagePack CodeGen").Show();
-        }
-
-        async void OnEnable()
+        private async void OnEnable()
         {
             window = this; // set singleton.
             try
@@ -45,10 +34,7 @@ namespace MessagePack.Unity.Editor
                 isDotnetInstalled = dotnet.found;
                 dotnetVersion = dotnet.version;
 
-                if (isDotnetInstalled)
-                {
-                    isInstalledMpc = await ProcessHelper.IsInstalledMpc();
-                }
+                if (isDotnetInstalled) isInstalledMpc = await ProcessHelper.IsInstalledMpc();
             }
             finally
             {
@@ -57,26 +43,22 @@ namespace MessagePack.Unity.Editor
             }
         }
 
-        async void OnGUI()
+        private async void OnGUI()
         {
             if (!processInitialized)
             {
                 GUILayout.Label("Check .NET Core SDK/CodeGen install status.");
                 return;
             }
-            if (mpcArgument == null)
-            {
-                return;
-            }
+
+            if (mpcArgument == null) return;
 
             if (!isDotnetInstalled)
             {
                 GUILayout.Label(".NET Core SDK not found.");
                 GUILayout.Label("MessagePack CodeGen requires .NET Core Runtime.");
                 if (GUILayout.Button("Open .NET Core install page."))
-                {
                     Application.OpenURL("https://dotnet.microsoft.com/download");
-                }
                 return;
             }
 
@@ -91,23 +73,17 @@ namespace MessagePack.Unity.Editor
                     try
                     {
                         var log = await ProcessHelper.InstallMpc();
-                        if (!string.IsNullOrWhiteSpace(log))
-                        {
-                            UnityEngine.Debug.Log(log);
-                        }
+                        if (!string.IsNullOrWhiteSpace(log)) Debug.Log(log);
                         if (log != null && log.Contains("error"))
-                        {
                             isInstalledMpc = false;
-                        }
                         else
-                        {
                             isInstalledMpc = true;
-                        }
                     }
                     finally
                     {
                         installingMpc = false;
                     }
+
                     return;
                 }
 
@@ -139,29 +115,40 @@ namespace MessagePack.Unity.Editor
             TextField(mpcArgument, x => x.Namespace, (x, y) => x.Namespace = y);
 
             EditorGUILayout.LabelField("-ms(optional) Generate #if-- files by symbols, split with ','");
-            TextField(mpcArgument, x => x.MultipleIfDirectiveOutputSymbols, (x, y) => x.MultipleIfDirectiveOutputSymbols = y);
+            TextField(mpcArgument, x => x.MultipleIfDirectiveOutputSymbols,
+                (x, y) => x.MultipleIfDirectiveOutputSymbols = y);
 
             EditorGUI.BeginDisabledGroup(invokingMpc);
             if (GUILayout.Button("Generate"))
             {
                 var commnadLineArguments = mpcArgument.ToString();
-                UnityEngine.Debug.Log("Generate MessagePack Files, command:" + commnadLineArguments);
+                Debug.Log("Generate MessagePack Files, command:" + commnadLineArguments);
 
                 invokingMpc = true;
                 try
                 {
                     var log = await ProcessHelper.InvokeProcessStartAsync("mpc", commnadLineArguments);
-                    UnityEngine.Debug.Log(log);
+                    Debug.Log(log);
                 }
                 finally
                 {
                     invokingMpc = false;
                 }
             }
+
             EditorGUI.EndDisabledGroup();
         }
 
-        void TextField(MpcArgument args, Func<MpcArgument, string> getter, Action<MpcArgument, string> setter)
+        [MenuItem("Window/MessagePack/CodeGenerator")]
+        public static void OpenWindow()
+        {
+            if (window != null) window.Close();
+
+            // will called OnEnable(singleton instance will be set).
+            GetWindow<MessagePackWindow>("MessagePack CodeGen").Show();
+        }
+
+        private void TextField(MpcArgument args, Func<MpcArgument, string> getter, Action<MpcArgument, string> setter)
         {
             var current = getter(args);
             var newValue = EditorGUILayout.TextField(current);
@@ -175,15 +162,15 @@ namespace MessagePack.Unity.Editor
 
     internal class MpcArgument
     {
-        public string Input;
-        public string Output;
         public string ConditionalSymbol;
-        public string ResolverName;
-        public string Namespace;
-        public bool UseMapMode;
+        public string Input;
         public string MultipleIfDirectiveOutputSymbols;
+        public string Namespace;
+        public string Output;
+        public string ResolverName;
+        public bool UseMapMode;
 
-        static string Key => "MessagePackCodeGen." + Application.productName;
+        private static string Key => "MessagePackCodeGen." + Application.productName;
 
         public static MpcArgument Restore()
         {
@@ -192,10 +179,8 @@ namespace MessagePack.Unity.Editor
                 var json = EditorPrefs.GetString(Key);
                 return JsonUtility.FromJson<MpcArgument>(json);
             }
-            else
-            {
-                return new MpcArgument();
-            }
+
+            return new MpcArgument();
         }
 
         public void Save()
@@ -207,27 +192,33 @@ namespace MessagePack.Unity.Editor
         public override string ToString()
         {
             var sb = new StringBuilder();
-            sb.Append("-i "); sb.Append(Input);
-            sb.Append(" -o "); sb.Append(Output);
+            sb.Append("-i ");
+            sb.Append(Input);
+            sb.Append(" -o ");
+            sb.Append(Output);
             if (!string.IsNullOrWhiteSpace(ConditionalSymbol))
             {
-                sb.Append(" -c "); sb.Append(ConditionalSymbol);
+                sb.Append(" -c ");
+                sb.Append(ConditionalSymbol);
             }
+
             if (!string.IsNullOrWhiteSpace(ResolverName))
             {
-                sb.Append(" -r "); sb.Append(ResolverName);
+                sb.Append(" -r ");
+                sb.Append(ResolverName);
             }
-            if (UseMapMode)
-            {
-                sb.Append(" -m");
-            }
+
+            if (UseMapMode) sb.Append(" -m");
             if (!string.IsNullOrWhiteSpace(Namespace))
             {
-                sb.Append(" -n "); sb.Append(Namespace);
+                sb.Append(" -n ");
+                sb.Append(Namespace);
             }
+
             if (!string.IsNullOrWhiteSpace(MultipleIfDirectiveOutputSymbols))
             {
-                sb.Append(" -ms "); sb.Append(MultipleIfDirectiveOutputSymbols);
+                sb.Append(" -ms ");
+                sb.Append(MultipleIfDirectiveOutputSymbols);
             }
 
             return sb.ToString();
@@ -236,19 +227,14 @@ namespace MessagePack.Unity.Editor
 
     internal static class ProcessHelper
     {
-        const string InstallName = "messagepack.generator";
+        private const string InstallName = "messagepack.generator";
 
         public static async Task<bool> IsInstalledMpc()
         {
             var list = await InvokeProcessStartAsync("dotnet", "tool list -g");
-            if (list.Contains(InstallName))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            if (list.Contains(InstallName)) return true;
+
+            return false;
         }
 
         public static async Task<string> InstallMpc()
@@ -271,7 +257,7 @@ namespace MessagePack.Unity.Editor
 
         public static Task<string> InvokeProcessStartAsync(string fileName, string arguments)
         {
-            var psi = new ProcessStartInfo()
+            var psi = new ProcessStartInfo
             {
                 CreateNoWindow = true,
                 WindowStyle = ProcessWindowStyle.Hidden,
@@ -297,7 +283,7 @@ namespace MessagePack.Unity.Editor
 
             var tcs = new TaskCompletionSource<string>();
             p.EnableRaisingEvents = true;
-            p.Exited += (object sender, System.EventArgs e) =>
+            p.Exited += (sender, e) =>
             {
                 var data = p.StandardOutput.ReadToEnd();
                 p.Dispose();

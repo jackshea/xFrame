@@ -1,4 +1,3 @@
-using System.Reflection;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
@@ -8,67 +7,64 @@ using xFrame.Runtime.Logging;
 namespace xFrame.Runtime
 {
     /// <summary>
-    /// xFrame框架启动器
-    /// 作为游戏的入口点，负责初始化框架的核心组件
+    ///     xFrame框架启动器
+    ///     作为游戏的入口点，负责初始化框架的核心组件
     /// </summary>
     public class xFrameBootstrapper : MonoBehaviour
     {
         /// <summary>
-        /// 单例实例
+        ///     单例实例
         /// </summary>
         private static xFrameBootstrapper _instance;
 
         /// <summary>
-        /// 生命周期容器预制体
-        /// 如果不指定，将自动创建默认的xFrameLifetimeScope
+        ///     生命周期容器预制体
+        ///     如果不指定，将自动创建默认的xFrameLifetimeScope
         /// </summary>
-        [SerializeField]
-        private LifetimeScope lifetimeScopePrefab;
+        [SerializeField] private LifetimeScope lifetimeScopePrefab;
 
         /// <summary>
-        /// 是否在Awake时自动初始化
+        ///     是否在Awake时自动初始化
         /// </summary>
-        [SerializeField]
-        private bool autoInitialize = true;
+        [SerializeField] private bool autoInitialize = true;
 
         /// <summary>
-        /// 是否使用DontDestroyOnLoad保持框架对象
+        ///     是否使用DontDestroyOnLoad保持框架对象
         /// </summary>
-        [SerializeField]
-        private bool dontDestroyOnLoad = true;
+        [SerializeField] private bool dontDestroyOnLoad = true;
 
         /// <summary>
-        /// 框架是否已初始化
+        ///     框架是否已初始化
         /// </summary>
         private bool _initialized;
 
         /// <summary>
-        /// 框架生命周期容器实例
+        ///     框架生命周期容器实例
         /// </summary>
         private LifetimeScope _lifetimeScope;
 
         /// <summary>
-        /// 日志管理器实例
+        ///     日志管理器实例
         /// </summary>
         private IXLogManager _logManager;
 
         /// <summary>
-        /// 获取单例实例
+        ///     获取单例实例
         /// </summary>
         public static xFrameBootstrapper Instance => Instance;
 
         /// <summary>
-        /// 获取生命周期容器
+        ///     获取生命周期容器
         /// </summary>
         public LifetimeScope LifetimeScope => _lifetimeScope;
 
         /// <summary>
-        /// 获取日志管理器
+        ///     获取日志管理器
         /// </summary>
         public IXLogManager LogManager => _logManager;
 
         /// <summary>
-        /// Unity Awake生命周期
+        ///     Unity Awake生命周期
         /// </summary>
         private void Awake()
         {
@@ -89,7 +85,7 @@ namespace xFrame.Runtime
         }
 
         /// <summary>
-        /// Unity OnDestroy生命周期
+        ///     Unity OnDestroy生命周期
         /// </summary>
         private void OnDestroy()
         {
@@ -103,7 +99,7 @@ namespace xFrame.Runtime
         }
 
         /// <summary>
-        /// 初始化框架
+        ///     初始化框架
         /// </summary>
         public void Initialize()
         {
@@ -126,7 +122,7 @@ namespace xFrame.Runtime
         }
 
         /// <summary>
-        /// 创建生命周期容器
+        ///     创建生命周期容器
         /// </summary>
         private void CreateLifetimeScope()
         {

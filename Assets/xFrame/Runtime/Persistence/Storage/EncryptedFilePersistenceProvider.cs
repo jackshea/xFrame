@@ -7,8 +7,8 @@ using xFrame.Runtime.Serialization;
 namespace xFrame.Runtime.Persistence.Storage
 {
     /// <summary>
-    /// 加密文件持久化提供者
-    /// 在文件存储的基础上增加加密功能
+    ///     加密文件持久化提供者
+    ///     在文件存储的基础上增加加密功能
     /// </summary>
     public class EncryptedFilePersistenceProvider : FilePersistenceProvider
     {
@@ -16,12 +16,7 @@ namespace xFrame.Runtime.Persistence.Storage
         private readonly IXLogger _logger;
 
         /// <summary>
-        /// 提供者名称
-        /// </summary>
-        public override string Name => "EncryptedFile";
-
-        /// <summary>
-        /// 创建加密文件持久化提供者
+        ///     创建加密文件持久化提供者
         /// </summary>
         /// <param name="serializer">序列化器</param>
         /// <param name="basePath">基础存储路径</param>
@@ -39,7 +34,12 @@ namespace xFrame.Runtime.Persistence.Storage
         }
 
         /// <summary>
-        /// 保存原始字节数据（加密后存储）
+        ///     提供者名称
+        /// </summary>
+        public override string Name => "EncryptedFile";
+
+        /// <summary>
+        ///     保存原始字节数据（加密后存储）
         /// </summary>
         public override void SaveRaw(string key, byte[] data)
         {
@@ -63,7 +63,7 @@ namespace xFrame.Runtime.Persistence.Storage
         }
 
         /// <summary>
-        /// 异步保存原始字节数据（加密后存储）
+        ///     异步保存原始字节数据（加密后存储）
         /// </summary>
         public override async UniTask SaveRawAsync(string key, byte[] data)
         {
@@ -87,15 +87,12 @@ namespace xFrame.Runtime.Persistence.Storage
         }
 
         /// <summary>
-        /// 加载原始字节数据（解密后返回）
+        ///     加载原始字节数据（解密后返回）
         /// </summary>
         public override byte[] LoadRaw(string key)
         {
             var encryptedData = base.LoadRaw(key);
-            if (encryptedData == null || encryptedData.Length == 0)
-            {
-                return encryptedData;
-            }
+            if (encryptedData == null || encryptedData.Length == 0) return encryptedData;
 
             try
             {
@@ -111,15 +108,12 @@ namespace xFrame.Runtime.Persistence.Storage
         }
 
         /// <summary>
-        /// 异步加载原始字节数据（解密后返回）
+        ///     异步加载原始字节数据（解密后返回）
         /// </summary>
         public override async UniTask<byte[]> LoadRawAsync(string key)
         {
             var encryptedData = await base.LoadRawAsync(key);
-            if (encryptedData == null || encryptedData.Length == 0)
-            {
-                return encryptedData;
-            }
+            if (encryptedData == null || encryptedData.Length == 0) return encryptedData;
 
             try
             {

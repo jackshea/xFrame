@@ -6,8 +6,8 @@ using System.Threading;
 namespace xFrame.Runtime.DataStructures
 {
     /// <summary>
-    /// 线程安全的LRU缓存实现
-    /// 使用读写锁来保证线程安全性
+    ///     线程安全的LRU缓存实现
+    ///     使用读写锁来保证线程安全性
     /// </summary>
     /// <typeparam name="TKey">键的类型</typeparam>
     /// <typeparam name="TValue">值的类型</typeparam>
@@ -18,7 +18,7 @@ namespace xFrame.Runtime.DataStructures
         private bool _disposed;
 
         /// <summary>
-        /// 构造函数
+        ///     构造函数
         /// </summary>
         /// <param name="capacity">缓存的最大容量</param>
         public ThreadSafeLRUCache(int capacity)
@@ -29,7 +29,7 @@ namespace xFrame.Runtime.DataStructures
         }
 
         /// <summary>
-        /// 释放资源
+        ///     释放资源
         /// </summary>
         public void Dispose()
         {
@@ -41,12 +41,12 @@ namespace xFrame.Runtime.DataStructures
         }
 
         /// <summary>
-        /// 缓存的最大容量
+        ///     缓存的最大容量
         /// </summary>
         public int Capacity => _innerCache.Capacity;
 
         /// <summary>
-        /// 当前缓存中的元素数量
+        ///     当前缓存中的元素数量
         /// </summary>
         public int Count
         {
@@ -65,7 +65,7 @@ namespace xFrame.Runtime.DataStructures
         }
 
         /// <summary>
-        /// 获取所有键的集合（按最近使用顺序排列）
+        ///     获取所有键的集合（按最近使用顺序排列）
         /// </summary>
         public IEnumerable<TKey> Keys
         {
@@ -85,7 +85,7 @@ namespace xFrame.Runtime.DataStructures
         }
 
         /// <summary>
-        /// 获取所有值的集合（按最近使用顺序排列）
+        ///     获取所有值的集合（按最近使用顺序排列）
         /// </summary>
         public IEnumerable<TValue> Values
         {
@@ -105,7 +105,7 @@ namespace xFrame.Runtime.DataStructures
         }
 
         /// <summary>
-        /// 获取指定键对应的值
+        ///     获取指定键对应的值
         /// </summary>
         /// <param name="key">要查找的键</param>
         /// <param name="value">输出参数，如果找到则包含对应的值</param>
@@ -126,7 +126,7 @@ namespace xFrame.Runtime.DataStructures
         }
 
         /// <summary>
-        /// 获取指定键对应的值
+        ///     获取指定键对应的值
         /// </summary>
         /// <param name="key">要查找的键</param>
         /// <returns>如果找到键则返回对应的值，否则抛出异常</returns>
@@ -146,7 +146,7 @@ namespace xFrame.Runtime.DataStructures
         }
 
         /// <summary>
-        /// 设置指定键的值
+        ///     设置指定键的值
         /// </summary>
         /// <param name="key">要设置的键</param>
         /// <param name="value">要设置的值</param>
@@ -166,7 +166,7 @@ namespace xFrame.Runtime.DataStructures
         }
 
         /// <summary>
-        /// 检查缓存中是否包含指定的键
+        ///     检查缓存中是否包含指定的键
         /// </summary>
         /// <param name="key">要检查的键</param>
         /// <returns>如果包含键则返回true，否则返回false</returns>
@@ -186,7 +186,7 @@ namespace xFrame.Runtime.DataStructures
         }
 
         /// <summary>
-        /// 从缓存中移除指定的键
+        ///     从缓存中移除指定的键
         /// </summary>
         /// <param name="key">要移除的键</param>
         /// <returns>如果成功移除则返回true，否则返回false</returns>
@@ -206,7 +206,7 @@ namespace xFrame.Runtime.DataStructures
         }
 
         /// <summary>
-        /// 清空缓存中的所有元素
+        ///     清空缓存中的所有元素
         /// </summary>
         public void Clear()
         {
@@ -224,7 +224,7 @@ namespace xFrame.Runtime.DataStructures
         }
 
         /// <summary>
-        /// 获取键值对集合的快照
+        ///     获取键值对集合的快照
         /// </summary>
         /// <returns>键值对的列表</returns>
         public KeyValuePair<IEnumerable<TKey>, IEnumerable<TValue>> GetKeyValueSnapshot()
@@ -243,7 +243,7 @@ namespace xFrame.Runtime.DataStructures
         }
 
         /// <summary>
-        /// 检查对象是否已被释放
+        ///     检查对象是否已被释放
         /// </summary>
         private void ThrowIfDisposed()
         {
@@ -252,7 +252,7 @@ namespace xFrame.Runtime.DataStructures
         }
 
         /// <summary>
-        /// 获取缓存的统计信息
+        ///     获取缓存的统计信息
         /// </summary>
         /// <returns>包含容量、当前数量等信息的字符串</returns>
         public override string ToString()

@@ -4,43 +4,43 @@ using System.Threading;
 namespace xFrame.Runtime.Logging
 {
     /// <summary>
-    /// 日志条目数据结构
-    /// 包含一条日志的所有信息
+    ///     日志条目数据结构
+    ///     包含一条日志的所有信息
     /// </summary>
     public struct LogEntry
     {
         /// <summary>
-        /// 日志等级
+        ///     日志等级
         /// </summary>
         public LogLevel Level { get; }
 
         /// <summary>
-        /// 日志消息内容
+        ///     日志消息内容
         /// </summary>
         public string Message { get; }
 
         /// <summary>
-        /// 模块名称
+        ///     模块名称
         /// </summary>
         public string ModuleName { get; }
 
         /// <summary>
-        /// 时间戳
+        ///     时间戳
         /// </summary>
         public DateTime Timestamp { get; }
 
         /// <summary>
-        /// 线程ID
+        ///     线程ID
         /// </summary>
         public int ThreadId { get; }
 
         /// <summary>
-        /// 异常信息（可选）
+        ///     异常信息（可选）
         /// </summary>
         public Exception Exception { get; }
 
         /// <summary>
-        /// 构造函数
+        ///     构造函数
         /// </summary>
         /// <param name="level">日志等级</param>
         /// <param name="message">日志消息</param>

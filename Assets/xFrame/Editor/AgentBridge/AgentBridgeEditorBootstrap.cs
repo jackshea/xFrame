@@ -1,6 +1,7 @@
 using System;
 using UnityEditor;
 using xFrame.Runtime.Logging;
+using xFrame.Runtime.Networking.AgentBridge;
 
 namespace xFrame.Editor.AgentBridge
 {
@@ -10,10 +11,6 @@ namespace xFrame.Editor.AgentBridge
         private static FleckAgentBridgeServer _server;
         private static readonly IXLogger Logger = new XLogManager().GetLogger("AgentBridge");
 
-        public static bool IsRunning => _server != null && _server.IsRunning;
-
-        public static string Endpoint => _server?.Endpoint;
-
         static AgentBridgeEditorBootstrap()
         {
             EditorApplication.delayCall += EnsureStarted;
@@ -21,12 +18,13 @@ namespace xFrame.Editor.AgentBridge
             EditorApplication.quitting += StopSilently;
         }
 
+        public static bool IsRunning => _server != null && _server.IsRunning;
+
+        public static string Endpoint => _server?.Endpoint;
+
         public static void EnsureStarted()
         {
-            if (_server != null)
-            {
-                return;
-            }
+            if (_server != null) return;
 
             try
             {
@@ -53,7 +51,7 @@ namespace xFrame.Editor.AgentBridge
 
             if (_server == null)
             {
-                var persistence = new Runtime.Networking.AgentBridge.AgentBridgeEndpointPersistence();
+                var persistence = new AgentBridgeEndpointPersistence();
                 if (!persistence.TrySave(host, port, out error))
                 {
                     Logger.Warning($"AgentBridge endpoint save rejected. host={host}, port={port}, error={error}");
@@ -74,18 +72,12 @@ namespace xFrame.Editor.AgentBridge
 
         private static void StopCore(bool silent)
         {
-            if (_server == null)
-            {
-                return;
-            }
+            if (_server == null) return;
 
             try
             {
                 _server.Stop();
-                if (!silent)
-                {
-                    Logger.Info("AgentBridge stopped.");
-                }
+                if (!silent) Logger.Info("AgentBridge stopped.");
             }
             catch (Exception ex)
             {

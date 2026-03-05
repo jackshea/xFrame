@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace xFrame.Runtime.Networking.AgentBridge
 {
     /// <summary>
-    /// 命令处理器注册表。
+    ///     命令处理器注册表。
     /// </summary>
     public sealed class AgentCommandRegistry
     {
@@ -13,10 +13,7 @@ namespace xFrame.Runtime.Networking.AgentBridge
 
         public void Register(IAgentRpcCommandHandler handler)
         {
-            if (handler == null || string.IsNullOrWhiteSpace(handler.Method))
-            {
-                return;
-            }
+            if (handler == null || string.IsNullOrWhiteSpace(handler.Method)) return;
 
             _handlers[handler.Method] = handler;
         }

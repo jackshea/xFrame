@@ -6,8 +6,8 @@ using xFrame.Runtime.Logging.Appenders;
 namespace xFrame.Runtime.Logging
 {
     /// <summary>
-    /// 日志模块
-    /// 负责初始化和配置整个日志系统，集成到VContainer依赖注入框架
+    ///     日志模块
+    ///     负责初始化和配置整个日志系统，集成到VContainer依赖注入框架
     /// </summary>
     public class XLoggingModule
     {
@@ -15,7 +15,7 @@ namespace xFrame.Runtime.Logging
         private readonly IXLogger _moduleLogger;
 
         /// <summary>
-        /// 构造函数
+        ///     构造函数
         /// </summary>
         /// <param name="logManager">日志管理器</param>
         public XLoggingModule(IXLogManager logManager)
@@ -28,7 +28,7 @@ namespace xFrame.Runtime.Logging
         public int Priority { get; } = 1;
 
         /// <summary>
-        /// 初始化日志模块
+        ///     初始化日志模块
         /// </summary>
         public void OnInit()
         {
@@ -49,7 +49,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 配置默认的日志输出器
+        ///     配置默认的日志输出器
         /// </summary>
         private void ConfigureDefaultAppenders()
         {
@@ -109,7 +109,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 获取日志文件路径
+        ///     获取日志文件路径
         /// </summary>
         /// <returns>日志文件路径</returns>
         private string GetLogFilePath()
@@ -120,7 +120,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 获取网络日志端点
+        ///     获取网络日志端点
         /// </summary>
         /// <returns>网络日志端点URL，如果未配置则返回null</returns>
         private string GetNetworkLogEndpoint()
@@ -131,7 +131,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 释放资源
+        ///     释放资源
         /// </summary>
         public void OnDestroy()
         {

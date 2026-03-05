@@ -1,22 +1,25 @@
+using System;
 using UnityEngine;
 using xFrame.Runtime.Core;
 
 namespace xFrame.Runtime.Unity.Adapter
 {
     /// <summary>
-    /// Unity时间提供者适配器
-    /// 将Unity的Time类适配到ITimeProvider接口
+    ///     Unity时间提供者适配器
+    ///     将Unity的Time类适配到ITimeProvider接口
     /// </summary>
     public class UnityTimeProvider : ITimeProvider
     {
         public float Time => UnityEngine.Time.time;
         public float DeltaTime => UnityEngine.Time.deltaTime;
         public float UnscaledDeltaTime => UnityEngine.Time.unscaledDeltaTime;
-        public float TimeScale 
-        { 
-            get => UnityEngine.Time.timeScale; 
-            set => UnityEngine.Time.timeScale = value; 
+
+        public float TimeScale
+        {
+            get => UnityEngine.Time.timeScale;
+            set => UnityEngine.Time.timeScale = value;
         }
+
         public bool IsPaused { get; set; }
         public int FrameCount => UnityEngine.Time.frameCount;
         public float RealTime => UnityEngine.Time.realtimeSinceStartup;
@@ -36,61 +39,61 @@ namespace xFrame.Runtime.Unity.Adapter
     }
 
     /// <summary>
-    /// Unity日志适配器 - 将核心日志输出到Unity控制台
+    ///     Unity日志适配器 - 将核心日志输出到Unity控制台
     /// </summary>
     public class UnityLogAppender : ICoreLogAppender
     {
         public void Append(CoreLogEntry entry)
         {
             var message = $"[{entry.Category}] {entry.Message}";
-            
+
             switch (entry.Level)
             {
                 case LogLevel.Verbose:
                 case LogLevel.Debug:
-                    UnityEngine.Debug.Log(message);
+                    Debug.Log(message);
                     break;
                 case LogLevel.Info:
-                    UnityEngine.Debug.Log(message);
+                    Debug.Log(message);
                     break;
                 case LogLevel.Warning:
-                    UnityEngine.Debug.LogWarning(message);
+                    Debug.LogWarning(message);
                     break;
                 case LogLevel.Error:
                 case LogLevel.Fatal:
                     if (entry.Exception != null)
-                        UnityEngine.Debug.LogError($"{message}\n{entry.Exception}");
+                        Debug.LogError($"{message}\n{entry.Exception}");
                     else
-                        UnityEngine.Debug.LogError(message);
+                        Debug.LogError(message);
                     break;
             }
         }
     }
 
     /// <summary>
-    /// Unity生命周期适配器 - 将Unity生命周期事件转换为核心层接口
+    ///     Unity生命周期适配器 - 将Unity生命周期事件转换为核心层接口
     /// </summary>
     public class UnityLifecycleAdapter : MonoBehaviour
     {
-        public System.Action OnUpdate;
-        public System.Action OnLateUpdate;
-        public System.Action OnFixedUpdate;
-        public System.Action OnDestroyAction;
-        public System.Action OnApplicationQuitAction;
+        public Action OnApplicationQuitAction;
+        public Action OnDestroyAction;
+        public Action OnFixedUpdate;
+        public Action OnLateUpdate;
+        public Action OnUpdate;
 
         private void Update()
         {
             OnUpdate?.Invoke();
         }
 
-        private void LateUpdate()
-        {
-            OnLateUpdate?.Invoke();
-        }
-
         private void FixedUpdate()
         {
             OnFixedUpdate?.Invoke();
+        }
+
+        private void LateUpdate()
+        {
+            OnLateUpdate?.Invoke();
         }
 
         private void OnDestroy()

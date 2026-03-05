@@ -7,28 +7,23 @@ using xFrame.Runtime.Logging;
 namespace xFrame.Examples.Logging
 {
     /// <summary>
-    /// 日志系统测试运行器
-    /// 用于自动化测试日志系统的各项功能
+    ///     日志系统测试运行器
+    ///     用于自动化测试日志系统的各项功能
     /// </summary>
     public class LoggingTestRunner : MonoBehaviour
     {
-        [Header("测试配置")]
-        [SerializeField]
-        private bool autoRunTests = true;
+        [Header("测试配置")] [SerializeField] private bool autoRunTests = true;
 
-        [SerializeField]
-        private float testInterval = 2f;
+        [SerializeField] private float testInterval = 2f;
 
-        [SerializeField]
-        private int testIterations = 5;
+        [SerializeField] private int testIterations = 5;
 
         private IXLogger _logger;
 
-        [Inject]
-        private IXLogManager _logManager;
+        [Inject] private IXLogManager _logManager;
 
         /// <summary>
-        /// Unity Start生命周期方法
+        ///     Unity Start生命周期方法
         /// </summary>
         private void Start()
         {
@@ -38,7 +33,7 @@ namespace xFrame.Examples.Logging
         }
 
         /// <summary>
-        /// 运行自动化测试
+        ///     运行自动化测试
         /// </summary>
         /// <returns>协程</returns>
         private IEnumerator RunAutomatedTests()
@@ -71,7 +66,7 @@ namespace xFrame.Examples.Logging
         }
 
         /// <summary>
-        /// 测试基本日志功能
+        ///     测试基本日志功能
         /// </summary>
         /// <returns>协程</returns>
         private IEnumerator TestBasicLogging()
@@ -92,7 +87,7 @@ namespace xFrame.Examples.Logging
         }
 
         /// <summary>
-        /// 测试日志性能
+        ///     测试日志性能
         /// </summary>
         /// <returns>协程</returns>
         private IEnumerator TestLoggingPerformance()
@@ -119,7 +114,7 @@ namespace xFrame.Examples.Logging
         }
 
         /// <summary>
-        /// 测试异常处理
+        ///     测试异常处理
         /// </summary>
         /// <returns>协程</returns>
         private IEnumerator TestExceptionHandling()
@@ -153,7 +148,7 @@ namespace xFrame.Examples.Logging
         }
 
         /// <summary>
-        /// 测试线程安全（模拟多线程环境）
+        ///     测试线程安全（模拟多线程环境）
         /// </summary>
         /// <returns>协程</returns>
         private IEnumerator TestThreadSafety()
@@ -176,7 +171,7 @@ namespace xFrame.Examples.Logging
         }
 
         /// <summary>
-        /// 模拟线程日志记录
+        ///     模拟线程日志记录
         /// </summary>
         /// <param name="logger">日志记录器</param>
         /// <param name="threadId">模拟线程ID</param>
@@ -191,7 +186,7 @@ namespace xFrame.Examples.Logging
         }
 
         /// <summary>
-        /// Unity按钮事件：手动运行单次测试
+        ///     Unity按钮事件：手动运行单次测试
         /// </summary>
         [ContextMenu("运行单次测试")]
         public void RunSingleTest()
@@ -202,7 +197,7 @@ namespace xFrame.Examples.Logging
         }
 
         /// <summary>
-        /// 运行单次测试的协程
+        ///     运行单次测试的协程
         /// </summary>
         /// <returns>协程</returns>
         private IEnumerator RunSingleTestCoroutine()
@@ -217,7 +212,7 @@ namespace xFrame.Examples.Logging
         }
 
         /// <summary>
-        /// Unity按钮事件：测试日志等级过滤
+        ///     Unity按钮事件：测试日志等级过滤
         /// </summary>
         [ContextMenu("测试日志等级过滤")]
         public void TestLogLevelFiltering()

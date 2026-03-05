@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Text;
+using System.Threading;
 using NUnit.Framework;
 using xFrame.Runtime.Logging;
 using xFrame.Runtime.Persistence;
@@ -11,14 +13,54 @@ using xFrame.Runtime.Serialization;
 namespace xFrame.Tests.PersistenceTests
 {
     /// <summary>
-    /// 持久化管理器单元测试
-    /// 测试PersistenceManager的核心功能
+    ///     持久化管理器单元测试
+    ///     测试PersistenceManager的核心功能
     /// </summary>
     [TestFixture]
     public class PersistenceManagerTests
     {
+        [SetUp]
+        public void SetUp()
+        {
+            // 初始化日志系统
+            try
+            {
+                var logManager = new XLogManager();
+                XLog.Initialize(logManager);
+            }
+            catch
+            {
+                // 可能已经初始化
+            }
+
+            _serializer = new JsonSerializer();
+            var workDirectory = TestContext.CurrentContext.WorkDirectory;
+            if (string.IsNullOrEmpty(workDirectory)) workDirectory = Environment.CurrentDirectory;
+
+            if (string.IsNullOrEmpty(workDirectory)) workDirectory = Path.GetTempPath();
+
+            _testBasePath = Path.Combine(
+                workDirectory,
+                "Temp",
+                "xFrame_PersistenceManagerTests_" + Guid.NewGuid().ToString("N"));
+            _config = PersistenceConfig.CreateDefault(_testBasePath);
+            _config.EnableValidation = false; // 简化测试
+
+            _memoryProvider = new MemoryPersistenceProvider(_serializer);
+            _persistenceManager = new PersistenceManager(
+                _memoryProvider,
+                _serializer,
+                _config);
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            TryDeleteDirectory(_testBasePath);
+        }
+
         /// <summary>
-        /// 测试用的简单数据类
+        ///     测试用的简单数据类
         /// </summary>
         [Serializable]
         private class PlayerData
@@ -29,31 +71,31 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 版本化的游戏设置数据
+        ///     版本化的游戏设置数据
         /// </summary>
         [Serializable]
         private class GameSettingsV1 : IVersionedData
         {
-            public int CurrentVersion => 1;
             public float volume;
             public bool fullscreen;
+            public int CurrentVersion => 1;
         }
 
         /// <summary>
-        /// 版本2的游戏设置数据
+        ///     版本2的游戏设置数据
         /// </summary>
         [Serializable]
         private class GameSettingsV2 : IVersionedData
         {
-            public int CurrentVersion => 2;
             public float masterVolume;
             public float musicVolume;
             public float sfxVolume;
             public bool fullscreen;
+            public int CurrentVersion => 2;
         }
 
         /// <summary>
-        /// 设置迁移器
+        ///     设置迁移器
         /// </summary>
         private class SettingsMigratorV1ToV2 : DataMigratorBase<GameSettingsV1, GameSettingsV2>
         {
@@ -78,68 +120,15 @@ namespace xFrame.Tests.PersistenceTests
         private PersistenceConfig _config;
         private string _testBasePath;
 
-        [SetUp]
-        public void SetUp()
-        {
-            // 初始化日志系统
-            try
-            {
-                var logManager = new XLogManager();
-                XLog.Initialize(logManager);
-            }
-            catch
-            {
-                // 可能已经初始化
-            }
-
-            _serializer = new JsonSerializer();
-            var workDirectory = TestContext.CurrentContext.WorkDirectory;
-            if (string.IsNullOrEmpty(workDirectory))
-            {
-                workDirectory = Environment.CurrentDirectory;
-            }
-
-            if (string.IsNullOrEmpty(workDirectory))
-            {
-                workDirectory = Path.GetTempPath();
-            }
-
-            _testBasePath = Path.Combine(
-                workDirectory,
-                "Temp",
-                "xFrame_PersistenceManagerTests_" + Guid.NewGuid().ToString("N"));
-            _config = PersistenceConfig.CreateDefault(_testBasePath);
-            _config.EnableValidation = false; // 简化测试
-
-            _memoryProvider = new MemoryPersistenceProvider(_serializer);
-            _persistenceManager = new PersistenceManager(
-                _memoryProvider,
-                _serializer,
-                _config);
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            TryDeleteDirectory(_testBasePath);
-        }
-
         private static void TryDeleteDirectory(string path, int maxRetries = 5)
         {
-            if (string.IsNullOrEmpty(path) || !Directory.Exists(path))
-            {
-                return;
-            }
+            if (string.IsNullOrEmpty(path) || !Directory.Exists(path)) return;
 
             for (var attempt = 1; attempt <= maxRetries; attempt++)
-            {
                 try
                 {
                     var files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
-                    foreach (var file in files)
-                    {
-                        File.SetAttributes(file, FileAttributes.Normal);
-                    }
+                    foreach (var file in files) File.SetAttributes(file, FileAttributes.Normal);
 
                     Directory.Delete(path, true);
                     return;
@@ -152,7 +141,7 @@ namespace xFrame.Tests.PersistenceTests
                         return;
                     }
 
-                    System.Threading.Thread.Sleep(100 * attempt);
+                    Thread.Sleep(100 * attempt);
                 }
                 catch (IOException)
                 {
@@ -162,17 +151,14 @@ namespace xFrame.Tests.PersistenceTests
                         return;
                     }
 
-                    System.Threading.Thread.Sleep(100 * attempt);
+                    Thread.Sleep(100 * attempt);
                 }
-            }
 
             TestContext.Progress.WriteLine($"[PersistenceManagerTests] 清理目录失败(已跳过): {path}");
         }
 
-        #region 基础保存和加载测试
-
         /// <summary>
-        /// 测试保存和加载数据（使用默认键）
+        ///     测试保存和加载数据（使用默认键）
         /// </summary>
         [Test]
         public void SaveAndLoad_WithDefaultKey_ShouldWork()
@@ -189,7 +175,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试保存和加载数据（使用自定义键）
+        ///     测试保存和加载数据（使用自定义键）
         /// </summary>
         [Test]
         public void SaveAndLoad_WithCustomKey_ShouldWork()
@@ -205,7 +191,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试加载不存在的数据
+        ///     测试加载不存在的数据
         /// </summary>
         [Test]
         public void Load_NonExistent_ShouldReturnDefault()
@@ -215,7 +201,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试LoadOrDefault
+        ///     测试LoadOrDefault
         /// </summary>
         [Test]
         public void LoadOrDefault_NonExistent_ShouldReturnDefault()
@@ -229,7 +215,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试LoadOrDefault（数据存在时）
+        ///     测试LoadOrDefault（数据存在时）
         /// </summary>
         [Test]
         public void LoadOrDefault_Existing_ShouldReturnSavedData()
@@ -244,12 +230,8 @@ namespace xFrame.Tests.PersistenceTests
             Assert.AreEqual(20, loaded.level);
         }
 
-        #endregion
-
-        #region 存在性检查和删除测试
-
         /// <summary>
-        /// 测试Exists方法
+        ///     测试Exists方法
         /// </summary>
         [Test]
         public void Exists_ShouldReturnCorrectly()
@@ -262,7 +244,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试Delete方法
+        ///     测试Delete方法
         /// </summary>
         [Test]
         public void Delete_ShouldWork()
@@ -277,7 +259,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试删除不存在的数据
+        ///     测试删除不存在的数据
         /// </summary>
         [Test]
         public void Delete_NonExistent_ShouldReturnFalse()
@@ -286,12 +268,8 @@ namespace xFrame.Tests.PersistenceTests
             Assert.IsFalse(result);
         }
 
-        #endregion
-
-        #region 默认键生成测试
-
         /// <summary>
-        /// 测试GetDefaultKey
+        ///     测试GetDefaultKey
         /// </summary>
         [Test]
         public void GetDefaultKey_ShouldReturnTypeName()
@@ -301,7 +279,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试不同类型生成不同键
+        ///     测试不同类型生成不同键
         /// </summary>
         [Test]
         public void GetDefaultKey_DifferentTypes_ShouldBeDifferent()
@@ -312,12 +290,8 @@ namespace xFrame.Tests.PersistenceTests
             Assert.AreNotEqual(key1, key2);
         }
 
-        #endregion
-
-        #region 数据校验测试
-
         /// <summary>
-        /// 测试启用数据校验
+        ///     测试启用数据校验
         /// </summary>
         [Test]
         public void SaveAndLoad_WithValidation_ShouldWork()
@@ -338,12 +312,8 @@ namespace xFrame.Tests.PersistenceTests
             Assert.AreEqual("Validated", loaded.playerName);
         }
 
-        #endregion
-
-        #region 加密测试
-
         /// <summary>
-        /// 测试启用加密
+        ///     测试启用加密
         /// </summary>
         [Test]
         public void SaveAndLoad_WithEncryption_ShouldWork()
@@ -363,7 +333,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试加密后原始数据不可读
+        ///     测试加密后原始数据不可读
         /// </summary>
         [Test]
         public void Save_WithEncryption_RawDataShouldNotBeReadable()
@@ -377,18 +347,14 @@ namespace xFrame.Tests.PersistenceTests
 
             // 直接读取原始数据
             var rawData = provider.LoadRaw("encrypted_data");
-            var rawString = System.Text.Encoding.UTF8.GetString(rawData);
+            var rawString = Encoding.UTF8.GetString(rawData);
 
             // 原始数据不应该包含明文
             Assert.IsFalse(rawString.Contains("SecretPlayer"));
         }
 
-        #endregion
-
-        #region 迁移器注册测试
-
         /// <summary>
-        /// 测试注册迁移器
+        ///     测试注册迁移器
         /// </summary>
         [Test]
         public void RegisterMigrator_ShouldWork()
@@ -401,12 +367,8 @@ namespace xFrame.Tests.PersistenceTests
             Assert.AreEqual(1, migrators.Count);
         }
 
-        #endregion
-
-        #region 配置测试
-
         /// <summary>
-        /// 测试Config属性
+        ///     测试Config属性
         /// </summary>
         [Test]
         public void Config_ShouldReturnConfiguration()
@@ -416,7 +378,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试MigrationManager属性
+        ///     测试MigrationManager属性
         /// </summary>
         [Test]
         public void MigrationManager_ShouldNotBeNull()
@@ -424,52 +386,35 @@ namespace xFrame.Tests.PersistenceTests
             Assert.IsNotNull(_persistenceManager.MigrationManager);
         }
 
-        #endregion
-
-        #region 异常处理测试
-
         /// <summary>
-        /// 测试空provider抛出异常
+        ///     测试空provider抛出异常
         /// </summary>
         [Test]
         public void Constructor_NullProvider_ShouldThrow()
         {
-            Assert.Throws<ArgumentNullException>(() =>
-            {
-                new PersistenceManager(null, _serializer, _config);
-            });
+            Assert.Throws<ArgumentNullException>(() => { new PersistenceManager(null, _serializer, _config); });
         }
 
         /// <summary>
-        /// 测试空serializer抛出异常
+        ///     测试空serializer抛出异常
         /// </summary>
         [Test]
         public void Constructor_NullSerializer_ShouldThrow()
         {
-            Assert.Throws<ArgumentNullException>(() =>
-            {
-                new PersistenceManager(_memoryProvider, null, _config);
-            });
+            Assert.Throws<ArgumentNullException>(() => { new PersistenceManager(_memoryProvider, null, _config); });
         }
 
         /// <summary>
-        /// 测试空config抛出异常
+        ///     测试空config抛出异常
         /// </summary>
         [Test]
         public void Constructor_NullConfig_ShouldThrow()
         {
-            Assert.Throws<ArgumentNullException>(() =>
-            {
-                new PersistenceManager(_memoryProvider, _serializer, null);
-            });
+            Assert.Throws<ArgumentNullException>(() => { new PersistenceManager(_memoryProvider, _serializer, null); });
         }
 
-        #endregion
-
-        #region 多数据类型测试
-
         /// <summary>
-        /// 测试保存多种类型的数据
+        ///     测试保存多种类型的数据
         /// </summary>
         [Test]
         public void SaveAndLoad_MultipleTypes_ShouldWork()
@@ -489,7 +434,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试覆盖保存
+        ///     测试覆盖保存
         /// </summary>
         [Test]
         public void Save_Overwrite_ShouldWork()
@@ -502,7 +447,5 @@ namespace xFrame.Tests.PersistenceTests
             Assert.AreEqual("Second", loaded.playerName);
             Assert.AreEqual(2, loaded.level);
         }
-
-        #endregion
     }
 }

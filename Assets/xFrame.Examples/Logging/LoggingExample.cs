@@ -8,18 +8,17 @@ using Random = UnityEngine.Random;
 namespace xFrame.Examples.Logging
 {
     /// <summary>
-    /// 日志系统使用示例
-    /// 演示如何在项目中使用日志系统的各种功能
+    ///     日志系统使用示例
+    ///     演示如何在项目中使用日志系统的各种功能
     /// </summary>
     public class LoggingExample : MonoBehaviour
     {
         private IXLogger _logger;
 
-        [Inject]
-        private IXLogManager _logManager;
+        [Inject] private IXLogManager _logManager;
 
         /// <summary>
-        /// Unity Start生命周期方法
+        ///     Unity Start生命周期方法
         /// </summary>
         private void Start()
         {
@@ -37,7 +36,7 @@ namespace xFrame.Examples.Logging
         }
 
         /// <summary>
-        /// 演示基本日志功能
+        ///     演示基本日志功能
         /// </summary>
         private void DemonstrateBasicLogging()
         {
@@ -53,7 +52,7 @@ namespace xFrame.Examples.Logging
         }
 
         /// <summary>
-        /// 演示静态日志访问
+        ///     演示静态日志访问
         /// </summary>
         private void DemonstrateStaticLogging()
         {
@@ -70,7 +69,7 @@ namespace xFrame.Examples.Logging
         }
 
         /// <summary>
-        /// 演示异常日志记录
+        ///     演示异常日志记录
         /// </summary>
         private void DemonstrateExceptionLogging()
         {
@@ -90,7 +89,7 @@ namespace xFrame.Examples.Logging
         }
 
         /// <summary>
-        /// 演示条件日志记录
+        ///     演示条件日志记录
         /// </summary>
         private void DemonstrateConditionalLogging()
         {
@@ -113,7 +112,7 @@ namespace xFrame.Examples.Logging
         }
 
         /// <summary>
-        /// 生成昂贵的调试信息（模拟）
+        ///     生成昂贵的调试信息（模拟）
         /// </summary>
         /// <returns>调试信息字符串</returns>
         private string GenerateExpensiveDebugInfo()
@@ -124,7 +123,7 @@ namespace xFrame.Examples.Logging
         }
 
         /// <summary>
-        /// Unity按钮事件：测试不同日志等级
+        ///     Unity按钮事件：测试不同日志等级
         /// </summary>
         [ContextMenu("测试所有日志等级")]
         public void TestAllLogLevels()
@@ -138,7 +137,7 @@ namespace xFrame.Examples.Logging
         }
 
         /// <summary>
-        /// Unity按钮事件：测试异常日志
+        ///     Unity按钮事件：测试异常日志
         /// </summary>
         [ContextMenu("测试异常日志")]
         public void TestExceptionLogging()
@@ -155,7 +154,7 @@ namespace xFrame.Examples.Logging
         }
 
         /// <summary>
-        /// Unity按钮事件：刷新所有日志缓冲区
+        ///     Unity按钮事件：刷新所有日志缓冲区
         /// </summary>
         [ContextMenu("刷新日志缓冲区")]
         public void FlushAllLogs()

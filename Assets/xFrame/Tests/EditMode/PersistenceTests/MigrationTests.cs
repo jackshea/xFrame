@@ -7,14 +7,31 @@ using xFrame.Runtime.Persistence.Migration;
 namespace xFrame.Tests.PersistenceTests
 {
     /// <summary>
-    /// 数据迁移单元测试
-    /// 测试迁移管理器和迁移器的功能
+    ///     数据迁移单元测试
+    ///     测试迁移管理器和迁移器的功能
     /// </summary>
     [TestFixture]
     public class MigrationTests
     {
+        [SetUp]
+        public void SetUp()
+        {
+            // 初始化日志系统（测试环境）
+            try
+            {
+                var logManager = new XLogManager();
+                XLog.Initialize(logManager);
+            }
+            catch
+            {
+                // 可能已经初始化
+            }
+
+            _migrationManager = new MigrationManager();
+        }
+
         /// <summary>
-        /// 版本1的用户数据
+        ///     版本1的用户数据
         /// </summary>
         [Serializable]
         private class UserDataV1
@@ -24,7 +41,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 版本2的用户数据（添加了email字段）
+        ///     版本2的用户数据（添加了email字段）
         /// </summary>
         [Serializable]
         private class UserDataV2
@@ -35,7 +52,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 版本3的用户数据（拆分name为firstName和lastName）
+        ///     版本3的用户数据（拆分name为firstName和lastName）
         /// </summary>
         [Serializable]
         private class UserDataV3
@@ -47,7 +64,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// V1到V2的迁移器
+        ///     V1到V2的迁移器
         /// </summary>
         private class UserDataMigratorV1ToV2 : DataMigratorBase<UserDataV1, UserDataV2>
         {
@@ -66,7 +83,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// V2到V3的迁移器
+        ///     V2到V3的迁移器
         /// </summary>
         private class UserDataMigratorV2ToV3 : DataMigratorBase<UserDataV2, UserDataV3>
         {
@@ -87,7 +104,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 简单的JSON字符串迁移器
+        ///     简单的JSON字符串迁移器
         /// </summary>
         private class SimpleJsonMigrator : DataMigratorBase
         {
@@ -103,27 +120,8 @@ namespace xFrame.Tests.PersistenceTests
 
         private MigrationManager _migrationManager;
 
-        [SetUp]
-        public void SetUp()
-        {
-            // 初始化日志系统（测试环境）
-            try
-            {
-                var logManager = new XLogManager();
-                XLog.Initialize(logManager);
-            }
-            catch
-            {
-                // 可能已经初始化
-            }
-
-            _migrationManager = new MigrationManager();
-        }
-
-        #region 迁移器注册测试
-
         /// <summary>
-        /// 测试注册迁移器
+        ///     测试注册迁移器
         /// </summary>
         [Test]
         public void RegisterMigrator_ShouldWork()
@@ -139,7 +137,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试注册多个迁移器
+        ///     测试注册多个迁移器
         /// </summary>
         [Test]
         public void RegisterMigrator_Multiple_ShouldBeSorted()
@@ -154,7 +152,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试注销迁移器
+        ///     测试注销迁移器
         /// </summary>
         [Test]
         public void UnregisterMigrator_ShouldWork()
@@ -168,7 +166,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试注销不存在的迁移器
+        ///     测试注销不存在的迁移器
         /// </summary>
         [Test]
         public void UnregisterMigrator_NonExistent_ShouldReturnFalse()
@@ -178,7 +176,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试清除所有迁移器
+        ///     测试清除所有迁移器
         /// </summary>
         [Test]
         public void Clear_ShouldRemoveAllMigrators()
@@ -191,12 +189,8 @@ namespace xFrame.Tests.PersistenceTests
             Assert.AreEqual(0, _migrationManager.GetMigrators<UserDataV3>().Count);
         }
 
-        #endregion
-
-        #region 迁移能力检查测试
-
         /// <summary>
-        /// 测试检查可以迁移
+        ///     测试检查可以迁移
         /// </summary>
         [Test]
         public void CanMigrate_WithMigrators_ShouldReturnTrue()
@@ -210,7 +204,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试检查无法迁移（缺少迁移器）
+        ///     测试检查无法迁移（缺少迁移器）
         /// </summary>
         [Test]
         public void CanMigrate_MissingMigrator_ShouldReturnFalse()
@@ -224,7 +218,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试相同版本无需迁移
+        ///     测试相同版本无需迁移
         /// </summary>
         [Test]
         public void CanMigrate_SameVersion_ShouldReturnTrue()
@@ -234,7 +228,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试降级版本无需迁移
+        ///     测试降级版本无需迁移
         /// </summary>
         [Test]
         public void CanMigrate_DowngradeVersion_ShouldReturnTrue()
@@ -243,12 +237,8 @@ namespace xFrame.Tests.PersistenceTests
             Assert.IsTrue(canMigrate);
         }
 
-        #endregion
-
-        #region 数据迁移测试
-
         /// <summary>
-        /// 测试单步迁移
+        ///     测试单步迁移
         /// </summary>
         [Test]
         public void Migrate_SingleStep_ShouldWork()
@@ -267,7 +257,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试链式迁移
+        ///     测试链式迁移
         /// </summary>
         [Test]
         public void Migrate_ChainedSteps_ShouldWork()
@@ -288,7 +278,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试相同版本不迁移
+        ///     测试相同版本不迁移
         /// </summary>
         [Test]
         public void Migrate_SameVersion_ShouldReturnOriginalData()
@@ -301,21 +291,18 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试缺少迁移器抛出异常
+        ///     测试缺少迁移器抛出异常
         /// </summary>
         [Test]
         public void Migrate_MissingMigrator_ShouldThrow()
         {
             var v1Json = "{\"name\":\"Test\",\"age\":20}";
 
-            Assert.Throws<InvalidOperationException>(() =>
-            {
-                _migrationManager.Migrate<UserDataV3>(v1Json, 1, 3);
-            });
+            Assert.Throws<InvalidOperationException>(() => { _migrationManager.Migrate<UserDataV3>(v1Json, 1, 3); });
         }
 
         /// <summary>
-        /// 测试简单JSON迁移器
+        ///     测试简单JSON迁移器
         /// </summary>
         [Test]
         public void Migrate_SimpleJsonMigrator_ShouldWork()
@@ -329,12 +316,8 @@ namespace xFrame.Tests.PersistenceTests
             Assert.IsTrue(newJson.Contains("added"));
         }
 
-        #endregion
-
-        #region 泛型迁移器测试
-
         /// <summary>
-        /// 测试泛型迁移器的MigrateTyped方法
+        ///     测试泛型迁移器的MigrateTyped方法
         /// </summary>
         [Test]
         public void TypedMigrator_MigrateTyped_ShouldWork()
@@ -350,7 +333,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试泛型迁移器的Migrate方法（JSON字符串）
+        ///     测试泛型迁移器的Migrate方法（JSON字符串）
         /// </summary>
         [Test]
         public void TypedMigrator_Migrate_ShouldWork()
@@ -364,7 +347,5 @@ namespace xFrame.Tests.PersistenceTests
             Assert.AreEqual("Bob", v2Data.name);
             Assert.AreEqual(35, v2Data.age);
         }
-
-        #endregion
     }
 }

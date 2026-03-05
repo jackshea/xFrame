@@ -3,15 +3,15 @@ using System.Text;
 namespace xFrame.Runtime.Logging
 {
     /// <summary>
-    /// 简单的日志格式化器
-    /// 提供标准的日志格式化功能，包含时间戳、等级等信息
+    ///     简单的日志格式化器
+    ///     提供标准的日志格式化功能，包含时间戳、等级等信息
     /// </summary>
     public class SimpleLogFormatter : DefaultLogFormatter
     {
         private readonly string _dateTimeFormat;
 
         /// <summary>
-        /// 构造函数
+        ///     构造函数
         /// </summary>
         /// <param name="dateTimeFormat">时间格式</param>
         /// <param name="includeThreadId">是否包含线程ID</param>
@@ -22,7 +22,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 格式化日志条目
+        ///     格式化日志条目
         /// </summary>
         /// <param name="entry">日志条目</param>
         /// <returns>格式化后的日志字符串</returns>

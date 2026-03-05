@@ -2,12 +2,11 @@
 
 namespace Fleck.Helpers
 {
-  public static class MonoHelper
-  {
-    public static bool IsRunningOnMono ()
+    public static class MonoHelper
     {
-      return Type.GetType ("Mono.Runtime") != null;
+        public static bool IsRunningOnMono()
+        {
+            return Type.GetType("Mono.Runtime") != null;
+        }
     }
-  }
 }
-

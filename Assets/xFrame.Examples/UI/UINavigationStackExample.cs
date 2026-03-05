@@ -7,8 +7,8 @@ using xFrame.Runtime.UI;
 namespace xFrame.Examples.UI
 {
     /// <summary>
-    /// UI导航栈与生命周期示例
-    /// 展示OnShow和OnHide在导航栈中的使用
+    ///     UI导航栈与生命周期示例
+    ///     展示OnShow和OnHide在导航栈中的使用
     /// </summary>
     public class UINavigationStackExample : MonoBehaviour
     {
@@ -29,7 +29,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 演示导航栈生命周期
+        ///     演示导航栈生命周期
         /// </summary>
         private async Task DemonstrateNavigationLifecycle()
         {
@@ -77,8 +77,8 @@ namespace xFrame.Examples.UI
     #region 示例UI面板 - 展示生命周期
 
     /// <summary>
-    /// 示例UI面板A
-    /// 展示完整的生命周期调用
+    ///     示例UI面板A
+    ///     展示完整的生命周期调用
     /// </summary>
     public class UIPanelA : UIPanel
     {
@@ -133,7 +133,7 @@ namespace xFrame.Examples.UI
     }
 
     /// <summary>
-    /// 示例UI面板B
+    ///     示例UI面板B
     /// </summary>
     public class UIPanelB : UIPanel
     {
@@ -178,7 +178,7 @@ namespace xFrame.Examples.UI
     }
 
     /// <summary>
-    /// 示例UI面板C
+    ///     示例UI面板C
     /// </summary>
     public class UIPanelC : UIPanel
     {
@@ -227,8 +227,8 @@ namespace xFrame.Examples.UI
     #region 实际应用示例 - 带动画和音效的UI
 
     /// <summary>
-    /// 实际应用示例：带动画和音效的UI面板
-    /// 展示如何在OnShow/OnHide中处理实际业务逻辑
+    ///     实际应用示例：带动画和音效的UI面板
+    ///     展示如何在OnShow/OnHide中处理实际业务逻辑
     /// </summary>
     public class GameMenuPanel : UIPanel
     {

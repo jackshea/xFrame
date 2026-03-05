@@ -7,14 +7,12 @@ using xFrame.Runtime.UI;
 namespace xFrame.Tests.PlayMode.UITests
 {
     /// <summary>
-    /// UIView视图基类的PlayMode测试
-    /// 注意：由于Internal*方法是internal的，这里只测试公开的行为
+    ///     UIView视图基类的PlayMode测试
+    ///     注意：由于Internal*方法是internal的，这里只测试公开的行为
     /// </summary>
     [TestFixture]
     public class UIViewTests
     {
-        private GameObject _testRoot;
-
         [SetUp]
         public void SetUp()
         {
@@ -24,16 +22,13 @@ namespace xFrame.Tests.PlayMode.UITests
         [TearDown]
         public void TearDown()
         {
-            if (_testRoot != null)
-            {
-                Object.Destroy(_testRoot);
-            }
+            if (_testRoot != null) Object.Destroy(_testRoot);
         }
 
-        #region 组件初始化测试
+        private GameObject _testRoot;
 
         /// <summary>
-        /// 测试UIView创建时自动添加CanvasGroup
+        ///     测试UIView创建时自动添加CanvasGroup
         /// </summary>
         [UnityTest]
         public IEnumerator Awake_ShouldAddCanvasGroup()
@@ -45,7 +40,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试UIView创建时初始化ComponentManager
+        ///     测试UIView创建时初始化ComponentManager
         /// </summary>
         [UnityTest]
         public IEnumerator Awake_ShouldInitializeComponentManager()
@@ -57,7 +52,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试UIView创建时获取RectTransform
+        ///     测试UIView创建时获取RectTransform
         /// </summary>
         [UnityTest]
         public IEnumerator Awake_ShouldGetRectTransform()
@@ -72,12 +67,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.IsNotNull(view.RectTransform, "RectTransform应被获取");
         }
 
-        #endregion
-
-        #region 初始状态测试
-
         /// <summary>
-        /// 测试初始IsCreated状态
+        ///     测试初始IsCreated状态
         /// </summary>
         [UnityTest]
         public IEnumerator IsCreated_Initial_ShouldBeFalse()
@@ -89,7 +80,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试初始IsOpen状态
+        ///     测试初始IsOpen状态
         /// </summary>
         [UnityTest]
         public IEnumerator IsOpen_Initial_ShouldBeFalse()
@@ -100,12 +91,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.IsFalse(view.IsOpen, "初始IsOpen应为false");
         }
 
-        #endregion
-
-        #region 辅助方法测试
-
         /// <summary>
-        /// 测试SetVisible方法
+        ///     测试SetVisible方法
         /// </summary>
         [UnityTest]
         public IEnumerator SetVisible_ShouldSetCanvasGroupAlpha()
@@ -121,7 +108,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试SetInteractable方法
+        ///     测试SetInteractable方法
         /// </summary>
         [UnityTest]
         public IEnumerator SetInteractable_ShouldSetCanvasGroupInteractable()
@@ -138,12 +125,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.IsTrue(view.CanvasGroup.blocksRaycasts, "应阻挡射线");
         }
 
-        #endregion
-
-        #region IPoolable接口测试
-
         /// <summary>
-        /// 测试OnGet激活GameObject
+        ///     测试OnGet激活GameObject
         /// </summary>
         [UnityTest]
         public IEnumerator OnGet_ShouldActivateGameObject()
@@ -158,7 +141,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试OnRelease禁用GameObject
+        ///     测试OnRelease禁用GameObject
         /// </summary>
         [UnityTest]
         public IEnumerator OnRelease_ShouldDeactivateGameObject()
@@ -171,12 +154,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.IsFalse(view.gameObject.activeSelf, "GameObject应被禁用");
         }
 
-        #endregion
-
-        #region 默认属性测试
-
         /// <summary>
-        /// 测试默认Layer
+        ///     测试默认Layer
         /// </summary>
         [UnityTest]
         public IEnumerator Layer_Default_ShouldBeNormal()
@@ -188,7 +167,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试默认Cacheable
+        ///     测试默认Cacheable
         /// </summary>
         [UnityTest]
         public IEnumerator Cacheable_Default_ShouldBeTrue()
@@ -199,12 +178,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.IsTrue(view.Cacheable, "默认Cacheable应为true");
         }
 
-        #endregion
-
-        #region 辅助方法
-
         /// <summary>
-        /// 创建测试视图
+        ///     创建测试视图
         /// </summary>
         private T CreateTestView<T>() where T : UIView
         {
@@ -213,19 +188,15 @@ namespace xFrame.Tests.PlayMode.UITests
             return go.AddComponent<T>();
         }
 
-        #endregion
-
-        #region 测试辅助类
-
         /// <summary>
-        /// 基础测试视图
+        ///     基础测试视图
         /// </summary>
         private class TestUIView : UIView
         {
         }
 
         /// <summary>
-        /// 带计数器的测试视图
+        ///     带计数器的测试视图
         /// </summary>
         private class TestUIViewWithCounter : UIView
         {
@@ -274,7 +245,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试数据类
+        ///     测试数据类
         /// </summary>
         private class TestData
         {
@@ -283,7 +254,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 带数据的测试视图
+        ///     带数据的测试视图
         /// </summary>
         private class TestUIViewWithData : UIView
         {
@@ -295,7 +266,5 @@ namespace xFrame.Tests.PlayMode.UITests
                 ReceivedData = data;
             }
         }
-
-        #endregion
     }
 }

@@ -4,12 +4,12 @@ using xFrame.Runtime.StateMachine;
 namespace xFrame.Examples.StateMachine
 {
     /// <summary>
-    /// 玩家待机状态
+    ///     玩家待机状态
     /// </summary>
     public class PlayerIdleState : StateBase<PlayerContext>
     {
         /// <summary>
-        /// 进入待机状态
+        ///     进入待机状态
         /// </summary>
         /// <param name="context">玩家上下文</param>
         public override void OnEnter(PlayerContext context)
@@ -18,7 +18,7 @@ namespace xFrame.Examples.StateMachine
         }
 
         /// <summary>
-        /// 更新待机状态
+        ///     更新待机状态
         /// </summary>
         /// <param name="context">玩家上下文</param>
         public override void OnUpdate(PlayerContext context)
@@ -28,7 +28,7 @@ namespace xFrame.Examples.StateMachine
         }
 
         /// <summary>
-        /// 退出待机状态
+        ///     退出待机状态
         /// </summary>
         /// <param name="context">玩家上下文</param>
         public override void OnExit(PlayerContext context)

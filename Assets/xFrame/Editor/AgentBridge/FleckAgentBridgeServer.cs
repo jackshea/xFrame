@@ -10,22 +10,23 @@ using xFrame.Runtime.Networking.AgentBridge.Commands;
 namespace xFrame.Editor.AgentBridge
 {
     /// <summary>
-    /// 基于 Fleck 的 Unity Agent Bridge 服务。
+    ///     基于 Fleck 的 Unity Agent Bridge 服务。
     /// </summary>
     public sealed class FleckAgentBridgeServer : IDisposable
     {
-        private readonly AgentBridgeOptions _options;
-        private readonly IXLogger _logger;
+        private readonly object _connectionLock = new();
+        private readonly List<IWebSocketConnection> _connections = new();
+        private readonly TimeSpan _dispatchTimeout;
         private readonly IAgentBridgeEndpointPersistence _endpointPersistence;
+        private readonly IXLogger _logger;
+        private readonly AgentBridgeOptions _options;
         private readonly AgentRpcRouter _router;
         private EditorMainThreadDispatcher _dispatcher;
-        private readonly List<IWebSocketConnection> _connections = new();
-        private readonly object _connectionLock = new();
-        private readonly TimeSpan _dispatchTimeout;
 
         private WebSocketServer _server;
 
-        public FleckAgentBridgeServer(AgentBridgeOptions options = null, IXLogger logger = null, IAgentBridgeEndpointPersistence endpointPersistence = null)
+        public FleckAgentBridgeServer(AgentBridgeOptions options = null, IXLogger logger = null,
+            IAgentBridgeEndpointPersistence endpointPersistence = null)
         {
             _options = options ?? new AgentBridgeOptions();
             _logger = logger ?? new XLogManager().GetLogger("AgentBridge");
@@ -53,6 +54,11 @@ namespace xFrame.Editor.AgentBridge
         public bool IsRunning => _server != null;
 
         public string Endpoint => $"ws://{_options.Host}:{_options.Port}";
+
+        public void Dispose()
+        {
+            Stop();
+        }
 
         public bool SetEndpoint(string host, int port, out string error)
         {
@@ -92,15 +98,9 @@ namespace xFrame.Editor.AgentBridge
 
         public void Start()
         {
-            if (_server != null)
-            {
-                return;
-            }
+            if (_server != null) return;
 
-            if (_dispatcher == null)
-            {
-                _dispatcher = new EditorMainThreadDispatcher();
-            }
+            if (_dispatcher == null) _dispatcher = new EditorMainThreadDispatcher();
 
             var endpoint = Endpoint;
 
@@ -116,7 +116,8 @@ namespace xFrame.Editor.AgentBridge
                             _connections.Add(socket);
                         }
 
-                        _logger.Info($"AgentBridge connection opened. endpoint={Endpoint}, connectionId={socket.ConnectionInfo.Id}, clientIp={socket.ConnectionInfo.ClientIpAddress}");
+                        _logger.Info(
+                            $"AgentBridge connection opened. endpoint={Endpoint}, connectionId={socket.ConnectionInfo.Id}, clientIp={socket.ConnectionInfo.ClientIpAddress}");
                     };
 
                     socket.OnClose = () =>
@@ -127,22 +128,22 @@ namespace xFrame.Editor.AgentBridge
                         }
 
                         _router.RemoveContext(socket.ConnectionInfo.Id.ToString());
-                        _logger.Info($"AgentBridge connection closed. endpoint={Endpoint}, connectionId={socket.ConnectionInfo.Id}");
+                        _logger.Info(
+                            $"AgentBridge connection closed. endpoint={Endpoint}, connectionId={socket.ConnectionInfo.Id}");
                     };
 
                     socket.OnError = ex =>
                     {
-                        _logger.Error($"AgentBridge socket error. endpoint={Endpoint}, connectionId={socket.ConnectionInfo.Id}", ex);
+                        _logger.Error(
+                            $"AgentBridge socket error. endpoint={Endpoint}, connectionId={socket.ConnectionInfo.Id}",
+                            ex);
                     };
 
                     socket.OnMessage = message =>
                     {
                         var connectionId = socket.ConnectionInfo.Id.ToString();
                         var response = HandleMessage(message, connectionId);
-                        if (!string.IsNullOrWhiteSpace(response))
-                        {
-                            socket.Send(response);
-                        }
+                        if (!string.IsNullOrWhiteSpace(response)) socket.Send(response);
                     };
                 });
 
@@ -174,10 +175,7 @@ namespace xFrame.Editor.AgentBridge
                     _connections.Clear();
                 }
 
-                foreach (var connection in snapshot)
-                {
-                    connection.Close();
-                }
+                foreach (var connection in snapshot) connection.Close();
 
                 _server.Dispose();
                 _router.ClearContexts();
@@ -195,9 +193,7 @@ namespace xFrame.Editor.AgentBridge
             try
             {
                 if (_dispatcher == null)
-                {
                     throw new InvalidOperationException("Main thread dispatcher is not available.");
-                }
 
                 return _dispatcher.Invoke(() => _router.Handle(message, connectionId), _dispatchTimeout);
             }
@@ -223,7 +219,8 @@ namespace xFrame.Editor.AgentBridge
             {
                 _options.Host = AgentBridgeOptions.DefaultHost;
                 _options.Port = AgentBridgeOptions.DefaultPort;
-                _logger.Warning($"AgentBridge persisted endpoint is invalid, fallback to default. error={error}, endpoint=ws://{_options.Host}:{_options.Port}");
+                _logger.Warning(
+                    $"AgentBridge persisted endpoint is invalid, fallback to default. error={error}, endpoint=ws://{_options.Host}:{_options.Port}");
             }
         }
 
@@ -235,10 +232,7 @@ namespace xFrame.Editor.AgentBridge
 
         private static string BuildInternalErrorResponse(string message, Exception ex)
         {
-            if (!TryReadRequestId(message, out var requestId))
-            {
-                return null;
-            }
+            if (!TryReadRequestId(message, out var requestId)) return null;
 
             var response = new JsonRpcResponse
             {
@@ -261,10 +255,8 @@ namespace xFrame.Editor.AgentBridge
             try
             {
                 var requestObj = JObject.Parse(message);
-                if (!requestObj.TryGetValue("id", out var idToken) || idToken == null || idToken.Type == JTokenType.Null)
-                {
-                    return false;
-                }
+                if (!requestObj.TryGetValue("id", out var idToken) || idToken == null ||
+                    idToken.Type == JTokenType.Null) return false;
 
                 requestId = idToken;
                 return true;
@@ -273,11 +265,6 @@ namespace xFrame.Editor.AgentBridge
             {
                 return false;
             }
-        }
-
-        public void Dispose()
-        {
-            Stop();
         }
     }
 }

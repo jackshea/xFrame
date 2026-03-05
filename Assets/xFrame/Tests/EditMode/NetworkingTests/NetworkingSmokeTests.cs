@@ -14,7 +14,7 @@ namespace xFrame.Tests
             builder.RegisterNetworkingModule();
             var resolver = builder.Build();
 
-            INetworkClient client = resolver.Resolve<INetworkClient>();
+            var client = resolver.Resolve<INetworkClient>();
 
             Assert.IsNotNull(client);
             Assert.IsFalse(client.IsConnected);

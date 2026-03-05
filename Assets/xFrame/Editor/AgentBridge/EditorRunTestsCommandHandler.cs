@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using UnityEditor.TestTools.TestRunner.Api;
 using UnityEngine;
@@ -7,7 +8,7 @@ using xFrame.Runtime.Networking.AgentBridge;
 namespace xFrame.Editor.AgentBridge
 {
     /// <summary>
-    /// 触发 Unity Test Runner 执行测试。
+    ///     触发 Unity Test Runner 执行测试。
     /// </summary>
     public sealed class EditorRunTestsCommandHandler : IAgentRpcCommandHandler
     {
@@ -21,23 +22,16 @@ namespace xFrame.Editor.AgentBridge
         {
             JObject paramObj;
             if (request.Params == null || request.Params.Type == JTokenType.Null)
-            {
                 paramObj = new JObject();
-            }
             else if (request.Params is JObject obj)
-            {
                 paramObj = obj;
-            }
             else
-            {
                 return AgentRpcExecutionResult.Failure(AgentRpcErrorCodes.InvalidParams, "params must be object.");
-            }
 
             var modeRaw = paramObj.Value<string>("mode");
             if (!TryParseMode(modeRaw, out var mode))
-            {
-                return AgentRpcExecutionResult.Failure(AgentRpcErrorCodes.InvalidParams, "mode must be EditMode or PlayMode.");
-            }
+                return AgentRpcExecutionResult.Failure(AgentRpcErrorCodes.InvalidParams,
+                    "mode must be EditMode or PlayMode.");
 
             var filterName = paramObj.Value<string>("filter");
             var runId = Guid.NewGuid().ToString("N");
@@ -55,7 +49,7 @@ namespace xFrame.Editor.AgentBridge
                 Status = "running"
             };
 
-            var settings = new ExecutionSettings(new[] { filter })
+            var settings = new ExecutionSettings(filter)
             {
                 runSynchronously = mode == TestMode.EditMode
             };
@@ -63,7 +57,6 @@ namespace xFrame.Editor.AgentBridge
             api.Execute(settings);
 
             if (mode != TestMode.EditMode)
-            {
                 return AgentRpcExecutionResult.Success(new
                 {
                     started = true,
@@ -73,7 +66,6 @@ namespace xFrame.Editor.AgentBridge
                     filter = filterName,
                     message = "PlayMode run started. Use unity.tests.lastResult to query completion."
                 });
-            }
 
             return AgentRpcExecutionResult.Success(new
             {
@@ -88,27 +80,6 @@ namespace xFrame.Editor.AgentBridge
             });
         }
 
-        public sealed class LastResultHandler : IAgentRpcCommandHandler
-        {
-            public string Method => "unity.tests.lastResult";
-
-            public bool RequiresAuthentication => true;
-
-            public AgentRpcExecutionResult Execute(JsonRpcRequest request, AgentRpcContext context)
-            {
-                return AgentRpcExecutionResult.Success(new
-                {
-                    hasResult = !string.IsNullOrWhiteSpace(_lastSnapshot.RunId),
-                    runId = _lastSnapshot.RunId,
-                    mode = _lastSnapshot.Mode,
-                    filter = _lastSnapshot.Filter,
-                    status = _lastSnapshot.Status,
-                    summary = _lastSnapshot.Summary,
-                    failures = _lastSnapshot.Failures
-                });
-            }
-        }
-
         private static Filter BuildFilter(TestMode mode, string filterName)
         {
             var filter = new Filter
@@ -116,10 +87,7 @@ namespace xFrame.Editor.AgentBridge
                 testMode = mode
             };
 
-            if (!string.IsNullOrWhiteSpace(filterName))
-            {
-                filter.testNames = new[] { filterName };
-            }
+            if (!string.IsNullOrWhiteSpace(filterName)) filter.testNames = new[] { filterName };
 
             return filter;
         }
@@ -153,12 +121,33 @@ namespace xFrame.Editor.AgentBridge
             _lastSnapshot = snapshot;
         }
 
+        public sealed class LastResultHandler : IAgentRpcCommandHandler
+        {
+            public string Method => "unity.tests.lastResult";
+
+            public bool RequiresAuthentication => true;
+
+            public AgentRpcExecutionResult Execute(JsonRpcRequest request, AgentRpcContext context)
+            {
+                return AgentRpcExecutionResult.Success(new
+                {
+                    hasResult = !string.IsNullOrWhiteSpace(_lastSnapshot.RunId),
+                    runId = _lastSnapshot.RunId,
+                    mode = _lastSnapshot.Mode,
+                    filter = _lastSnapshot.Filter,
+                    status = _lastSnapshot.Status,
+                    summary = _lastSnapshot.Summary,
+                    failures = _lastSnapshot.Failures
+                });
+            }
+        }
+
         private sealed class AgentBridgeTestRunCallback : ICallbacks
         {
             private readonly TestRunnerApi _api;
-            private readonly string _runId;
-            private readonly TestMode _mode;
             private readonly string _filter;
+            private readonly TestMode _mode;
+            private readonly string _runId;
 
             public AgentBridgeTestRunCallback(TestRunnerApi api, string runId, TestMode mode, string filter)
             {
@@ -181,10 +170,11 @@ namespace xFrame.Editor.AgentBridge
                         RunId = _runId,
                         Mode = _mode.ToString(),
                         Filter = _filter,
-                        Status = result == null ? "failed" : (result.FailCount > 0 ? "failed" : "passed"),
+                        Status = result == null ? "failed" : result.FailCount > 0 ? "failed" : "passed",
                         Summary = new
                         {
-                            total = (result?.PassCount ?? 0) + (result?.FailCount ?? 0) + (result?.SkipCount ?? 0) + (result?.InconclusiveCount ?? 0),
+                            total = (result?.PassCount ?? 0) + (result?.FailCount ?? 0) + (result?.SkipCount ?? 0) +
+                                    (result?.InconclusiveCount ?? 0),
                             passed = result?.PassCount ?? 0,
                             failed = result?.FailCount ?? 0,
                             skipped = result?.SkipCount ?? 0,
@@ -210,42 +200,29 @@ namespace xFrame.Editor.AgentBridge
 
             private static object[] BuildFailureList(ITestResultAdaptor result)
             {
-                if (result == null)
-                {
-                    return Array.Empty<object>();
-                }
+                if (result == null) return Array.Empty<object>();
 
-                var failures = new System.Collections.Generic.List<object>();
+                var failures = new List<object>();
                 CollectFailures(result, failures);
                 return failures.ToArray();
             }
 
-            private static void CollectFailures(ITestResultAdaptor node, System.Collections.Generic.ICollection<object> failures)
+            private static void CollectFailures(ITestResultAdaptor node, ICollection<object> failures)
             {
-                if (node == null)
-                {
-                    return;
-                }
+                if (node == null) return;
 
-                if (node.FailCount > 0 && !string.IsNullOrWhiteSpace(node.Name) && !string.IsNullOrWhiteSpace(node.Message))
-                {
+                if (node.FailCount > 0 && !string.IsNullOrWhiteSpace(node.Name) &&
+                    !string.IsNullOrWhiteSpace(node.Message))
                     failures.Add(new
                     {
                         name = node.Name,
                         message = node.Message,
                         stackTrace = node.StackTrace
                     });
-                }
 
-                if (!node.HasChildren)
-                {
-                    return;
-                }
+                if (!node.HasChildren) return;
 
-                foreach (var child in node.Children)
-                {
-                    CollectFailures(child, failures);
-                }
+                foreach (var child in node.Children) CollectFailures(child, failures);
             }
         }
 

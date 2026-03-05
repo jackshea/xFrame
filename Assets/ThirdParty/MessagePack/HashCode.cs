@@ -43,7 +43,6 @@ https://raw.githubusercontent.com/Cyan4973/xxHash/5c174cfa4e45a42f94082dc0d4539b
 */
 
 #if !(NETCOREAPP || UNITY_2021_2_OR_NEWER)
-
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Numerics;

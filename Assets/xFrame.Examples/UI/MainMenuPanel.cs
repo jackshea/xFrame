@@ -7,25 +7,20 @@ using xFrame.Runtime.UI;
 namespace xFrame.Examples.UI
 {
     /// <summary>
-    /// 主菜单面板示例
-    /// 展示如何创建一个基本的UI面板
+    ///     主菜单面板示例
+    ///     展示如何创建一个基本的UI面板
     /// </summary>
     public class MainMenuPanel : UIPanel
     {
         #region UI组件
 
-        [Header("UI组件")]
-        [SerializeField]
-        private Button startButton;
+        [Header("UI组件")] [SerializeField] private Button startButton;
 
-        [SerializeField]
-        private Button settingsButton;
+        [SerializeField] private Button settingsButton;
 
-        [SerializeField]
-        private Button achievementsButton;
+        [SerializeField] private Button achievementsButton;
 
-        [SerializeField]
-        private Button exitButton;
+        [SerializeField] private Button exitButton;
 
         #endregion
 
@@ -34,7 +29,7 @@ namespace xFrame.Examples.UI
         private IUIManager _uiManager;
 
         /// <summary>
-        /// VContainer依赖注入
+        ///     VContainer依赖注入
         /// </summary>
         [Inject]
         public void Construct(IUIManager uiManager)
@@ -47,22 +42,22 @@ namespace xFrame.Examples.UI
         #region UI配置
 
         /// <summary>
-        /// 设置UI层级为普通层
+        ///     设置UI层级为普通层
         /// </summary>
         public override UILayer Layer => UILayer.Normal;
 
         /// <summary>
-        /// 打开时关闭其他同层UI
+        ///     打开时关闭其他同层UI
         /// </summary>
         public override bool CloseOthers => true;
 
         /// <summary>
-        /// 主菜单不使用导航栈（作为根UI）
+        ///     主菜单不使用导航栈（作为根UI）
         /// </summary>
         public override bool UseStack => false;
 
         /// <summary>
-        /// 允许缓存到对象池
+        ///     允许缓存到对象池
         /// </summary>
         public override bool Cacheable => true;
 
@@ -71,7 +66,7 @@ namespace xFrame.Examples.UI
         #region 生命周期回调
 
         /// <summary>
-        /// UI创建时调用（仅一次）
+        ///     UI创建时调用（仅一次）
         /// </summary>
         protected override void OnCreate()
         {
@@ -94,7 +89,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// UI打开时调用
+        ///     UI打开时调用
         /// </summary>
         protected override void OnOpen(object data)
         {
@@ -107,9 +102,9 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// UI显示时调用
-        /// 场景1: 打开后自动调用
-        /// 场景2: 从导航栈恢复时调用（被其他UI遮挡后返回）
+        ///     UI显示时调用
+        ///     场景1: 打开后自动调用
+        ///     场景2: 从导航栈恢复时调用（被其他UI遮挡后返回）
         /// </summary>
         protected override void OnShow()
         {
@@ -124,9 +119,9 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// UI隐藏时调用
-        /// 场景1: 被其他UI遮挡压入栈时调用
-        /// 场景2: 关闭前调用
+        ///     UI隐藏时调用
+        ///     场景1: 被其他UI遮挡压入栈时调用
+        ///     场景2: 关闭前调用
         /// </summary>
         protected override void OnHide()
         {
@@ -141,7 +136,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// UI关闭时调用
+        ///     UI关闭时调用
         /// </summary>
         protected override void OnClose()
         {
@@ -150,7 +145,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// UI销毁时调用（仅一次）
+        ///     UI销毁时调用（仅一次）
         /// </summary>
         protected override void OnUIDestroy()
         {
@@ -176,7 +171,7 @@ namespace xFrame.Examples.UI
         #region 按钮事件处理
 
         /// <summary>
-        /// 开始游戏按钮点击
+        ///     开始游戏按钮点击
         /// </summary>
         private void OnStartButtonClicked()
         {
@@ -190,7 +185,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 设置按钮点击
+        ///     设置按钮点击
         /// </summary>
         private async void OnSettingsButtonClicked()
         {
@@ -201,7 +196,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 成就按钮点击
+        ///     成就按钮点击
         /// </summary>
         private async void OnAchievementsButtonClicked()
         {
@@ -212,7 +207,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 退出按钮点击
+        ///     退出按钮点击
         /// </summary>
         private async void OnExitButtonClicked()
         {
@@ -240,7 +235,7 @@ namespace xFrame.Examples.UI
     #region 数据类
 
     /// <summary>
-    /// 主菜单数据
+    ///     主菜单数据
     /// </summary>
     public class MainMenuData
     {
@@ -249,7 +244,7 @@ namespace xFrame.Examples.UI
     }
 
     /// <summary>
-    /// 游戏开始事件
+    ///     游戏开始事件
     /// </summary>
     public struct GameStartEvent : IEvent
     {

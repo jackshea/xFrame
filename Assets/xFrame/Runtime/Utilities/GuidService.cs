@@ -3,7 +3,7 @@ using System;
 namespace xFrame.Runtime.Utilities
 {
     /// <summary>
-    /// Guid 服务默认实现。
+    ///     Guid 服务默认实现。
     /// </summary>
     public sealed class GuidService : IGuidService
     {

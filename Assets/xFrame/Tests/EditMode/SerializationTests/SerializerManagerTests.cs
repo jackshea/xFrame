@@ -6,38 +6,12 @@ using xFrame.Runtime.Serialization;
 namespace xFrame.Tests.SerializationTests
 {
     /// <summary>
-    /// 序列化管理器单元测试
-    /// 测试序列化管理器的核心功能
+    ///     序列化管理器单元测试
+    ///     测试序列化管理器的核心功能
     /// </summary>
     [TestFixture]
     public class SerializerManagerTests
     {
-        /// <summary>
-        /// 测试用的简单数据类
-        /// </summary>
-        [Serializable]
-        private class TestData
-        {
-            public string Name;
-            public int Value;
-            public float Score;
-        }
-
-        /// <summary>
-        /// 测试用的嵌套数据类
-        /// </summary>
-        [Serializable]
-        private class NestedTestData
-        {
-            public string Title;
-            public TestData Inner;
-        }
-
-        private ISerializerManager _serializerManager;
-        private int _registeredEventCount;
-        private int _unregisteredEventCount;
-        private int _defaultChangedEventCount;
-
         [SetUp]
         public void SetUp()
         {
@@ -61,22 +35,46 @@ namespace xFrame.Tests.SerializationTests
             xFrameEventBus.ClearListeners<DefaultSerializerChangedEvent>();
         }
 
-        #region 基础功能测试
+        /// <summary>
+        ///     测试用的简单数据类
+        /// </summary>
+        [Serializable]
+        private class TestData
+        {
+            public string Name;
+            public int Value;
+            public float Score;
+        }
 
         /// <summary>
-        /// 测试默认序列化器是否正确初始化
+        ///     测试用的嵌套数据类
+        /// </summary>
+        [Serializable]
+        private class NestedTestData
+        {
+            public string Title;
+            public TestData Inner;
+        }
+
+        private ISerializerManager _serializerManager;
+        private int _registeredEventCount;
+        private int _unregisteredEventCount;
+        private int _defaultChangedEventCount;
+
+        /// <summary>
+        ///     测试默认序列化器是否正确初始化
         /// </summary>
         [Test]
         public void DefaultSerializer_ShouldBeJsonSerializer()
         {
             // Assert
             Assert.IsNotNull(_serializerManager.DefaultSerializer, "默认序列化器不应为空");
-            Assert.AreEqual(JsonSerializer.SerializerName, _serializerManager.DefaultSerializer.Name, 
+            Assert.AreEqual(JsonSerializer.SerializerName, _serializerManager.DefaultSerializer.Name,
                 "默认序列化器应该是JSON序列化器");
         }
 
         /// <summary>
-        /// 测试获取已注册的序列化器
+        ///     测试获取已注册的序列化器
         /// </summary>
         [Test]
         public void GetSerializer_WithValidName_ShouldReturnSerializer()
@@ -90,7 +88,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试获取未注册的序列化器
+        ///     测试获取未注册的序列化器
         /// </summary>
         [Test]
         public void GetSerializer_WithInvalidName_ShouldReturnNull()
@@ -103,7 +101,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试注册新的序列化器
+        ///     测试注册新的序列化器
         /// </summary>
         [Test]
         public void RegisterSerializer_ShouldAddSerializer()
@@ -121,7 +119,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试注销序列化器
+        ///     测试注销序列化器
         /// </summary>
         [Test]
         public void UnregisterSerializer_ShouldRemoveSerializer()
@@ -140,7 +138,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试设置默认序列化器
+        ///     测试设置默认序列化器
         /// </summary>
         [Test]
         public void SetDefaultSerializer_ShouldChangeDefault()
@@ -153,27 +151,23 @@ namespace xFrame.Tests.SerializationTests
             _serializerManager.SetDefaultSerializer("CustomJson");
 
             // Assert
-            Assert.AreSame(customSerializer, _serializerManager.DefaultSerializer, 
+            Assert.AreSame(customSerializer, _serializerManager.DefaultSerializer,
                 "默认序列化器应该被更改");
         }
 
         /// <summary>
-        /// 测试设置未注册的序列化器为默认时抛出异常
+        ///     测试设置未注册的序列化器为默认时抛出异常
         /// </summary>
         [Test]
         public void SetDefaultSerializer_WithInvalidName_ShouldThrowException()
         {
             // Act & Assert
-            Assert.Throws<InvalidOperationException>(() => 
+            Assert.Throws<InvalidOperationException>(() =>
                 _serializerManager.SetDefaultSerializer("NonExistent"));
         }
 
-        #endregion
-
-        #region 序列化测试
-
         /// <summary>
-        /// 测试使用默认序列化器序列化对象为字符串
+        ///     测试使用默认序列化器序列化对象为字符串
         /// </summary>
         [Test]
         public void SerializeToString_WithDefaultSerializer_ShouldWork()
@@ -191,7 +185,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试使用默认序列化器序列化对象为字节数组
+        ///     测试使用默认序列化器序列化对象为字节数组
         /// </summary>
         [Test]
         public void Serialize_WithDefaultSerializer_ShouldWork()
@@ -208,7 +202,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试使用指定序列化器序列化对象
+        ///     测试使用指定序列化器序列化对象
         /// </summary>
         [Test]
         public void SerializeToString_WithSpecificSerializer_ShouldWork()
@@ -225,7 +219,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试使用未注册的序列化器时抛出异常
+        ///     测试使用未注册的序列化器时抛出异常
         /// </summary>
         [Test]
         public void SerializeToString_WithInvalidSerializer_ShouldThrowException()
@@ -234,16 +228,12 @@ namespace xFrame.Tests.SerializationTests
             var data = new TestData { Name = "Test", Value = 42, Score = 3.14f };
 
             // Act & Assert
-            Assert.Throws<InvalidOperationException>(() => 
+            Assert.Throws<InvalidOperationException>(() =>
                 _serializerManager.SerializeToString("NonExistent", data));
         }
 
-        #endregion
-
-        #region 反序列化测试
-
         /// <summary>
-        /// 测试使用默认序列化器从字符串反序列化
+        ///     测试使用默认序列化器从字符串反序列化
         /// </summary>
         [Test]
         public void DeserializeFromString_WithDefaultSerializer_ShouldWork()
@@ -262,7 +252,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试使用默认序列化器从字节数组反序列化
+        ///     测试使用默认序列化器从字节数组反序列化
         /// </summary>
         [Test]
         public void Deserialize_WithDefaultSerializer_ShouldWork()
@@ -282,7 +272,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试序列化和反序列化的往返一致性
+        ///     测试序列化和反序列化的往返一致性
         /// </summary>
         [Test]
         public void SerializeAndDeserialize_ShouldBeConsistent()
@@ -301,7 +291,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试嵌套对象的序列化和反序列化
+        ///     测试嵌套对象的序列化和反序列化
         /// </summary>
         [Test]
         public void SerializeAndDeserialize_NestedObject_ShouldWork()
@@ -325,7 +315,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试反序列化空字符串
+        ///     测试反序列化空字符串
         /// </summary>
         [Test]
         public void DeserializeFromString_WithEmptyString_ShouldReturnDefault()
@@ -338,7 +328,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试反序列化null字符串
+        ///     测试反序列化null字符串
         /// </summary>
         [Test]
         public void DeserializeFromString_WithNullString_ShouldReturnDefault()
@@ -350,19 +340,15 @@ namespace xFrame.Tests.SerializationTests
             Assert.IsNull(result, "null字符串应该返回默认值");
         }
 
-        #endregion
-
-        #region 事件测试
-
         /// <summary>
-        /// 测试注册序列化器时触发事件
+        ///     测试注册序列化器时触发事件
         /// </summary>
         [Test]
         public void RegisterSerializer_ShouldRaiseEvent()
         {
             // Arrange
             string receivedName = null;
-            xFrameEventBus.SubscribeTo<SerializerRegisteredEvent>((ref SerializerRegisteredEvent e) =>
+            xFrameEventBus.SubscribeTo((ref SerializerRegisteredEvent e) =>
             {
                 receivedName = e.SerializerName;
                 _registeredEventCount++;
@@ -379,14 +365,14 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试注销序列化器时触发事件
+        ///     测试注销序列化器时触发事件
         /// </summary>
         [Test]
         public void UnregisterSerializer_ShouldRaiseEvent()
         {
             // Arrange
             string receivedName = null;
-            xFrameEventBus.SubscribeTo<SerializerUnregisteredEvent>((ref SerializerUnregisteredEvent e) =>
+            xFrameEventBus.SubscribeTo((ref SerializerUnregisteredEvent e) =>
             {
                 receivedName = e.SerializerName;
                 _unregisteredEventCount++;
@@ -404,7 +390,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试设置默认序列化器时触发事件
+        ///     测试设置默认序列化器时触发事件
         /// </summary>
         [Test]
         public void SetDefaultSerializer_ShouldRaiseEvent()
@@ -412,7 +398,7 @@ namespace xFrame.Tests.SerializationTests
             // Arrange
             string previousName = null;
             string newName = null;
-            xFrameEventBus.SubscribeTo<DefaultSerializerChangedEvent>((ref DefaultSerializerChangedEvent e) =>
+            xFrameEventBus.SubscribeTo((ref DefaultSerializerChangedEvent e) =>
             {
                 previousName = e.PreviousSerializerName;
                 newName = e.NewSerializerName;
@@ -431,12 +417,8 @@ namespace xFrame.Tests.SerializationTests
             Assert.AreEqual("NewDefault", newName, "新的默认序列化器名称应该正确");
         }
 
-        #endregion
-
-        #region 边界条件测试
-
         /// <summary>
-        /// 测试注册空名称的序列化器时抛出异常
+        ///     测试注册空名称的序列化器时抛出异常
         /// </summary>
         [Test]
         public void RegisterSerializer_WithNullName_ShouldThrowException()
@@ -445,23 +427,23 @@ namespace xFrame.Tests.SerializationTests
             var serializer = new JsonSerializer();
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => 
+            Assert.Throws<ArgumentNullException>(() =>
                 _serializerManager.RegisterSerializer(null, serializer));
         }
 
         /// <summary>
-        /// 测试注册空实例的序列化器时抛出异常
+        ///     测试注册空实例的序列化器时抛出异常
         /// </summary>
         [Test]
         public void RegisterSerializer_WithNullSerializer_ShouldThrowException()
         {
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => 
+            Assert.Throws<ArgumentNullException>(() =>
                 _serializerManager.RegisterSerializer("Test", null));
         }
 
         /// <summary>
-        /// 测试注销不存在的序列化器
+        ///     测试注销不存在的序列化器
         /// </summary>
         [Test]
         public void UnregisterSerializer_WithNonExistentName_ShouldReturnFalse()
@@ -474,7 +456,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试注销默认序列化器后默认序列化器变为null
+        ///     测试注销默认序列化器后默认序列化器变为null
         /// </summary>
         [Test]
         public void UnregisterDefaultSerializer_ShouldClearDefault()
@@ -485,7 +467,5 @@ namespace xFrame.Tests.SerializationTests
             // Assert
             Assert.IsNull(_serializerManager.DefaultSerializer, "注销默认序列化器后应该变为null");
         }
-
-        #endregion
     }
 }

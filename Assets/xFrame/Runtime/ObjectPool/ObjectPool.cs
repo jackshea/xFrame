@@ -4,8 +4,8 @@ using System.Collections.Generic;
 namespace xFrame.Runtime.ObjectPool
 {
     /// <summary>
-    /// 通用对象池实现
-    /// 支持线程安全、容量控制、自定义创建/销毁/重置逻辑
+    ///     通用对象池实现
+    ///     支持线程安全、容量控制、自定义创建/销毁/重置逻辑
     /// </summary>
     /// <typeparam name="T">池化对象的类型</typeparam>
     public class ObjectPool<T> : IObjectPool<T>, IDisposable where T : class
@@ -23,7 +23,7 @@ namespace xFrame.Runtime.ObjectPool
         private bool _disposed;
 
         /// <summary>
-        /// 构造函数
+        ///     构造函数
         /// </summary>
         /// <param name="createFunc">对象创建函数</param>
         /// <param name="onGet">获取对象时的回调</param>
@@ -56,7 +56,7 @@ namespace xFrame.Runtime.ObjectPool
         }
 
         /// <summary>
-        /// 当前池中对象数量
+        ///     当前池中对象数量
         /// </summary>
         public int CountInPool
         {
@@ -73,7 +73,7 @@ namespace xFrame.Runtime.ObjectPool
         }
 
         /// <summary>
-        /// 已创建的对象总数
+        ///     已创建的对象总数
         /// </summary>
         public int CountAll
         {
@@ -90,8 +90,8 @@ namespace xFrame.Runtime.ObjectPool
         }
 
         /// <summary>
-        /// 从对象池中获取一个对象
-        /// 如果池中没有对象，将创建一个新对象
+        ///     从对象池中获取一个对象
+        ///     如果池中没有对象，将创建一个新对象
         /// </summary>
         /// <returns>池化对象实例</returns>
         public T Get()
@@ -113,7 +113,7 @@ namespace xFrame.Runtime.ObjectPool
         }
 
         /// <summary>
-        /// 将对象归还到对象池
+        ///     将对象归还到对象池
         /// </summary>
         /// <param name="obj">要归还的对象</param>
         public void Release(T obj)
@@ -133,7 +133,7 @@ namespace xFrame.Runtime.ObjectPool
         }
 
         /// <summary>
-        /// 预热对象池，预先创建指定数量的对象
+        ///     预热对象池，预先创建指定数量的对象
         /// </summary>
         /// <param name="count">要预创建的对象数量</param>
         public void WarmUp(int count)
@@ -153,7 +153,7 @@ namespace xFrame.Runtime.ObjectPool
         }
 
         /// <summary>
-        /// 清空对象池，销毁所有池中的对象
+        ///     清空对象池，销毁所有池中的对象
         /// </summary>
         public void Clear()
         {
@@ -169,7 +169,7 @@ namespace xFrame.Runtime.ObjectPool
         }
 
         /// <summary>
-        /// 销毁对象池，释放所有资源
+        ///     销毁对象池，释放所有资源
         /// </summary>
         public void Dispose()
         {
@@ -181,7 +181,7 @@ namespace xFrame.Runtime.ObjectPool
         }
 
         /// <summary>
-        /// 内部获取对象的实现
+        ///     内部获取对象的实现
         /// </summary>
         /// <returns>池化对象实例</returns>
         private T GetInternal()
@@ -202,7 +202,7 @@ namespace xFrame.Runtime.ObjectPool
         }
 
         /// <summary>
-        /// 内部释放对象的实现
+        ///     内部释放对象的实现
         /// </summary>
         /// <param name="obj">要释放的对象</param>
         private void ReleaseInternal(T obj)
@@ -228,7 +228,7 @@ namespace xFrame.Runtime.ObjectPool
         }
 
         /// <summary>
-        /// 内部预热的实现
+        ///     内部预热的实现
         /// </summary>
         /// <param name="count">要预创建的对象数量</param>
         private void WarmUpInternal(int count)
@@ -246,7 +246,7 @@ namespace xFrame.Runtime.ObjectPool
         }
 
         /// <summary>
-        /// 内部清空的实现
+        ///     内部清空的实现
         /// </summary>
         private void ClearInternal()
         {
@@ -259,7 +259,7 @@ namespace xFrame.Runtime.ObjectPool
         }
 
         /// <summary>
-        /// 检查对象池是否已被销毁
+        ///     检查对象池是否已被销毁
         /// </summary>
         private void ThrowIfDisposed()
         {

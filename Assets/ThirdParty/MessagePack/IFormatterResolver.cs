@@ -16,27 +16,36 @@ using MessagePack.Internal;
 namespace MessagePack
 {
     /// <summary>
-    /// Allows querying for a formatter for serializing or deserializing a particular <see cref="Type" />.
+    ///     Allows querying for a formatter for serializing or deserializing a particular <see cref="Type" />.
     /// </summary>
     public interface IFormatterResolver
     {
         /// <summary>
-        /// Gets an <see cref="IMessagePackFormatter{T}"/> instance that can serialize or deserialize some type <typeparamref name="T"/>.
+        ///     Gets an <see cref="IMessagePackFormatter{T}" /> instance that can serialize or deserialize some type
+        ///     <typeparamref name="T" />.
         /// </summary>
         /// <typeparam name="T">The type of value to be serialized or deserialized.</typeparam>
-        /// <returns>A formatter, if this resolver supplies one for type <typeparamref name="T"/>; otherwise <see langword="null"/>.</returns>
+        /// <returns>
+        ///     A formatter, if this resolver supplies one for type <typeparamref name="T" />; otherwise
+        ///     <see langword="null" />.
+        /// </returns>
         IMessagePackFormatter<T>? GetFormatter<T>();
     }
 
     public static class FormatterResolverExtensions
     {
+        private static readonly ThreadsafeTypeKeyHashTable<Func<IFormatterResolver, IMessagePackFormatter>>
+            FormatterGetters =
+                new();
+
+        private static readonly MethodInfo GetFormatterRuntimeMethod =
+            typeof(IFormatterResolver).GetRuntimeMethod(nameof(IFormatterResolver.GetFormatter), Type.EmptyTypes) ??
+            throw new Exception("Unable to find our own method.");
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IMessagePackFormatter<T> GetFormatterWithVerify<T>(this IFormatterResolver resolver)
         {
-            if (resolver is null)
-            {
-                throw new ArgumentNullException(nameof(resolver));
-            }
+            if (resolver is null) throw new ArgumentNullException(nameof(resolver));
 
             IMessagePackFormatter<T>? formatter;
             try
@@ -52,10 +61,7 @@ namespace MessagePack
                 return default; // not reachable
             }
 
-            if (formatter == null)
-            {
-                Throw(typeof(T), resolver);
-            }
+            if (formatter == null) Throw(typeof(T), resolver);
 
             return formatter;
         }
@@ -70,25 +76,15 @@ namespace MessagePack
         [DoesNotReturn]
         private static void Throw(Type t, IFormatterResolver resolver)
         {
-            throw new FormatterNotRegisteredException(t.FullName + " is not registered in resolver: " + resolver.GetType());
+            throw new FormatterNotRegisteredException(t.FullName + " is not registered in resolver: " +
+                                                      resolver.GetType());
         }
-
-        private static readonly ThreadsafeTypeKeyHashTable<Func<IFormatterResolver, IMessagePackFormatter>> FormatterGetters =
-            new ThreadsafeTypeKeyHashTable<Func<IFormatterResolver, IMessagePackFormatter>>();
-
-        private static readonly MethodInfo GetFormatterRuntimeMethod = typeof(IFormatterResolver).GetRuntimeMethod(nameof(IFormatterResolver.GetFormatter), Type.EmptyTypes) ?? throw new Exception("Unable to find our own method.");
 
         public static object? GetFormatterDynamic(this IFormatterResolver resolver, Type type)
         {
-            if (resolver is null)
-            {
-                throw new ArgumentNullException(nameof(resolver));
-            }
+            if (resolver is null) throw new ArgumentNullException(nameof(resolver));
 
-            if (type is null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
+            if (type is null) throw new ArgumentNullException(nameof(type));
 
             if (!FormatterGetters.TryGetValue(type, out var formatterGetter))
             {
@@ -104,11 +100,8 @@ namespace MessagePack
 
         internal static object GetFormatterDynamicWithVerify(this IFormatterResolver resolver, Type type)
         {
-            var result = GetFormatterDynamic(resolver, type);
-            if (result == null)
-            {
-                Throw(type, resolver);
-            }
+            var result = resolver.GetFormatterDynamic(type);
+            if (result == null) Throw(type, resolver);
 
             return result;
         }

@@ -6,8 +6,8 @@ using UnityEngine;
 namespace xFrame.Runtime.Logging.Appenders
 {
     /// <summary>
-    /// 文件日志输出器
-    /// 将日志输出到文件系统
+    ///     文件日志输出器
+    ///     将日志输出到文件系统
     /// </summary>
     public class FileLogAppender : ILogAppender
     {
@@ -18,7 +18,7 @@ namespace xFrame.Runtime.Logging.Appenders
         private StreamWriter _writer;
 
         /// <summary>
-        /// 构造函数
+        ///     构造函数
         /// </summary>
         /// <param name="filePath">日志文件路径</param>
         /// <param name="formatter">日志格式化器</param>
@@ -33,22 +33,22 @@ namespace xFrame.Runtime.Logging.Appenders
         }
 
         /// <summary>
-        /// 输出器名称
+        ///     输出器名称
         /// </summary>
         public string Name => "File";
 
         /// <summary>
-        /// 是否启用该输出器
+        ///     是否启用该输出器
         /// </summary>
         public bool IsEnabled { get; set; } = true;
 
         /// <summary>
-        /// 最小日志等级过滤
+        ///     最小日志等级过滤
         /// </summary>
         public LogLevel MinLevel { get; set; } = LogLevel.Info;
 
         /// <summary>
-        /// 写入日志条目
+        ///     写入日志条目
         /// </summary>
         /// <param name="entry">日志条目</param>
         public void WriteLog(LogEntry entry)
@@ -73,7 +73,7 @@ namespace xFrame.Runtime.Logging.Appenders
         }
 
         /// <summary>
-        /// 刷新缓冲区
+        ///     刷新缓冲区
         /// </summary>
         public void Flush()
         {
@@ -91,7 +91,7 @@ namespace xFrame.Runtime.Logging.Appenders
         }
 
         /// <summary>
-        /// 释放资源
+        ///     释放资源
         /// </summary>
         public void Dispose()
         {
@@ -112,7 +112,7 @@ namespace xFrame.Runtime.Logging.Appenders
         }
 
         /// <summary>
-        /// 初始化文件写入器
+        ///     初始化文件写入器
         /// </summary>
         private void InitializeWriter()
         {

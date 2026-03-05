@@ -10,7 +10,7 @@ namespace xFrame.Tests.MVVM
         public void Bind_InvokeImmediately_ShouldReceiveInitialValue()
         {
             var property = new BindableProperty<int>(5);
-            int received = 0;
+            var received = 0;
 
             property.Bind(v => received = v);
 
@@ -21,7 +21,7 @@ namespace xFrame.Tests.MVVM
         public void Value_SetSameValue_ShouldNotNotifyAgain()
         {
             var property = new BindableProperty<string>("A");
-            int called = 0;
+            var called = 0;
             property.Bind(_ => called++, false);
 
             property.Value = "A";
@@ -32,8 +32,8 @@ namespace xFrame.Tests.MVVM
         [Test]
         public void Unbind_AfterDisposedSubscription_ShouldNotNotify()
         {
-            var property = new BindableProperty<int>(0);
-            int received = 0;
+            var property = new BindableProperty<int>();
+            var received = 0;
 
             var subscription = property.Bind(v => received = v, false);
             subscription.Dispose();

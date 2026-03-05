@@ -5,7 +5,7 @@ using xFrame.Runtime.Startup;
 namespace xFrame.Runtime.Networking.AgentBridge.Commands
 {
     /// <summary>
-    /// 触发启动流程关闭。
+    ///     触发启动流程关闭。
     /// </summary>
     public sealed class StartupStopCommandHandler : IAgentRpcCommandHandler
     {
@@ -32,7 +32,8 @@ namespace xFrame.Runtime.Networking.AgentBridge.Commands
             }
             catch (Exception ex)
             {
-                return AgentRpcExecutionResult.Failure(AgentRpcErrorCodes.InternalError, "startup.stop failed.", ex.Message);
+                return AgentRpcExecutionResult.Failure(AgentRpcErrorCodes.InternalError, "startup.stop failed.",
+                    ex.Message);
             }
         }
     }

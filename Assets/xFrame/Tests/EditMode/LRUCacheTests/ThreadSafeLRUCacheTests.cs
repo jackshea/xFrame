@@ -9,14 +9,14 @@ using xFrame.Runtime.DataStructures;
 namespace xFrame.Tests
 {
     /// <summary>
-    /// 线程安全LRU缓存单元测试
-    /// 测试线程安全LRU缓存的功能和并发安全性
+    ///     线程安全LRU缓存单元测试
+    ///     测试线程安全LRU缓存的功能和并发安全性
     /// </summary>
     [TestFixture]
     public class ThreadSafeLRUCacheTests
     {
         /// <summary>
-        /// 测试基本功能
+        ///     测试基本功能
         /// </summary>
         [Test]
         public void TestBasicFunctionality()
@@ -35,7 +35,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试LRU淘汰机制
+        ///     测试LRU淘汰机制
         /// </summary>
         [Test]
         public void TestLRUEviction()
@@ -54,7 +54,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试并发读操作
+        ///     测试并发读操作
         /// </summary>
         [Test]
         public void TestConcurrentReads()
@@ -90,7 +90,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试并发写操作
+        ///     测试并发写操作
         /// </summary>
         [Test]
         public void TestConcurrentWrites()
@@ -126,7 +126,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试并发读写操作
+        ///     测试并发读写操作
         /// </summary>
         [Test]
         public void TestConcurrentReadWrites()
@@ -183,7 +183,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试并发Remove操作
+        ///     测试并发Remove操作
         /// </summary>
         [Test]
         public void TestConcurrentRemoves()
@@ -223,7 +223,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试并发Clear操作
+        ///     测试并发Clear操作
         /// </summary>
         [Test]
         public void TestConcurrentClear()
@@ -261,7 +261,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试Keys和Values属性的线程安全性
+        ///     测试Keys和Values属性的线程安全性
         /// </summary>
         [Test]
         public void TestKeysAndValuesThreadSafety()
@@ -339,7 +339,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试Dispose方法
+        ///     测试Dispose方法
         /// </summary>
         [Test]
         public void TestDispose()
@@ -363,7 +363,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试ToString方法的线程安全性
+        ///     测试ToString方法的线程安全性
         /// </summary>
         [Test]
         public void TestToStringThreadSafety()
@@ -400,7 +400,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 压力测试：大量并发操作
+        ///     压力测试：大量并发操作
         /// </summary>
         [Test]
         public void StressTest()

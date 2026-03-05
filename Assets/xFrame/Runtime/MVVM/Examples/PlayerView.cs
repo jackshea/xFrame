@@ -6,23 +6,19 @@ using xFrame.Runtime.MVVM.Core;
 namespace xFrame.Runtime.MVVM.Examples
 {
     /// <summary>
-    /// 玩家视图。
-    /// 负责控件引用与 ViewModel 绑定，不包含业务计算逻辑。
+    ///     玩家视图。
+    ///     负责控件引用与 ViewModel 绑定，不包含业务计算逻辑。
     /// </summary>
     public sealed class PlayerView : MonoBehaviour
     {
-        [Header("UI References")]
-        [SerializeField]
+        [Header("UI References")] [SerializeField]
         private TextMeshProUGUI _nameText;
 
-        [SerializeField]
-        private TextMeshProUGUI _healthText;
+        [SerializeField] private TextMeshProUGUI _healthText;
 
-        [SerializeField]
-        private Image _healthBar;
+        [SerializeField] private Image _healthBar;
 
-        [SerializeField]
-        private Button _damageButton;
+        [SerializeField] private Button _damageButton;
 
         private BindingContext _bindingContext;
         private PlayerViewModel _viewModel;
@@ -57,34 +53,22 @@ namespace xFrame.Runtime.MVVM.Examples
             _bindingContext?.Dispose();
             _bindingContext = null;
 
-            if (_damageButton != null)
-            {
-                _damageButton.onClick.RemoveAllListeners();
-            }
+            if (_damageButton != null) _damageButton.onClick.RemoveAllListeners();
         }
 
         private void OnNameChanged(string newValue)
         {
-            if (_nameText != null)
-            {
-                _nameText.text = newValue;
-            }
+            if (_nameText != null) _nameText.text = newValue;
         }
 
         private void OnHealthTextChanged(string newValue)
         {
-            if (_healthText != null)
-            {
-                _healthText.text = newValue;
-            }
+            if (_healthText != null) _healthText.text = newValue;
         }
 
         private void OnHealthFillAmountChanged(float value)
         {
-            if (_healthBar != null)
-            {
-                _healthBar.fillAmount = value;
-            }
+            if (_healthBar != null) _healthBar.fillAmount = value;
         }
     }
 }

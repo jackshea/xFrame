@@ -16,38 +16,29 @@ namespace xFrame.Runtime.Networking.AgentBridge
 
     public sealed class JsonRpcRequest
     {
-        [JsonProperty("jsonrpc")]
-        public string JsonRpc { get; set; }
+        [JsonProperty("jsonrpc")] public string JsonRpc { get; set; }
 
-        [JsonProperty("id")]
-        public JToken Id { get; set; }
+        [JsonProperty("id")] public JToken Id { get; set; }
 
-        [JsonProperty("method")]
-        public string Method { get; set; }
+        [JsonProperty("method")] public string Method { get; set; }
 
-        [JsonProperty("params")]
-        public JToken Params { get; set; }
+        [JsonProperty("params")] public JToken Params { get; set; }
     }
 
     public sealed class JsonRpcError
     {
-        [JsonProperty("code")]
-        public int Code { get; set; }
+        [JsonProperty("code")] public int Code { get; set; }
 
-        [JsonProperty("message")]
-        public string Message { get; set; }
+        [JsonProperty("message")] public string Message { get; set; }
 
-        [JsonProperty("data")]
-        public object Data { get; set; }
+        [JsonProperty("data")] public object Data { get; set; }
     }
 
     public sealed class JsonRpcResponse
     {
-        [JsonProperty("jsonrpc")]
-        public string JsonRpc { get; set; } = "2.0";
+        [JsonProperty("jsonrpc")] public string JsonRpc { get; set; } = "2.0";
 
-        [JsonProperty("id")]
-        public JToken Id { get; set; }
+        [JsonProperty("id")] public JToken Id { get; set; }
 
         [JsonProperty("result", NullValueHandling = NullValueHandling.Ignore)]
         public object Result { get; set; }

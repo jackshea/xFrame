@@ -3,8 +3,8 @@ using UnityEngine;
 namespace xFrame.Runtime.Logging.Appenders
 {
     /// <summary>
-    /// Unity调试日志输出器
-    /// 将日志输出到Unity的Debug.Log系统
+    ///     Unity调试日志输出器
+    ///     将日志输出到Unity的Debug.Log系统
     /// </summary>
     public class UnityDebugLogAppender : ILogAppender
     {
@@ -12,7 +12,7 @@ namespace xFrame.Runtime.Logging.Appenders
         private readonly object _lock = new();
 
         /// <summary>
-        /// 构造函数
+        ///     构造函数
         /// </summary>
         /// <param name="formatter">日志格式化器</param>
         public UnityDebugLogAppender(ILogFormatter formatter = null)
@@ -21,22 +21,22 @@ namespace xFrame.Runtime.Logging.Appenders
         }
 
         /// <summary>
-        /// 输出器名称
+        ///     输出器名称
         /// </summary>
         public string Name => "UnityDebug";
 
         /// <summary>
-        /// 是否启用该输出器
+        ///     是否启用该输出器
         /// </summary>
         public bool IsEnabled { get; set; } = true;
 
         /// <summary>
-        /// 最小日志等级过滤
+        ///     最小日志等级过滤
         /// </summary>
         public LogLevel MinLevel { get; set; } = LogLevel.Debug;
 
         /// <summary>
-        /// 写入日志条目
+        ///     写入日志条目
         /// </summary>
         /// <param name="entry">日志条目</param>
         public void WriteLog(LogEntry entry)
@@ -79,7 +79,7 @@ namespace xFrame.Runtime.Logging.Appenders
         }
 
         /// <summary>
-        /// 刷新缓冲区
+        ///     刷新缓冲区
         /// </summary>
         public void Flush()
         {
@@ -87,7 +87,7 @@ namespace xFrame.Runtime.Logging.Appenders
         }
 
         /// <summary>
-        /// 释放资源
+        ///     释放资源
         /// </summary>
         public void Dispose()
         {

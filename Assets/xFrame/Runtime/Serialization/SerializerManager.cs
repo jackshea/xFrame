@@ -6,41 +6,24 @@ using xFrame.Runtime.EventBus;
 namespace xFrame.Runtime.Serialization
 {
     /// <summary>
-    /// 序列化管理器实现
-    /// 管理多个序列化器，提供统一的序列化服务入口
+    ///     序列化管理器实现
+    ///     管理多个序列化器，提供统一的序列化服务入口
     /// </summary>
     public class SerializerManager : ISerializerManager
     {
         /// <summary>
-        /// 已注册的序列化器字典
+        ///     已注册的序列化器字典
         /// </summary>
-        private readonly Dictionary<string, ISerializer> _serializers = new Dictionary<string, ISerializer>();
+        private readonly Dictionary<string, ISerializer> _serializers = new();
 
         /// <summary>
-        /// 默认序列化器名称
+        ///     默认序列化器名称
         /// </summary>
         private string _defaultSerializerName;
 
         /// <summary>
-        /// 默认序列化器
-        /// </summary>
-        public ISerializer DefaultSerializer
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(_defaultSerializerName))
-                {
-                    return null;
-                }
-
-                _serializers.TryGetValue(_defaultSerializerName, out var serializer);
-                return serializer;
-            }
-        }
-
-        /// <summary>
-        /// 构造函数
-        /// 自动注册默认的JSON序列化器
+        ///     构造函数
+        ///     自动注册默认的JSON序列化器
         /// </summary>
         public SerializerManager()
         {
@@ -51,26 +34,31 @@ namespace xFrame.Runtime.Serialization
         }
 
         /// <summary>
-        /// 注册序列化器
+        ///     默认序列化器
+        /// </summary>
+        public ISerializer DefaultSerializer
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_defaultSerializerName)) return null;
+
+                _serializers.TryGetValue(_defaultSerializerName, out var serializer);
+                return serializer;
+            }
+        }
+
+        /// <summary>
+        ///     注册序列化器
         /// </summary>
         /// <param name="name">序列化器名称</param>
         /// <param name="serializer">序列化器实例</param>
         public void RegisterSerializer(string name, ISerializer serializer)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException(nameof(name), "序列化器名称不能为空");
-            }
+            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name), "序列化器名称不能为空");
 
-            if (serializer == null)
-            {
-                throw new ArgumentNullException(nameof(serializer), "序列化器实例不能为空");
-            }
+            if (serializer == null) throw new ArgumentNullException(nameof(serializer), "序列化器实例不能为空");
 
-            if (_serializers.ContainsKey(name))
-            {
-                Debug.LogWarning($"[SerializerManager] 序列化器 '{name}' 已存在，将被覆盖");
-            }
+            if (_serializers.ContainsKey(name)) Debug.LogWarning($"[SerializerManager] 序列化器 '{name}' 已存在，将被覆盖");
 
             _serializers[name] = serializer;
             Debug.Log($"[SerializerManager] 注册序列化器: {name}");
@@ -80,16 +68,13 @@ namespace xFrame.Runtime.Serialization
         }
 
         /// <summary>
-        /// 注销序列化器
+        ///     注销序列化器
         /// </summary>
         /// <param name="name">序列化器名称</param>
         /// <returns>是否成功注销</returns>
         public bool UnregisterSerializer(string name)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                return false;
-            }
+            if (string.IsNullOrEmpty(name)) return false;
 
             if (_serializers.Remove(name))
             {
@@ -111,36 +96,27 @@ namespace xFrame.Runtime.Serialization
         }
 
         /// <summary>
-        /// 获取指定名称的序列化器
+        ///     获取指定名称的序列化器
         /// </summary>
         /// <param name="name">序列化器名称</param>
         /// <returns>序列化器实例，如果不存在则返回null</returns>
         public ISerializer GetSerializer(string name)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                return null;
-            }
+            if (string.IsNullOrEmpty(name)) return null;
 
             _serializers.TryGetValue(name, out var serializer);
             return serializer;
         }
 
         /// <summary>
-        /// 设置默认序列化器
+        ///     设置默认序列化器
         /// </summary>
         /// <param name="name">序列化器名称</param>
         public void SetDefaultSerializer(string name)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException(nameof(name), "序列化器名称不能为空");
-            }
+            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name), "序列化器名称不能为空");
 
-            if (!_serializers.ContainsKey(name))
-            {
-                throw new InvalidOperationException($"序列化器 '{name}' 未注册");
-            }
+            if (!_serializers.ContainsKey(name)) throw new InvalidOperationException($"序列化器 '{name}' 未注册");
 
             var previousDefault = _defaultSerializerName;
             _defaultSerializerName = name;
@@ -151,7 +127,7 @@ namespace xFrame.Runtime.Serialization
         }
 
         /// <summary>
-        /// 使用默认序列化器将对象序列化为字节数组
+        ///     使用默认序列化器将对象序列化为字节数组
         /// </summary>
         /// <typeparam name="T">对象类型</typeparam>
         /// <param name="obj">要序列化的对象</param>
@@ -163,7 +139,7 @@ namespace xFrame.Runtime.Serialization
         }
 
         /// <summary>
-        /// 使用默认序列化器将对象序列化为字符串
+        ///     使用默认序列化器将对象序列化为字符串
         /// </summary>
         /// <typeparam name="T">对象类型</typeparam>
         /// <param name="obj">要序列化的对象</param>
@@ -175,7 +151,7 @@ namespace xFrame.Runtime.Serialization
         }
 
         /// <summary>
-        /// 使用默认序列化器从字节数组反序列化为对象
+        ///     使用默认序列化器从字节数组反序列化为对象
         /// </summary>
         /// <typeparam name="T">目标对象类型</typeparam>
         /// <param name="data">字节数组</param>
@@ -187,7 +163,7 @@ namespace xFrame.Runtime.Serialization
         }
 
         /// <summary>
-        /// 使用默认序列化器从字符串反序列化为对象
+        ///     使用默认序列化器从字符串反序列化为对象
         /// </summary>
         /// <typeparam name="T">目标对象类型</typeparam>
         /// <param name="data">字符串数据</param>
@@ -199,7 +175,7 @@ namespace xFrame.Runtime.Serialization
         }
 
         /// <summary>
-        /// 使用指定序列化器将对象序列化为字节数组
+        ///     使用指定序列化器将对象序列化为字节数组
         /// </summary>
         /// <typeparam name="T">对象类型</typeparam>
         /// <param name="serializerName">序列化器名称</param>
@@ -212,7 +188,7 @@ namespace xFrame.Runtime.Serialization
         }
 
         /// <summary>
-        /// 使用指定序列化器将对象序列化为字符串
+        ///     使用指定序列化器将对象序列化为字符串
         /// </summary>
         /// <typeparam name="T">对象类型</typeparam>
         /// <param name="serializerName">序列化器名称</param>
@@ -225,7 +201,7 @@ namespace xFrame.Runtime.Serialization
         }
 
         /// <summary>
-        /// 使用指定序列化器从字节数组反序列化为对象
+        ///     使用指定序列化器从字节数组反序列化为对象
         /// </summary>
         /// <typeparam name="T">目标对象类型</typeparam>
         /// <param name="serializerName">序列化器名称</param>
@@ -238,7 +214,7 @@ namespace xFrame.Runtime.Serialization
         }
 
         /// <summary>
-        /// 使用指定序列化器从字符串反序列化为对象
+        ///     使用指定序列化器从字符串反序列化为对象
         /// </summary>
         /// <typeparam name="T">目标对象类型</typeparam>
         /// <param name="serializerName">序列化器名称</param>
@@ -251,32 +227,26 @@ namespace xFrame.Runtime.Serialization
         }
 
         /// <summary>
-        /// 获取默认序列化器，如果不存在则抛出异常
+        ///     获取默认序列化器，如果不存在则抛出异常
         /// </summary>
         /// <returns>默认序列化器</returns>
         private ISerializer GetDefaultSerializerOrThrow()
         {
             var serializer = DefaultSerializer;
-            if (serializer == null)
-            {
-                throw new InvalidOperationException("未设置默认序列化器");
-            }
+            if (serializer == null) throw new InvalidOperationException("未设置默认序列化器");
 
             return serializer;
         }
 
         /// <summary>
-        /// 获取指定名称的序列化器，如果不存在则抛出异常
+        ///     获取指定名称的序列化器，如果不存在则抛出异常
         /// </summary>
         /// <param name="name">序列化器名称</param>
         /// <returns>序列化器实例</returns>
         private ISerializer GetSerializerOrThrow(string name)
         {
             var serializer = GetSerializer(name);
-            if (serializer == null)
-            {
-                throw new InvalidOperationException($"序列化器 '{name}' 未注册");
-            }
+            if (serializer == null) throw new InvalidOperationException($"序列化器 '{name}' 未注册");
 
             return serializer;
         }

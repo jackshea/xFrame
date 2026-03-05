@@ -10,8 +10,8 @@ using xFrame.Runtime.UI;
 namespace xFrame.Examples.UI
 {
     /// <summary>
-    /// UI组件使用示例
-    /// 演示组件复用、父子通讯、生命周期传递
+    ///     UI组件使用示例
+    ///     演示组件复用、父子通讯、生命周期传递
     /// </summary>
     public class UIComponentUsageExample : MonoBehaviour
     {
@@ -49,8 +49,8 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 示例1: 组件复用
-        /// 演示如何创建和使用多个相同类型的组件
+        ///     示例1: 组件复用
+        ///     演示如何创建和使用多个相同类型的组件
         /// </summary>
         private void Example1_ComponentReuse()
         {
@@ -68,8 +68,8 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 示例2: 父子通讯
-        /// 演示父子组件之间的通讯方式
+        ///     示例2: 父子通讯
+        ///     演示父子组件之间的通讯方式
         /// </summary>
         private void Example2_ParentChildCommunication()
         {
@@ -94,8 +94,8 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 示例3: 生命周期传递
-        /// 演示父组件生命周期如何影响子组件
+        ///     示例3: 生命周期传递
+        ///     演示父组件生命周期如何影响子组件
         /// </summary>
         private void Example3_LifecyclePropagation()
         {
@@ -120,8 +120,8 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 示例4: 组件ID识别
-        /// 演示如何通过ComponentId区分同类型的多个组件
+        ///     示例4: 组件ID识别
+        ///     演示如何通过ComponentId区分同类型的多个组件
         /// </summary>
         private void Example4_ComponentIdIdentification()
         {
@@ -149,19 +149,16 @@ namespace xFrame.Examples.UI
     #region 完整的组件通讯示例
 
     /// <summary>
-    /// 技能按钮组件示例
-    /// 展示完整的组件生命周期和事件通讯
+    ///     技能按钮组件示例
+    ///     展示完整的组件生命周期和事件通讯
     /// </summary>
     public class SkillButtonComponent : UIComponent
     {
-        [SerializeField]
-        private Button button;
+        [SerializeField] private Button button;
 
-        [SerializeField]
-        private Image icon;
+        [SerializeField] private Image icon;
 
-        [SerializeField]
-        private TextMeshProUGUI cooldownText;
+        [SerializeField] private TextMeshProUGUI cooldownText;
 
         private float _cooldownRemaining;
 
@@ -294,16 +291,14 @@ namespace xFrame.Examples.UI
     }
 
     /// <summary>
-    /// 技能栏面板示例
-    /// 展示如何管理多个技能按钮组件
+    ///     技能栏面板示例
+    ///     展示如何管理多个技能按钮组件
     /// </summary>
     public class SkillBarPanel : UIPanel
     {
-        [SerializeField]
-        private Transform skillContainer;
+        [SerializeField] private Transform skillContainer;
 
-        [SerializeField]
-        private SkillButtonComponent skillButtonPrefab;
+        [SerializeField] private SkillButtonComponent skillButtonPrefab;
 
         private readonly List<SkillButtonComponent> _skillButtons = new();
 
@@ -406,7 +401,7 @@ namespace xFrame.Examples.UI
     #region 数据类型
 
     /// <summary>
-    /// 技能数据
+    ///     技能数据
     /// </summary>
     public class SkillData
     {
@@ -417,7 +412,7 @@ namespace xFrame.Examples.UI
     }
 
     /// <summary>
-    /// 技能按钮点击事件
+    ///     技能按钮点击事件
     /// </summary>
     public struct SkillButtonClickedEvent : IUIComponentEvent
     {

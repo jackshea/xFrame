@@ -1,7 +1,9 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using NUnit.Framework;
 using xFrame.Runtime.Persistence.Security;
 using xFrame.Runtime.Persistence.Storage;
@@ -10,39 +12,20 @@ using xFrame.Runtime.Serialization;
 namespace xFrame.Tests.PersistenceTests
 {
     /// <summary>
-    /// 存储介质层单元测试
-    /// 测试各种持久化提供者的功能
+    ///     存储介质层单元测试
+    ///     测试各种持久化提供者的功能
     /// </summary>
     [TestFixture]
     public class StorageTests
     {
-        /// <summary>
-        /// 测试用的简单数据类
-        /// </summary>
-        [Serializable]
-        private class TestData
-        {
-            public string Name;
-            public int Value;
-        }
-
-        private ISerializer _serializer;
-        private string _testBasePath;
-
         [SetUp]
         public void SetUp()
         {
             _serializer = new JsonSerializer();
             var workDirectory = TestContext.CurrentContext.WorkDirectory;
-            if (string.IsNullOrEmpty(workDirectory))
-            {
-                workDirectory = Environment.CurrentDirectory;
-            }
+            if (string.IsNullOrEmpty(workDirectory)) workDirectory = Environment.CurrentDirectory;
 
-            if (string.IsNullOrEmpty(workDirectory))
-            {
-                workDirectory = Path.GetTempPath();
-            }
+            if (string.IsNullOrEmpty(workDirectory)) workDirectory = Path.GetTempPath();
 
             _testBasePath = Path.Combine(
                 workDirectory,
@@ -56,22 +39,28 @@ namespace xFrame.Tests.PersistenceTests
             TryDeleteDirectory(_testBasePath);
         }
 
+        /// <summary>
+        ///     测试用的简单数据类
+        /// </summary>
+        [Serializable]
+        private class TestData
+        {
+            public string Name;
+            public int Value;
+        }
+
+        private ISerializer _serializer;
+        private string _testBasePath;
+
         private static void TryDeleteDirectory(string path, int maxRetries = 5)
         {
-            if (string.IsNullOrEmpty(path) || !Directory.Exists(path))
-            {
-                return;
-            }
+            if (string.IsNullOrEmpty(path) || !Directory.Exists(path)) return;
 
             for (var attempt = 1; attempt <= maxRetries; attempt++)
-            {
                 try
                 {
                     var files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
-                    foreach (var file in files)
-                    {
-                        File.SetAttributes(file, FileAttributes.Normal);
-                    }
+                    foreach (var file in files) File.SetAttributes(file, FileAttributes.Normal);
 
                     Directory.Delete(path, true);
                     return;
@@ -84,7 +73,7 @@ namespace xFrame.Tests.PersistenceTests
                         return;
                     }
 
-                    System.Threading.Thread.Sleep(100 * attempt);
+                    Thread.Sleep(100 * attempt);
                 }
                 catch (IOException)
                 {
@@ -94,17 +83,14 @@ namespace xFrame.Tests.PersistenceTests
                         return;
                     }
 
-                    System.Threading.Thread.Sleep(100 * attempt);
+                    Thread.Sleep(100 * attempt);
                 }
-            }
 
             TestContext.Progress.WriteLine($"[StorageTests] 清理目录失败(已跳过): {path}");
         }
 
-        #region MemoryPersistenceProvider 测试
-
         /// <summary>
-        /// 测试MemoryPersistenceProvider名称
+        ///     测试MemoryPersistenceProvider名称
         /// </summary>
         [Test]
         public void MemoryProvider_Name_ShouldReturnMemory()
@@ -114,7 +100,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试保存和加载数据
+        ///     测试保存和加载数据
         /// </summary>
         [Test]
         public void MemoryProvider_SaveAndLoad_ShouldWork()
@@ -131,7 +117,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试检查数据存在
+        ///     测试检查数据存在
         /// </summary>
         [Test]
         public void MemoryProvider_Exists_ShouldReturnCorrectly()
@@ -147,7 +133,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试删除数据
+        ///     测试删除数据
         /// </summary>
         [Test]
         public void MemoryProvider_Delete_ShouldWork()
@@ -165,7 +151,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试删除不存在的数据
+        ///     测试删除不存在的数据
         /// </summary>
         [Test]
         public void MemoryProvider_Delete_NonExistent_ShouldReturnFalse()
@@ -178,7 +164,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试加载不存在的数据
+        ///     测试加载不存在的数据
         /// </summary>
         [Test]
         public void MemoryProvider_Load_NonExistent_ShouldReturnDefault()
@@ -191,7 +177,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试保存原始字节数据
+        ///     测试保存原始字节数据
         /// </summary>
         [Test]
         public void MemoryProvider_SaveRawAndLoadRaw_ShouldWork()
@@ -206,7 +192,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试清除所有数据
+        ///     测试清除所有数据
         /// </summary>
         [Test]
         public void MemoryProvider_Clear_ShouldRemoveAllData()
@@ -225,7 +211,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试获取所有键
+        ///     测试获取所有键
         /// </summary>
         [Test]
         public void MemoryProvider_GetAllKeys_ShouldReturnAllKeys()
@@ -242,7 +228,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试数据隔离（修改返回的数据不影响存储）
+        ///     测试数据隔离（修改返回的数据不影响存储）
         /// </summary>
         [Test]
         public void MemoryProvider_DataIsolation_ShouldWork()
@@ -261,12 +247,8 @@ namespace xFrame.Tests.PersistenceTests
             Assert.AreEqual((byte)'O', reloaded[0]);
         }
 
-        #endregion
-
-        #region FilePersistenceProvider 测试
-
         /// <summary>
-        /// 测试FilePersistenceProvider名称
+        ///     测试FilePersistenceProvider名称
         /// </summary>
         [Test]
         public void FileProvider_Name_ShouldReturnFile()
@@ -276,7 +258,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试保存和加载数据
+        ///     测试保存和加载数据
         /// </summary>
         [Test]
         public void FileProvider_SaveAndLoad_ShouldWork()
@@ -293,7 +275,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试文件是否被创建
+        ///     测试文件是否被创建
         /// </summary>
         [Test]
         public void FileProvider_Save_ShouldCreateFile()
@@ -308,7 +290,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试检查数据存在
+        ///     测试检查数据存在
         /// </summary>
         [Test]
         public void FileProvider_Exists_ShouldReturnCorrectly()
@@ -323,7 +305,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试删除数据
+        ///     测试删除数据
         /// </summary>
         [Test]
         public void FileProvider_Delete_ShouldWork()
@@ -338,7 +320,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试自定义文件扩展名
+        ///     测试自定义文件扩展名
         /// </summary>
         [Test]
         public void FileProvider_CustomExtension_ShouldWork()
@@ -351,7 +333,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试获取所有键
+        ///     测试获取所有键
         /// </summary>
         [Test]
         public void FileProvider_GetAllKeys_ShouldReturnAllKeys()
@@ -366,7 +348,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试清除所有数据
+        ///     测试清除所有数据
         /// </summary>
         [Test]
         public void FileProvider_Clear_ShouldRemoveAllFiles()
@@ -382,7 +364,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试特殊字符键名处理
+        ///     测试特殊字符键名处理
         /// </summary>
         [Test]
         public void FileProvider_SpecialCharacterKey_ShouldBeSanitized()
@@ -398,12 +380,8 @@ namespace xFrame.Tests.PersistenceTests
             Assert.AreEqual("Special", loaded.Name);
         }
 
-        #endregion
-
-        #region EncryptedFilePersistenceProvider 测试
-
         /// <summary>
-        /// 测试EncryptedFilePersistenceProvider名称
+        ///     测试EncryptedFilePersistenceProvider名称
         /// </summary>
         [Test]
         public void EncryptedFileProvider_Name_ShouldReturnEncryptedFile()
@@ -414,7 +392,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试加密保存和加载数据
+        ///     测试加密保存和加载数据
         /// </summary>
         [Test]
         public void EncryptedFileProvider_SaveAndLoad_ShouldWork()
@@ -432,13 +410,13 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试文件内容是加密的
+        ///     测试文件内容是加密的
         /// </summary>
         [Test]
         public void EncryptedFileProvider_FileContent_ShouldBeEncrypted()
         {
             var encryptor = new AesEncryptor("test_password");
-            var provider = new EncryptedFilePersistenceProvider(_serializer, _testBasePath, encryptor, ".enc");
+            var provider = new EncryptedFilePersistenceProvider(_serializer, _testBasePath, encryptor);
             var data = new TestData { Name = "SecretData", Value = 123 };
 
             provider.Save("secret", data);
@@ -452,7 +430,7 @@ namespace xFrame.Tests.PersistenceTests
         }
 
         /// <summary>
-        /// 测试使用错误密钥解密失败
+        ///     测试使用错误密钥解密失败
         /// </summary>
         [Test]
         public void EncryptedFileProvider_WrongKey_ShouldFail()
@@ -467,12 +445,7 @@ namespace xFrame.Tests.PersistenceTests
             provider1.Save("key", data);
 
             // 使用错误密钥解密应该抛出异常
-            Assert.Throws<System.Security.Cryptography.CryptographicException>(() =>
-            {
-                provider2.Load<TestData>("key");
-            });
+            Assert.Throws<CryptographicException>(() => { provider2.Load<TestData>("key"); });
         }
-
-        #endregion
     }
 }

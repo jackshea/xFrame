@@ -4,8 +4,8 @@ using xFrame.Runtime.ObjectPool;
 namespace xFrame.Examples
 {
     /// <summary>
-    /// 对象池系统使用示例
-    /// 演示如何使用对象池系统来管理对象的创建和回收
+    ///     对象池系统使用示例
+    ///     演示如何使用对象池系统来管理对象的创建和回收
     /// </summary>
     public class ObjectPoolExample : MonoBehaviour
     {
@@ -15,7 +15,7 @@ namespace xFrame.Examples
         private ObjectPoolManager _poolManager;
 
         /// <summary>
-        /// 初始化对象池
+        ///     初始化对象池
         /// </summary>
         private void Start()
         {
@@ -35,7 +35,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 清理资源
+        ///     清理资源
         /// </summary>
         private void OnDestroy()
         {
@@ -49,7 +49,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 在Inspector中显示对象池状态信息
+        ///     在Inspector中显示对象池状态信息
         /// </summary>
         private void OnGUI()
         {
@@ -77,7 +77,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 创建支持IPoolable接口的对象池
+        ///     创建支持IPoolable接口的对象池
         /// </summary>
         private void CreatePoolableObjectPool()
         {
@@ -95,7 +95,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 创建普通对象池
+        ///     创建普通对象池
         /// </summary>
         private void CreateNormalObjectPool()
         {
@@ -120,7 +120,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 创建对象池管理器
+        ///     创建对象池管理器
         /// </summary>
         private void CreatePoolManager()
         {
@@ -139,7 +139,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 演示对象池的各种功能
+        ///     演示对象池的各种功能
         /// </summary>
         private void DemonstratePoolFeatures()
         {
@@ -159,7 +159,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 演示子弹对象池功能
+        ///     演示子弹对象池功能
         /// </summary>
         private void DemonstrateBulletPool()
         {
@@ -195,7 +195,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 演示敌人对象池功能
+        ///     演示敌人对象池功能
         /// </summary>
         private void DemonstrateEnemyPool()
         {
@@ -225,7 +225,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 演示通过管理器使用对象池
+        ///     演示通过管理器使用对象池
         /// </summary>
         private void DemonstratePoolManager()
         {
@@ -248,7 +248,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 演示容量限制功能
+        ///     演示容量限制功能
         /// </summary>
         private void DemonstrateCapacityLimit()
         {
@@ -289,8 +289,8 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 示例子弹类
-        /// 实现IPoolable接口以支持对象池生命周期管理
+        ///     示例子弹类
+        ///     实现IPoolable接口以支持对象池生命周期管理
         /// </summary>
         public class Bullet : IPoolable
         {
@@ -300,7 +300,7 @@ namespace xFrame.Examples
             public bool IsActive { get; private set; }
 
             /// <summary>
-            /// 当从对象池获取时调用
+            ///     当从对象池获取时调用
             /// </summary>
             public void OnGet()
             {
@@ -309,7 +309,7 @@ namespace xFrame.Examples
             }
 
             /// <summary>
-            /// 当释放回对象池时调用
+            ///     当释放回对象池时调用
             /// </summary>
             public void OnRelease()
             {
@@ -321,7 +321,7 @@ namespace xFrame.Examples
             }
 
             /// <summary>
-            /// 当对象被销毁时调用
+            ///     当对象被销毁时调用
             /// </summary>
             public void OnDestroy()
             {
@@ -329,7 +329,7 @@ namespace xFrame.Examples
             }
 
             /// <summary>
-            /// 更新子弹位置
+            ///     更新子弹位置
             /// </summary>
             public void Update(float deltaTime)
             {
@@ -338,8 +338,8 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 示例敌人类
-        /// 普通类，不实现IPoolable接口
+        ///     示例敌人类
+        ///     普通类，不实现IPoolable接口
         /// </summary>
         public class Enemy
         {

@@ -5,13 +5,13 @@ using Object = UnityEngine.Object;
 namespace xFrame.Runtime.ResourceManager
 {
     /// <summary>
-    /// 资源管理器接口
-    /// 提供统一的资源加载和释放接口，隐藏底层实现细节
+    ///     资源管理器接口
+    ///     提供统一的资源加载和释放接口，隐藏底层实现细节
     /// </summary>
     public interface IAssetManager
     {
         /// <summary>
-        /// 同步加载资源
+        ///     同步加载资源
         /// </summary>
         /// <typeparam name="T">资源类型</typeparam>
         /// <param name="address">资源地址</param>
@@ -19,7 +19,7 @@ namespace xFrame.Runtime.ResourceManager
         T LoadAsset<T>(string address) where T : Object;
 
         /// <summary>
-        /// 异步加载资源
+        ///     异步加载资源
         /// </summary>
         /// <typeparam name="T">资源类型</typeparam>
         /// <param name="address">资源地址</param>
@@ -27,7 +27,7 @@ namespace xFrame.Runtime.ResourceManager
         Task<T> LoadAssetAsync<T>(string address) where T : Object;
 
         /// <summary>
-        /// 同步加载资源（非泛型版本）
+        ///     同步加载资源（非泛型版本）
         /// </summary>
         /// <param name="address">资源地址</param>
         /// <param name="type">资源类型</param>
@@ -35,7 +35,7 @@ namespace xFrame.Runtime.ResourceManager
         Object LoadAsset(string address, Type type);
 
         /// <summary>
-        /// 异步加载资源（非泛型版本）
+        ///     异步加载资源（非泛型版本）
         /// </summary>
         /// <param name="address">资源地址</param>
         /// <param name="type">资源类型</param>
@@ -43,65 +43,65 @@ namespace xFrame.Runtime.ResourceManager
         Task<Object> LoadAssetAsync(string address, Type type);
 
         /// <summary>
-        /// 释放资源
+        ///     释放资源
         /// </summary>
         /// <param name="asset">要释放的资源对象</param>
         void ReleaseAsset(Object asset);
 
         /// <summary>
-        /// 释放指定地址的资源
+        ///     释放指定地址的资源
         /// </summary>
         /// <param name="address">资源地址</param>
         void ReleaseAsset(string address);
 
         /// <summary>
-        /// 预加载资源到缓存
+        ///     预加载资源到缓存
         /// </summary>
         /// <param name="address">资源地址</param>
         /// <returns>预加载任务</returns>
         Task PreloadAssetAsync(string address);
 
         /// <summary>
-        /// 检查资源是否已缓存
+        ///     检查资源是否已缓存
         /// </summary>
         /// <param name="address">资源地址</param>
         /// <returns>如果资源已缓存返回true，否则返回false</returns>
         bool IsAssetCached(string address);
 
         /// <summary>
-        /// 清理所有缓存的资源
+        ///     清理所有缓存的资源
         /// </summary>
         void ClearCache();
 
         /// <summary>
-        /// 获取缓存统计信息
+        ///     获取缓存统计信息
         /// </summary>
         /// <returns>缓存统计信息</returns>
         AssetCacheStats GetCacheStats();
     }
 
     /// <summary>
-    /// 资源缓存统计信息
+    ///     资源缓存统计信息
     /// </summary>
     public struct AssetCacheStats
     {
         /// <summary>
-        /// 缓存中的资源数量
+        ///     缓存中的资源数量
         /// </summary>
         public int CachedAssetCount;
 
         /// <summary>
-        /// 缓存命中次数
+        ///     缓存命中次数
         /// </summary>
         public int CacheHitCount;
 
         /// <summary>
-        /// 缓存未命中次数
+        ///     缓存未命中次数
         /// </summary>
         public int CacheMissCount;
 
         /// <summary>
-        /// 缓存命中率
+        ///     缓存命中率
         /// </summary>
         public float CacheHitRate => CacheHitCount + CacheMissCount > 0
             ? (float)CacheHitCount / (CacheHitCount + CacheMissCount)

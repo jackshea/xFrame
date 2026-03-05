@@ -3,7 +3,7 @@ using UnityEngine;
 namespace xFrame.Runtime.Platform
 {
     /// <summary>
-    /// Unity 平台服务实现。
+    ///     Unity 平台服务实现。
     /// </summary>
     public sealed class UnityPlatformService : IPlatformService
     {
@@ -20,7 +20,7 @@ namespace xFrame.Runtime.Platform
                 Platform = Application.platform.ToString(),
                 OperatingSystem = SystemInfo.operatingSystem,
                 UnityVersion = Application.unityVersion,
-                DeviceModel = SystemInfo.deviceModel,
+                DeviceModel = SystemInfo.deviceModel
             };
         }
     }

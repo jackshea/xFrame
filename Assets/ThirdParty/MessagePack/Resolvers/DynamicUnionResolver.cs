@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #if !(UNITY_2018_3_OR_NEWER && NET_STANDARD_2_0)
-
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -39,9 +38,11 @@ namespace MessagePack.Resolvers
 
         private static readonly Lazy<DynamicAssembly> DynamicAssembly;
 #if !UNITY_2018_3_OR_NEWER
-        private static readonly Regex SubtractFullNameRegex = new Regex(@", Version=\d+.\d+.\d+.\d+, Culture=\w+, PublicKeyToken=\w+", RegexOptions.Compiled);
+        private static readonly Regex SubtractFullNameRegex =
+ new Regex(@", Version=\d+.\d+.\d+.\d+, Culture=\w+, PublicKeyToken=\w+", RegexOptions.Compiled);
 #else
-        private static readonly Regex SubtractFullNameRegex = new Regex(@", Version=\d+.\d+.\d+.\d+, Culture=\w+, PublicKeyToken=\w+");
+        private static readonly Regex SubtractFullNameRegex =
+ new Regex(@", Version=\d+.\d+.\d+.\d+, Culture=\w+, PublicKeyToken=\w+");
 #endif
 
         private static int nameSequence = 0;
@@ -86,7 +87,8 @@ namespace MessagePack.Resolvers
                         return;
                     }
 
-                    Formatter = (IMessagePackFormatter<T>?)Activator.CreateInstance(typeof(StaticNullableFormatter<>).MakeGenericType(ti.AsType()), new object[] { innerFormatter });
+                    Formatter =
+ (IMessagePackFormatter<T>?)Activator.CreateInstance(typeof(StaticNullableFormatter<>).MakeGenericType(ti.AsType()), new object[] { innerFormatter });
                     return;
                 }
 
@@ -138,16 +140,20 @@ namespace MessagePack.Resolvers
                 Type formatterType = typeof(IMessagePackFormatter<>).MakeGenericType(type);
                 using (MonoProtection.EnterRefEmitLock())
                 {
-                    TypeBuilder typeBuilder = DynamicAssembly.Value.DefineType("MessagePack.Formatters." + SubtractFullNameRegex.Replace(type.FullName!, string.Empty).Replace(".", "_") + "Formatter" + +Interlocked.Increment(ref nameSequence), TypeAttributes.Public | TypeAttributes.Sealed, null, new[] { formatterType });
+                    TypeBuilder typeBuilder =
+ DynamicAssembly.Value.DefineType("MessagePack.Formatters." + SubtractFullNameRegex.Replace(type.FullName!, string.Empty).Replace(".", "_") + "Formatter" + +Interlocked.Increment(ref nameSequence), TypeAttributes.Public | TypeAttributes.Sealed, null, new[] { formatterType });
 
                     FieldBuilder? typeToKeyAndJumpMap = null; // Dictionary<RuntimeTypeHandle, KeyValuePair<int, int>>
                     FieldBuilder? keyToJumpMap = null; // Dictionary<int, int>
 
                     // create map dictionary
                     {
-                        ConstructorBuilder method = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, Type.EmptyTypes);
-                        typeToKeyAndJumpMap = typeBuilder.DefineField("typeToKeyAndJumpMap", typeof(Dictionary<RuntimeTypeHandle, KeyValuePair<int, int>>), FieldAttributes.Private | FieldAttributes.InitOnly);
-                        keyToJumpMap = typeBuilder.DefineField("keyToJumpMap", typeof(Dictionary<int, int>), FieldAttributes.Private | FieldAttributes.InitOnly);
+                        ConstructorBuilder method =
+ typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, Type.EmptyTypes);
+                        typeToKeyAndJumpMap =
+ typeBuilder.DefineField("typeToKeyAndJumpMap", typeof(Dictionary<RuntimeTypeHandle, KeyValuePair<int, int>>), FieldAttributes.Private | FieldAttributes.InitOnly);
+                        keyToJumpMap =
+ typeBuilder.DefineField("keyToJumpMap", typeof(Dictionary<int, int>), FieldAttributes.Private | FieldAttributes.InitOnly);
 
                         ILGenerator il = method.GetILGenerator();
                         BuildConstructor(type, unionAttrs, method, typeToKeyAndJumpMap, keyToJumpMap, il);
@@ -427,46 +433,63 @@ namespace MessagePack.Resolvers
         // EmitInfos...
         private static readonly Type refMessagePackReader = typeof(MessagePackReader).MakeByRefType();
         private static readonly Type refKvp = typeof(KeyValuePair<int, int>).MakeByRefType();
-        private static readonly MethodInfo getFormatterWithVerify = typeof(FormatterResolverExtensions).GetRuntimeMethods().First(x => x.Name == "GetFormatterWithVerify");
-        private static readonly MethodInfo getResolverFromOptions = typeof(MessagePackSerializerOptions).GetRuntimeProperty(nameof(MessagePackSerializerOptions.Resolver))!.GetMethod!;
+        private static readonly MethodInfo getFormatterWithVerify =
+ typeof(FormatterResolverExtensions).GetRuntimeMethods().First(x => x.Name == "GetFormatterWithVerify");
+        private static readonly MethodInfo getResolverFromOptions =
+ typeof(MessagePackSerializerOptions).GetRuntimeProperty(nameof(MessagePackSerializerOptions.Resolver))!.GetMethod!;
 
-        private static readonly Func<Type, MethodInfo> getSerialize = t => typeof(IMessagePackFormatter<>).MakeGenericType(t).GetRuntimeMethod("Serialize", new[] { typeof(MessagePackWriter).MakeByRefType(), t, typeof(MessagePackSerializerOptions) })!;
-        private static readonly Func<Type, MethodInfo> getDeserialize = t => typeof(IMessagePackFormatter<>).MakeGenericType(t).GetRuntimeMethod("Deserialize", new[] { typeof(MessagePackReader).MakeByRefType(), typeof(MessagePackSerializerOptions) })!;
+        private static readonly Func<Type, MethodInfo> getSerialize =
+ t => typeof(IMessagePackFormatter<>).MakeGenericType(t).GetRuntimeMethod("Serialize", new[] { typeof(MessagePackWriter).MakeByRefType(), t, typeof(MessagePackSerializerOptions) })!;
+        private static readonly Func<Type, MethodInfo> getDeserialize =
+ t => typeof(IMessagePackFormatter<>).MakeGenericType(t).GetRuntimeMethod("Deserialize", new[] { typeof(MessagePackReader).MakeByRefType(), typeof(MessagePackSerializerOptions) })!;
 
-        private static readonly FieldInfo runtimeTypeHandleEqualityComparer = typeof(RuntimeTypeHandleEqualityComparer).GetRuntimeField("Default")!;
-        private static readonly ConstructorInfo intIntKeyValuePairConstructor = typeof(KeyValuePair<int, int>).GetTypeInfo().DeclaredConstructors.First(x => x.GetParameters().Length == 2);
-        private static readonly ConstructorInfo typeMapDictionaryConstructor = typeof(Dictionary<RuntimeTypeHandle, KeyValuePair<int, int>>).GetTypeInfo().DeclaredConstructors.First(x =>
+        private static readonly FieldInfo runtimeTypeHandleEqualityComparer =
+ typeof(RuntimeTypeHandleEqualityComparer).GetRuntimeField("Default")!;
+        private static readonly ConstructorInfo intIntKeyValuePairConstructor =
+ typeof(KeyValuePair<int, int>).GetTypeInfo().DeclaredConstructors.First(x => x.GetParameters().Length == 2);
+        private static readonly ConstructorInfo typeMapDictionaryConstructor =
+ typeof(Dictionary<RuntimeTypeHandle, KeyValuePair<int, int>>).GetTypeInfo().DeclaredConstructors.First(x =>
         {
             ParameterInfo[] p = x.GetParameters();
             return p.Length == 2 && p[0].ParameterType == typeof(int);
         });
 
-        private static readonly MethodInfo typeMapDictionaryAdd = typeof(Dictionary<RuntimeTypeHandle, KeyValuePair<int, int>>).GetRuntimeMethod("Add", new[] { typeof(RuntimeTypeHandle), typeof(KeyValuePair<int, int>) })!;
-        private static readonly MethodInfo typeMapDictionaryTryGetValue = typeof(Dictionary<RuntimeTypeHandle, KeyValuePair<int, int>>).GetRuntimeMethod("TryGetValue", new[] { typeof(RuntimeTypeHandle), refKvp })!;
+        private static readonly MethodInfo typeMapDictionaryAdd =
+ typeof(Dictionary<RuntimeTypeHandle, KeyValuePair<int, int>>).GetRuntimeMethod("Add", new[] { typeof(RuntimeTypeHandle), typeof(KeyValuePair<int, int>) })!;
+        private static readonly MethodInfo typeMapDictionaryTryGetValue =
+ typeof(Dictionary<RuntimeTypeHandle, KeyValuePair<int, int>>).GetRuntimeMethod("TryGetValue", new[] { typeof(RuntimeTypeHandle), refKvp })!;
 
-        private static readonly ConstructorInfo keyMapDictionaryConstructor = typeof(Dictionary<int, int>).GetTypeInfo().DeclaredConstructors.First(x =>
+        private static readonly ConstructorInfo keyMapDictionaryConstructor =
+ typeof(Dictionary<int, int>).GetTypeInfo().DeclaredConstructors.First(x =>
         {
             ParameterInfo[] p = x.GetParameters();
             return p.Length == 1 && p[0].ParameterType == typeof(int);
         });
 
-        private static readonly MethodInfo keyMapDictionaryAdd = typeof(Dictionary<int, int>).GetRuntimeMethod("Add", new[] { typeof(int), typeof(int) })!;
-        private static readonly MethodInfo keyMapDictionaryTryGetValue = typeof(Dictionary<int, int>).GetRuntimeMethod("TryGetValue", new[] { typeof(int), typeof(int).MakeByRefType() })!;
+        private static readonly MethodInfo keyMapDictionaryAdd =
+ typeof(Dictionary<int, int>).GetRuntimeMethod("Add", new[] { typeof(int), typeof(int) })!;
+        private static readonly MethodInfo keyMapDictionaryTryGetValue =
+ typeof(Dictionary<int, int>).GetRuntimeMethod("TryGetValue", new[] { typeof(int), typeof(int).MakeByRefType() })!;
 
         private static readonly MethodInfo objectGetType = typeof(object).GetRuntimeMethod("GetType", Type.EmptyTypes)!;
-        private static readonly MethodInfo getTypeHandle = typeof(Type).GetRuntimeProperty("TypeHandle")!.GetGetMethod()!;
+        private static readonly MethodInfo getTypeHandle =
+ typeof(Type).GetRuntimeProperty("TypeHandle")!.GetGetMethod()!;
 
-        private static readonly MethodInfo intIntKeyValuePairGetKey = typeof(KeyValuePair<int, int>).GetRuntimeProperty("Key")!.GetGetMethod()!;
-        private static readonly MethodInfo intIntKeyValuePairGetValue = typeof(KeyValuePair<int, int>).GetRuntimeProperty("Value")!.GetGetMethod()!;
+        private static readonly MethodInfo intIntKeyValuePairGetKey =
+ typeof(KeyValuePair<int, int>).GetRuntimeProperty("Key")!.GetGetMethod()!;
+        private static readonly MethodInfo intIntKeyValuePairGetValue =
+ typeof(KeyValuePair<int, int>).GetRuntimeProperty("Value")!.GetGetMethod()!;
 
-        private static readonly ConstructorInfo invalidOperationExceptionConstructor = typeof(System.InvalidOperationException).GetTypeInfo().DeclaredConstructors.First(
+        private static readonly ConstructorInfo invalidOperationExceptionConstructor =
+ typeof(System.InvalidOperationException).GetTypeInfo().DeclaredConstructors.First(
             x =>
             {
                 ParameterInfo[] p = x.GetParameters();
                 return p.Length == 1 && p[0].ParameterType == typeof(string);
             });
 
-        private static readonly ConstructorInfo objectCtor = typeof(object).GetTypeInfo().DeclaredConstructors.First(x => x.GetParameters().Length == 0);
+        private static readonly ConstructorInfo objectCtor =
+ typeof(object).GetTypeInfo().DeclaredConstructors.First(x => x.GetParameters().Length == 0);
 
 #pragma warning restore SA1311 // Static readonly fields should begin with upper-case letter
 
@@ -474,22 +497,32 @@ namespace MessagePack.Resolvers
         {
             internal static readonly TypeInfo ReaderTypeInfo = typeof(MessagePackReader).GetTypeInfo();
 
-            internal static readonly MethodInfo ReadBytes = typeof(MessagePackReader).GetRuntimeMethod(nameof(MessagePackReader.ReadBytes), Type.EmptyTypes)!;
-            internal static readonly MethodInfo ReadInt32 = typeof(MessagePackReader).GetRuntimeMethod(nameof(MessagePackReader.ReadInt32), Type.EmptyTypes)!;
-            internal static readonly MethodInfo ReadString = typeof(MessagePackReader).GetRuntimeMethod(nameof(MessagePackReader.ReadString), Type.EmptyTypes)!;
-            internal static readonly MethodInfo TryReadNil = typeof(MessagePackReader).GetRuntimeMethod(nameof(MessagePackReader.TryReadNil), Type.EmptyTypes)!;
-            internal static readonly MethodInfo Skip = typeof(MessagePackReader).GetRuntimeMethod(nameof(MessagePackReader.Skip), Type.EmptyTypes)!;
-            internal static readonly MethodInfo ReadArrayHeader = typeof(MessagePackReader).GetRuntimeMethod(nameof(MessagePackReader.ReadArrayHeader), Type.EmptyTypes)!;
-            internal static readonly MethodInfo ReadMapHeader = typeof(MessagePackReader).GetRuntimeMethod(nameof(MessagePackReader.ReadMapHeader), Type.EmptyTypes)!;
+            internal static readonly MethodInfo ReadBytes =
+ typeof(MessagePackReader).GetRuntimeMethod(nameof(MessagePackReader.ReadBytes), Type.EmptyTypes)!;
+            internal static readonly MethodInfo ReadInt32 =
+ typeof(MessagePackReader).GetRuntimeMethod(nameof(MessagePackReader.ReadInt32), Type.EmptyTypes)!;
+            internal static readonly MethodInfo ReadString =
+ typeof(MessagePackReader).GetRuntimeMethod(nameof(MessagePackReader.ReadString), Type.EmptyTypes)!;
+            internal static readonly MethodInfo TryReadNil =
+ typeof(MessagePackReader).GetRuntimeMethod(nameof(MessagePackReader.TryReadNil), Type.EmptyTypes)!;
+            internal static readonly MethodInfo Skip =
+ typeof(MessagePackReader).GetRuntimeMethod(nameof(MessagePackReader.Skip), Type.EmptyTypes)!;
+            internal static readonly MethodInfo ReadArrayHeader =
+ typeof(MessagePackReader).GetRuntimeMethod(nameof(MessagePackReader.ReadArrayHeader), Type.EmptyTypes)!;
+            internal static readonly MethodInfo ReadMapHeader =
+ typeof(MessagePackReader).GetRuntimeMethod(nameof(MessagePackReader.ReadMapHeader), Type.EmptyTypes)!;
         }
 
         private static class MessagePackWriterTypeInfo
         {
             internal static readonly TypeInfo WriterTypeInfo = typeof(MessagePackWriter).GetTypeInfo();
 
-            internal static readonly MethodInfo WriteArrayHeader = typeof(MessagePackWriter).GetRuntimeMethod(nameof(MessagePackWriter.WriteArrayHeader), new[] { typeof(int) })!;
-            internal static readonly MethodInfo WriteInt32 = typeof(MessagePackWriter).GetRuntimeMethod(nameof(MessagePackWriter.Write), new[] { typeof(int) })!;
-            internal static readonly MethodInfo WriteNil = typeof(MessagePackWriter).GetRuntimeMethod(nameof(MessagePackWriter.WriteNil), Type.EmptyTypes)!;
+            internal static readonly MethodInfo WriteArrayHeader =
+ typeof(MessagePackWriter).GetRuntimeMethod(nameof(MessagePackWriter.WriteArrayHeader), new[] { typeof(int) })!;
+            internal static readonly MethodInfo WriteInt32 =
+ typeof(MessagePackWriter).GetRuntimeMethod(nameof(MessagePackWriter.Write), new[] { typeof(int) })!;
+            internal static readonly MethodInfo WriteNil =
+ typeof(MessagePackWriter).GetRuntimeMethod(nameof(MessagePackWriter.WriteNil), Type.EmptyTypes)!;
         }
     }
 

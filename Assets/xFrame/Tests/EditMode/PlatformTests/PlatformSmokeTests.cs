@@ -14,7 +14,7 @@ namespace xFrame.Tests
             builder.RegisterPlatformModule();
             var resolver = builder.Build();
 
-            IPlatformService service = resolver.Resolve<IPlatformService>();
+            var service = resolver.Resolve<IPlatformService>();
 
             var info = service.GetPlatformInfo();
 

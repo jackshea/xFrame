@@ -1,30 +1,28 @@
 using System;
-using UnityEngine;
+using System.Threading;
 using Cysharp.Threading.Tasks;
+using UnityEngine;
 using xFrame.Runtime.Scheduler;
-using VContainer;
 
 namespace xFrame.Examples
 {
     /// <summary>
-    /// 调度器模块使用示例
-    /// 演示如何使用调度器系统来管理延迟执行、定时重复执行、下一帧执行和异步方法调度
+    ///     调度器模块使用示例
+    ///     演示如何使用调度器系统来管理延迟执行、定时重复执行、下一帧执行和异步方法调度
     /// </summary>
     public class SchedulerModuleUsageExample : MonoBehaviour
     {
-        private ISchedulerService _scheduler;
+        [SerializeField] private bool _showGUI = true;
 
-        [SerializeField]
-        private bool _showGUI = true;
-
-        private int _counter1 = 0;
-        private int _counter2 = 0;
-        private int _counter3 = 0;
-        private int _intervalTaskId = 0;
-        private bool _isIntervalPaused = false;
+        private int _counter1;
+        private int _counter2;
+        private int _counter3;
+        private int _intervalTaskId;
+        private bool _isIntervalPaused;
+        private readonly ISchedulerService _scheduler;
 
         /// <summary>
-        /// 构造函数注入
+        ///     构造函数注入
         /// </summary>
         public SchedulerModuleUsageExample(ISchedulerService scheduler)
         {
@@ -32,7 +30,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 初始化
+        ///     初始化
         /// </summary>
         private void Start()
         {
@@ -60,7 +58,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 清理资源
+        ///     清理资源
         /// </summary>
         private void OnDestroy()
         {
@@ -69,7 +67,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 显示GUI
+        ///     显示GUI
         /// </summary>
         private void OnGUI()
         {
@@ -85,10 +83,7 @@ namespace xFrame.Examples
 
             GUILayout.Space(10);
 
-            if (GUILayout.Button("暂停/恢复间隔任务"))
-            {
-                ToggleIntervalTask();
-            }
+            if (GUILayout.Button("暂停/恢复间隔任务")) ToggleIntervalTask();
 
             if (GUILayout.Button("取消所有任务"))
             {
@@ -99,44 +94,35 @@ namespace xFrame.Examples
             GUILayout.Space(10);
 
             if (GUILayout.Button("创建新延迟任务 (1秒)"))
-            {
                 _scheduler.Delay(1f, () =>
                 {
                     Debug.Log("手动创建的延迟任务执行");
                     _counter1++;
                 });
-            }
 
             if (GUILayout.Button("创建新间隔任务 (0.5秒, 5次)"))
-            {
                 _scheduler.Interval(0.5f, () =>
                 {
                     Debug.Log("手动创建的间隔任务执行");
                     _counter2++;
                 }, 5);
-            }
 
             if (GUILayout.Button("创建下一帧任务"))
-            {
                 _scheduler.NextFrame(() =>
                 {
                     Debug.Log("下一帧任务执行");
                     _counter3++;
                 });
-            }
 
             GUILayout.Space(10);
 
-            if (GUILayout.Button("显示所有示例"))
-            {
-                DemonstrateAllFeatures();
-            }
+            if (GUILayout.Button("显示所有示例")) DemonstrateAllFeatures();
 
             GUILayout.EndArea();
         }
 
         /// <summary>
-        /// 示例1: 延迟执行
+        ///     示例1: 延迟执行
         /// </summary>
         private void DelayExecutionExample()
         {
@@ -150,24 +136,18 @@ namespace xFrame.Examples
             });
 
             // 不受Time.timeScale影响的延迟执行
-            var taskId = _scheduler.Delay(2f, () =>
-            {
-                Debug.Log("2秒后执行的任务（不受Time.timeScale影响）");
-            }, useTimeScale: false);
+            var taskId = _scheduler.Delay(2f, () => { Debug.Log("2秒后执行的任务（不受Time.timeScale影响）"); }, false);
 
             // 多个延迟任务
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
-                float delay = (i + 1) * 0.5f;
-                _scheduler.Delay(delay, () =>
-                {
-                    Debug.Log($"延迟 {delay} 秒后的任务执行");
-                });
+                var delay = (i + 1) * 0.5f;
+                _scheduler.Delay(delay, () => { Debug.Log($"延迟 {delay} 秒后的任务执行"); });
             }
         }
 
         /// <summary>
-        /// 示例2: 定时重复执行
+        ///     示例2: 定时重复执行
         /// </summary>
         private void IntervalExecutionExample()
         {
@@ -181,20 +161,14 @@ namespace xFrame.Examples
             }, 5);
 
             // 无限重复执行：每1秒执行一次
-            var infiniteTaskId = _scheduler.Interval(1f, () =>
-            {
-                Debug.Log("无限间隔任务执行");
-            }, -1);
+            var infiniteTaskId = _scheduler.Interval(1f, () => { Debug.Log("无限间隔任务执行"); });
 
             // 不受Time.timeScale影响的间隔任务
-            _scheduler.Interval(0.3f, () =>
-            {
-                Debug.Log("不受timeScale影响的间隔任务");
-            }, 3, useTimeScale: false);
+            _scheduler.Interval(0.3f, () => { Debug.Log("不受timeScale影响的间隔任务"); }, 3, false);
         }
 
         /// <summary>
-        /// 示例3: 下一帧执行
+        ///     示例3: 下一帧执行
         /// </summary>
         private void NextFrameExecutionExample()
         {
@@ -208,21 +182,18 @@ namespace xFrame.Examples
             });
 
             // 使用NextFrame来确保某些操作在下一帧执行
-            _scheduler.NextFrame(() =>
-            {
-                Debug.Log("确保在下一帧执行某些操作");
-            });
+            _scheduler.NextFrame(() => { Debug.Log("确保在下一帧执行某些操作"); });
         }
 
         /// <summary>
-        /// 示例4: 异步方法调度
+        ///     示例4: 异步方法调度
         /// </summary>
         private void AsyncMethodExample()
         {
             Debug.Log("--- 示例4: 异步方法调度 ---");
 
             // 调度一个简单的异步方法
-            _scheduler.ScheduleAsync(async (ct) =>
+            _scheduler.ScheduleAsync(async ct =>
             {
                 Debug.Log("异步任务开始");
                 await UniTask.Delay(TimeSpan.FromMilliseconds(1000), cancellationToken: ct);
@@ -230,25 +201,25 @@ namespace xFrame.Examples
             });
 
             // 调度带取消令牌的异步方法
-            var cts = new System.Threading.CancellationTokenSource();
-            _scheduler.ScheduleAsync(async (ct) =>
+            var cts = new CancellationTokenSource();
+            _scheduler.ScheduleAsync(async ct =>
             {
                 try
                 {
-                    for (int i = 0; i < 3; i++)
+                    for (var i = 0; i < 3; i++)
                     {
                         Debug.Log($"异步循环 {i + 1}/3");
                         await UniTask.Delay(TimeSpan.FromMilliseconds(500), cancellationToken: ct);
                     }
                 }
-                catch (System.OperationCanceledException)
+                catch (OperationCanceledException)
                 {
                     Debug.Log("异步任务被取消");
                 }
             }, cts.Token);
 
             // 演示链式异步操作
-            _scheduler.ScheduleAsync(async (ct) =>
+            _scheduler.ScheduleAsync(async ct =>
             {
                 Debug.Log("链式异步操作开始");
                 await UniTask.Delay(TimeSpan.FromMilliseconds(300), cancellationToken: ct);
@@ -261,17 +232,14 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 示例5: 任务暂停和恢复
+        ///     示例5: 任务暂停和恢复
         /// </summary>
         private void PauseResumeExample()
         {
             Debug.Log("--- 示例5: 任务暂停和恢复 ---");
 
             // 创建一个可以暂停恢复的任务
-            var taskId = _scheduler.Interval(0.3f, () =>
-            {
-                Debug.Log("可暂停的任务正在执行");
-            }, 10);
+            var taskId = _scheduler.Interval(0.3f, () => { Debug.Log("可暂停的任务正在执行"); }, 10);
 
             // 延迟1秒后暂停任务
             _scheduler.Delay(1f, () =>
@@ -289,30 +257,22 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 示例6: 任务取消
+        ///     示例6: 任务取消
         /// </summary>
         private void CancelExample()
         {
             Debug.Log("--- 示例6: 任务取消 ---");
 
             // 创建一个将被取消的任务
-            var taskId = _scheduler.Delay(0.5f, () =>
-            {
-                Debug.Log("这个任务不应该被执行（被取消）");
-            });
+            var taskId = _scheduler.Delay(0.5f, () => { Debug.Log("这个任务不应该被执行（被取消）"); });
 
             // 立即取消任务
             _scheduler.Cancel(taskId);
             Debug.Log($"任务已取消，任务ID: {taskId}");
 
             // 创建多个延迟任务，然后取消所有
-            for (int i = 0; i < 5; i++)
-            {
-                _scheduler.Delay(1f + i * 0.1f, () =>
-                {
-                    Debug.Log($"延迟任务 {i} 不应该被执行");
-                });
-            }
+            for (var i = 0; i < 5; i++)
+                _scheduler.Delay(1f + i * 0.1f, () => { Debug.Log($"延迟任务 {i} 不应该被执行"); });
 
             // 0.3秒后取消所有任务
             _scheduler.Delay(0.3f, () =>
@@ -323,7 +283,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 切换间隔任务的暂停状态
+        ///     切换间隔任务的暂停状态
         /// </summary>
         private void ToggleIntervalTask()
         {
@@ -344,7 +304,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 演示所有功能
+        ///     演示所有功能
         /// </summary>
         private void DemonstrateAllFeatures()
         {
@@ -368,13 +328,13 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 高级用法：游戏逻辑中的实际应用
+        ///     高级用法：游戏逻辑中的实际应用
         /// </summary>
         public void AdvancedGameLogicExamples()
         {
             // 示例：技能冷却
             const float cooldownTime = 5f;
-            bool isSkillOnCooldown = false;
+            var isSkillOnCooldown = false;
             var skillTaskId = 0;
 
             // 使用技能
@@ -414,12 +374,12 @@ namespace xFrame.Examples
             }
 
             // 示例：游戏定时器
-            float gameTime = 0f;
+            var gameTime = 0f;
             _scheduler.Interval(1f, () =>
             {
                 gameTime++;
                 Debug.Log($"游戏时间: {gameTime}秒");
-            }, -1, useTimeScale: false);
+            }, -1, false);
 
             // 示例：敌人生成
             _scheduler.Interval(2f, () =>

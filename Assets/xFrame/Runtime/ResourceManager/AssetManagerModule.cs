@@ -4,8 +4,8 @@ using xFrame.Runtime.Logging;
 namespace xFrame.Runtime.ResourceManager
 {
     /// <summary>
-    /// 资源管理模块
-    /// 负责初始化和配置资源管理系统，集成到VContainer依赖注入框架
+    ///     资源管理模块
+    ///     负责初始化和配置资源管理系统，集成到VContainer依赖注入框架
     /// </summary>
     public class AssetManagerModule : IDisposable
     {
@@ -13,7 +13,7 @@ namespace xFrame.Runtime.ResourceManager
         private readonly IXLogger _logger;
 
         /// <summary>
-        /// 构造函数
+        ///     构造函数
         /// </summary>
         /// <param name="assetManager">资源管理器</param>
         /// <param name="logManager">日志管理器</param>
@@ -21,11 +21,11 @@ namespace xFrame.Runtime.ResourceManager
         {
             _assetManager = assetManager ?? throw new ArgumentNullException(nameof(assetManager));
             _logger = logManager?.GetLogger<AssetManagerModule>() ??
-                            throw new ArgumentNullException(nameof(logManager));
+                      throw new ArgumentNullException(nameof(logManager));
         }
 
         /// <summary>
-        /// 释放资源
+        ///     释放资源
         /// </summary>
         public void Dispose()
         {
@@ -33,7 +33,7 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 初始化资源管理模块
+        ///     初始化资源管理模块
         /// </summary>
         public void OnInit()
         {
@@ -54,8 +54,8 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 模块启动
-        /// 在所有模块初始化完成后调用
+        ///     模块启动
+        ///     在所有模块初始化完成后调用
         /// </summary>
         public void OnStart()
         {
@@ -74,8 +74,8 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 模块销毁
-        /// 清理资源和缓存
+        ///     模块销毁
+        ///     清理资源和缓存
         /// </summary>
         public void OnDestroy()
         {
@@ -98,7 +98,7 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 验证资源管理器是否正常工作
+        ///     验证资源管理器是否正常工作
         /// </summary>
         private void ValidateAssetManager()
         {

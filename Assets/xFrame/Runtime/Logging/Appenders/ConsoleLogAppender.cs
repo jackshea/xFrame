@@ -3,8 +3,8 @@ using System;
 namespace xFrame.Runtime.Logging.Appenders
 {
     /// <summary>
-    /// 控制台日志输出器
-    /// 将日志输出到控制台
+    ///     控制台日志输出器
+    ///     将日志输出到控制台
     /// </summary>
     public class ConsoleLogAppender : ILogAppender
     {
@@ -12,7 +12,7 @@ namespace xFrame.Runtime.Logging.Appenders
         private readonly object _lock = new();
 
         /// <summary>
-        /// 构造函数
+        ///     构造函数
         /// </summary>
         /// <param name="formatter">日志格式化器</param>
         public ConsoleLogAppender(ILogFormatter formatter = null)
@@ -21,22 +21,22 @@ namespace xFrame.Runtime.Logging.Appenders
         }
 
         /// <summary>
-        /// 输出器名称
+        ///     输出器名称
         /// </summary>
         public string Name => "Console";
 
         /// <summary>
-        /// 是否启用该输出器
+        ///     是否启用该输出器
         /// </summary>
         public bool IsEnabled { get; set; } = true;
 
         /// <summary>
-        /// 最小日志等级过滤
+        ///     最小日志等级过滤
         /// </summary>
         public LogLevel MinLevel { get; set; } = LogLevel.Debug;
 
         /// <summary>
-        /// 写入日志条目
+        ///     写入日志条目
         /// </summary>
         /// <param name="entry">日志条目</param>
         public void WriteLog(LogEntry entry)
@@ -63,7 +63,7 @@ namespace xFrame.Runtime.Logging.Appenders
         }
 
         /// <summary>
-        /// 刷新缓冲区
+        ///     刷新缓冲区
         /// </summary>
         public void Flush()
         {
@@ -71,7 +71,7 @@ namespace xFrame.Runtime.Logging.Appenders
         }
 
         /// <summary>
-        /// 释放资源
+        ///     释放资源
         /// </summary>
         public void Dispose()
         {
@@ -79,7 +79,7 @@ namespace xFrame.Runtime.Logging.Appenders
         }
 
         /// <summary>
-        /// 根据日志等级获取控制台颜色
+        ///     根据日志等级获取控制台颜色
         /// </summary>
         /// <param name="level">日志等级</param>
         /// <returns>控制台颜色</returns>

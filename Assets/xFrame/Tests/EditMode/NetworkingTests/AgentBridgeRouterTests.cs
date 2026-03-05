@@ -6,17 +6,13 @@ using UnityEngine;
 using xFrame.Runtime.Networking.AgentBridge;
 using xFrame.Runtime.Networking.AgentBridge.Commands;
 using xFrame.Runtime.Startup;
+using Object = UnityEngine.Object;
 
 namespace xFrame.Tests
 {
     [TestFixture]
     public class AgentBridgeRouterTests
     {
-        private AgentBridgeOptions _options;
-        private AgentCommandRegistry _registry;
-        private AgentRpcRouter _router;
-        private TestStartupOrchestrator _startupOrchestrator;
-
         [SetUp]
         public void SetUp()
         {
@@ -35,7 +31,8 @@ namespace xFrame.Tests
             _registry.Register(new ListCommandsHandler());
             _registry.Register(new FindGameObjectCommandHandler());
             _registry.Register(new InvokeComponentCommandHandler());
-            _registry.Register(new StartupRunCommandHandler(_startupOrchestrator, new CodeStartupProfileProvider(), () => true));
+            _registry.Register(new StartupRunCommandHandler(_startupOrchestrator, new CodeStartupProfileProvider(),
+                () => true));
             _registry.Register(new StartupStopCommandHandler(_startupOrchestrator));
             _registry.Register(new TestEditorExecuteMenuHandler());
             _registry.Register(new TestRunTestsHandler());
@@ -47,16 +44,21 @@ namespace xFrame.Tests
         public void TearDown()
         {
             var obj = GameObject.Find("AgentBridgeTestObject");
-            if (obj != null)
-            {
-                UnityEngine.Object.DestroyImmediate(obj);
-            }
+            if (obj != null) Object.DestroyImmediate(obj);
         }
+
+        private AgentBridgeOptions _options;
+        private AgentCommandRegistry _registry;
+        private AgentRpcRouter _router;
+        private TestStartupOrchestrator _startupOrchestrator;
 
         [Test]
         public void Handle_FindGameObjectWithoutAuth_ShouldReturnUnauthenticated()
         {
-            var response = _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"unity.gameobject.find\",\"params\":{\"name\":\"Player\"}}", "c1");
+            var response =
+                _router.Handle(
+                    "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"unity.gameobject.find\",\"params\":{\"name\":\"Player\"}}",
+                    "c1");
             StringAssert.Contains("\"code\":-32001", response);
         }
 
@@ -64,9 +66,14 @@ namespace xFrame.Tests
         public void Handle_AuthenticateThenFind_ShouldSucceed()
         {
             var go = new GameObject("AgentBridgeTestObject");
-            _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}", "c2");
+            _router.Handle(
+                "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}",
+                "c2");
 
-            var response = _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"unity.gameobject.find\",\"params\":{\"name\":\"AgentBridgeTestObject\"}}", "c2");
+            var response =
+                _router.Handle(
+                    "{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"unity.gameobject.find\",\"params\":{\"name\":\"AgentBridgeTestObject\"}}",
+                    "c2");
 
             Assert.That(go, Is.Not.Null);
             StringAssert.Contains("\"found\":true", response);
@@ -75,8 +82,11 @@ namespace xFrame.Tests
         [Test]
         public void Handle_Commands_ShouldReturnRegisteredMethods()
         {
-            _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}", "c3");
-            var response = _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"agent.commands\",\"params\":{}}", "c3");
+            _router.Handle(
+                "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}",
+                "c3");
+            var response =
+                _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"agent.commands\",\"params\":{}}", "c3");
 
             StringAssert.Contains("agent.ping", response);
             StringAssert.Contains("unity.component.invoke", response);
@@ -89,9 +99,14 @@ namespace xFrame.Tests
         [Test]
         public void Handle_StartupRun_ShouldSucceed()
         {
-            _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}", "s1");
+            _router.Handle(
+                "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}",
+                "s1");
 
-            var response = _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"startup.run\",\"params\":{\"environment\":\"DevFull\"}}", "s1");
+            var response =
+                _router.Handle(
+                    "{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"startup.run\",\"params\":{\"environment\":\"DevFull\"}}",
+                    "s1");
 
             StringAssert.Contains("\"success\":true", response);
             StringAssert.Contains("\"environment\":\"DevFull\"", response);
@@ -101,9 +116,12 @@ namespace xFrame.Tests
         [Test]
         public void Handle_StartupStop_ShouldSucceed()
         {
-            _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}", "s2");
+            _router.Handle(
+                "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}",
+                "s2");
 
-            var response = _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"startup.stop\",\"params\":{}}", "s2");
+            var response =
+                _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"startup.stop\",\"params\":{}}", "s2");
 
             StringAssert.Contains("\"stopped\":true", response);
             Assert.That(_startupOrchestrator.StopCalledCount, Is.EqualTo(1));
@@ -121,9 +139,14 @@ namespace xFrame.Tests
                 () => false));
 
             var router = new AgentRpcRouter(_options, registry);
-            router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}", "s3");
+            router.Handle(
+                "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}",
+                "s3");
 
-            var response = router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"startup.run\",\"params\":{\"environment\":\"DevFull\"}}", "s3");
+            var response =
+                router.Handle(
+                    "{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"startup.run\",\"params\":{\"environment\":\"DevFull\"}}",
+                    "s3");
 
             StringAssert.Contains("\"code\":-32602", response);
             StringAssert.Contains("EnterLobby", response);
@@ -133,8 +156,12 @@ namespace xFrame.Tests
         [Test]
         public void Handle_ExecuteMenuWithInvalidParams_ShouldReturnInvalidParams()
         {
-            _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}", "cm1");
-            var response = _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"unity.editor.executeMenu\",\"params\":{}}", "cm1");
+            _router.Handle(
+                "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}",
+                "cm1");
+            var response =
+                _router.Handle(
+                    "{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"unity.editor.executeMenu\",\"params\":{}}", "cm1");
 
             StringAssert.Contains("\"code\":-32602", response);
         }
@@ -142,8 +169,13 @@ namespace xFrame.Tests
         [Test]
         public void Handle_RunTestsWithInvalidMode_ShouldReturnInvalidParams()
         {
-            _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}", "ct1");
-            var response = _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"unity.tests.run\",\"params\":{\"mode\":\"UnknownMode\"}}", "ct1");
+            _router.Handle(
+                "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}",
+                "ct1");
+            var response =
+                _router.Handle(
+                    "{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"unity.tests.run\",\"params\":{\"mode\":\"UnknownMode\"}}",
+                    "ct1");
 
             StringAssert.Contains("\"code\":-32602", response);
         }
@@ -158,8 +190,13 @@ namespace xFrame.Tests
         [Test]
         public void Handle_ReflectionDisabled_ShouldReturnDenied()
         {
-            _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}", "c4");
-            var response = _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"unity.reflect.invoke\",\"params\":{\"assembly\":\"Assembly-CSharp\",\"type\":\"xFrame.Tests.AgentBridgeRouterTests\",\"method\":\"TestStatic\"}}", "c4");
+            _router.Handle(
+                "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}",
+                "c4");
+            var response =
+                _router.Handle(
+                    "{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"unity.reflect.invoke\",\"params\":{\"assembly\":\"Assembly-CSharp\",\"type\":\"xFrame.Tests.AgentBridgeRouterTests\",\"method\":\"TestStatic\"}}",
+                    "c4");
 
             StringAssert.Contains("\"code\":-32012", response);
         }
@@ -171,8 +208,13 @@ namespace xFrame.Tests
             _options.AllowedTypePrefixes = new[] { "Allowed.Only" };
             _router = new AgentRpcRouter(_options, _registry);
 
-            _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}", "c6");
-            var response = _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"unity.reflect.invoke\",\"params\":{\"assembly\":\"Assembly-CSharp\",\"type\":\"xFrame.Tests.AgentBridgeRouterTests\",\"method\":\"TestStatic\"}}", "c6");
+            _router.Handle(
+                "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}",
+                "c6");
+            var response =
+                _router.Handle(
+                    "{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"unity.reflect.invoke\",\"params\":{\"assembly\":\"Assembly-CSharp\",\"type\":\"xFrame.Tests.AgentBridgeRouterTests\",\"method\":\"TestStatic\"}}",
+                    "c6");
 
             StringAssert.Contains("\"code\":-32012", response);
         }
@@ -183,8 +225,11 @@ namespace xFrame.Tests
             _options.EnableReflectionBridge = true;
             _router = new AgentRpcRouter(_options, _registry);
 
-            _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}", "c7");
-            var response = _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"agent.commands\",\"params\":{}}", "c7");
+            _router.Handle(
+                "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}",
+                "c7");
+            var response =
+                _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"agent.commands\",\"params\":{}}", "c7");
 
             StringAssert.Contains("unity.reflect.invoke", response);
         }
@@ -192,18 +237,28 @@ namespace xFrame.Tests
         [Test]
         public void RemoveContext_AfterAuthenticate_ShouldRequireAuthenticateAgain()
         {
-            _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}", "c8");
+            _router.Handle(
+                "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}",
+                "c8");
             _router.RemoveContext("c8");
 
-            var response = _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"unity.gameobject.find\",\"params\":{\"name\":\"Player\"}}", "c8");
+            var response =
+                _router.Handle(
+                    "{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"unity.gameobject.find\",\"params\":{\"name\":\"Player\"}}",
+                    "c8");
             StringAssert.Contains("\"code\":-32001", response);
         }
 
         [Test]
         public void Handle_InvokeComponentWithInvalidParams_ShouldReturnInvalidParams()
         {
-            _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}", "c5");
-            var response = _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"unity.component.invoke\",\"params\":{\"gameObjectName\":\"AgentBridgeTestObject\"}}", "c5");
+            _router.Handle(
+                "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}",
+                "c5");
+            var response =
+                _router.Handle(
+                    "{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"unity.component.invoke\",\"params\":{\"gameObjectName\":\"AgentBridgeTestObject\"}}",
+                    "c5");
 
             StringAssert.Contains("\"code\":-32602", response);
         }
@@ -223,21 +278,15 @@ namespace xFrame.Tests
             {
                 var paramsText = request.Params?.ToString();
                 if (string.IsNullOrWhiteSpace(paramsText))
-                {
                     return AgentRpcExecutionResult.Failure(AgentRpcErrorCodes.InvalidParams, "params must be object.");
-                }
 
                 const string menuPathToken = "\"menuPath\"";
                 if (!paramsText.Contains(menuPathToken, StringComparison.Ordinal))
-                {
                     return AgentRpcExecutionResult.Failure(AgentRpcErrorCodes.InvalidParams, "menuPath is required.");
-                }
 
                 var menuPath = "mock-menu";
                 if (string.IsNullOrWhiteSpace(menuPath))
-                {
                     return AgentRpcExecutionResult.Failure(AgentRpcErrorCodes.InvalidParams, "menuPath is required.");
-                }
 
                 return AgentRpcExecutionResult.Success(new { executed = true, menuPath });
             }
@@ -253,17 +302,14 @@ namespace xFrame.Tests
             {
                 var paramsText = request.Params?.ToString();
                 if (string.IsNullOrWhiteSpace(paramsText))
-                {
                     return AgentRpcExecutionResult.Failure(AgentRpcErrorCodes.InvalidParams, "params must be object.");
-                }
 
                 var containsMode = paramsText.Contains("\"mode\"", StringComparison.Ordinal);
                 var containsEditMode = paramsText.Contains("\"EditMode\"", StringComparison.Ordinal);
                 var containsPlayMode = paramsText.Contains("\"PlayMode\"", StringComparison.Ordinal);
                 if (containsMode && !containsEditMode && !containsPlayMode)
-                {
-                    return AgentRpcExecutionResult.Failure(AgentRpcErrorCodes.InvalidParams, "mode must be EditMode or PlayMode.");
-                }
+                    return AgentRpcExecutionResult.Failure(AgentRpcErrorCodes.InvalidParams,
+                        "mode must be EditMode or PlayMode.");
 
                 return AgentRpcExecutionResult.Success(new { started = true });
             }
@@ -277,7 +323,8 @@ namespace xFrame.Tests
 
             public StartupOrchestratorState State { get; private set; } = StartupOrchestratorState.Idle;
 
-            public Task<StartupPipelineResult> RunAsync(BootEnvironment environment, CancellationToken cancellationToken)
+            public Task<StartupPipelineResult> RunAsync(BootEnvironment environment,
+                CancellationToken cancellationToken)
             {
                 RunCalledCount++;
                 State = StartupOrchestratorState.Running;

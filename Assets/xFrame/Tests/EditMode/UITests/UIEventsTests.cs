@@ -6,15 +6,13 @@ using xFrame.Runtime.UI.Events;
 namespace xFrame.Tests.EditMode.UITests
 {
     /// <summary>
-    /// UI事件结构体的单元测试
+    ///     UI事件结构体的单元测试
     /// </summary>
     [TestFixture]
     public class UIEventsTests
     {
-        #region UIOpenedEvent测试
-
         /// <summary>
-        /// 测试UIOpenedEvent构造函数
+        ///     测试UIOpenedEvent构造函数
         /// </summary>
         [Test]
         public void UIOpenedEvent_Constructor_ShouldSetPropertiesCorrectly()
@@ -30,7 +28,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试UIOpenedEvent属性设置
+        ///     测试UIOpenedEvent属性设置
         /// </summary>
         [Test]
         public void UIOpenedEvent_Properties_ShouldBeSettable()
@@ -43,12 +41,8 @@ namespace xFrame.Tests.EditMode.UITests
             Assert.AreEqual(UILayer.Popup, evt.Layer);
         }
 
-        #endregion
-
-        #region UIClosedEvent测试
-
         /// <summary>
-        /// 测试UIClosedEvent构造函数
+        ///     测试UIClosedEvent构造函数
         /// </summary>
         [Test]
         public void UIClosedEvent_Constructor_ShouldSetPropertiesCorrectly()
@@ -63,7 +57,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试UIClosedEvent属性设置
+        ///     测试UIClosedEvent属性设置
         /// </summary>
         [Test]
         public void UIClosedEvent_Properties_ShouldBeSettable()
@@ -76,12 +70,8 @@ namespace xFrame.Tests.EditMode.UITests
             Assert.AreEqual(UILayer.Top, evt.Layer);
         }
 
-        #endregion
-
-        #region UILayerChangedEvent测试
-
         /// <summary>
-        /// 测试UILayerChangedEvent构造函数
+        ///     测试UILayerChangedEvent构造函数
         /// </summary>
         [Test]
         public void UILayerChangedEvent_Constructor_ShouldSetPropertiesCorrectly()
@@ -96,7 +86,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试UILayerChangedEvent属性设置
+        ///     测试UILayerChangedEvent属性设置
         /// </summary>
         [Test]
         public void UILayerChangedEvent_Properties_ShouldBeSettable()
@@ -110,7 +100,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试UILayerChangedEvent零计数
+        ///     测试UILayerChangedEvent零计数
         /// </summary>
         [Test]
         public void UILayerChangedEvent_ZeroCount_ShouldBeValid()
@@ -119,12 +109,8 @@ namespace xFrame.Tests.EditMode.UITests
             Assert.AreEqual(0, evt.ActiveCount, "ActiveCount可以为0");
         }
 
-        #endregion
-
-        #region UILoadStartEvent测试
-
         /// <summary>
-        /// 测试UILoadStartEvent构造函数
+        ///     测试UILoadStartEvent构造函数
         /// </summary>
         [Test]
         public void UILoadStartEvent_Constructor_ShouldSetPropertiesCorrectly()
@@ -137,7 +123,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试UILoadStartEvent属性设置
+        ///     测试UILoadStartEvent属性设置
         /// </summary>
         [Test]
         public void UILoadStartEvent_Properties_ShouldBeSettable()
@@ -148,12 +134,8 @@ namespace xFrame.Tests.EditMode.UITests
             Assert.AreEqual(typeof(TestUIView), evt.UIType);
         }
 
-        #endregion
-
-        #region UILoadCompleteEvent测试
-
         /// <summary>
-        /// 测试UILoadCompleteEvent成功场景
+        ///     测试UILoadCompleteEvent成功场景
         /// </summary>
         [Test]
         public void UILoadCompleteEvent_Success_ShouldSetPropertiesCorrectly()
@@ -169,7 +151,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试UILoadCompleteEvent失败场景
+        ///     测试UILoadCompleteEvent失败场景
         /// </summary>
         [Test]
         public void UILoadCompleteEvent_Failure_ShouldSetPropertiesCorrectly()
@@ -185,7 +167,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试UILoadCompleteEvent属性设置
+        ///     测试UILoadCompleteEvent属性设置
         /// </summary>
         [Test]
         public void UILoadCompleteEvent_Properties_ShouldBeSettable()
@@ -200,12 +182,8 @@ namespace xFrame.Tests.EditMode.UITests
             Assert.AreEqual(2.5f, evt.Duration, 0.001f);
         }
 
-        #endregion
-
-        #region UINavigationEvent测试
-
         /// <summary>
-        /// 测试UINavigationEvent前进导航
+        ///     测试UINavigationEvent前进导航
         /// </summary>
         [Test]
         public void UINavigationEvent_Forward_ShouldSetPropertiesCorrectly()
@@ -221,7 +199,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试UINavigationEvent返回导航
+        ///     测试UINavigationEvent返回导航
         /// </summary>
         [Test]
         public void UINavigationEvent_Back_ShouldSetPropertiesCorrectly()
@@ -237,7 +215,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试UINavigationEvent从null开始的导航
+        ///     测试UINavigationEvent从null开始的导航
         /// </summary>
         [Test]
         public void UINavigationEvent_FromNull_ShouldBeValid()
@@ -248,12 +226,8 @@ namespace xFrame.Tests.EditMode.UITests
             Assert.AreEqual(typeof(TestUIView), evt.ToUIType);
         }
 
-        #endregion
-
-        #region NavigationType枚举测试
-
         /// <summary>
-        /// 测试NavigationType枚举值
+        ///     测试NavigationType枚举值
         /// </summary>
         [Test]
         public void NavigationType_EnumValues_ShouldBeCorrectlyDefined()
@@ -263,7 +237,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试NavigationType枚举数量
+        ///     测试NavigationType枚举数量
         /// </summary>
         [Test]
         public void NavigationType_EnumCount_ShouldBeTwo()
@@ -272,20 +246,18 @@ namespace xFrame.Tests.EditMode.UITests
             Assert.AreEqual(2, values.Length, "NavigationType应有2个枚举值");
         }
 
-        #endregion
-
-        #region 测试辅助类
+        /// <summary>
+        ///     测试用UIView类型1
+        /// </summary>
+        private class TestUIView : UIView
+        {
+        }
 
         /// <summary>
-        /// 测试用UIView类型1
+        ///     测试用UIView类型2
         /// </summary>
-        private class TestUIView : UIView { }
-
-        /// <summary>
-        /// 测试用UIView类型2
-        /// </summary>
-        private class TestUIView2 : UIView { }
-
-        #endregion
+        private class TestUIView2 : UIView
+        {
+        }
     }
 }

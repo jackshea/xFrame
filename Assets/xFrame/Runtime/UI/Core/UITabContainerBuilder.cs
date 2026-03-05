@@ -4,8 +4,8 @@ using UnityEngine;
 namespace xFrame.Runtime.UI
 {
     /// <summary>
-    /// UI标签页容器构建器
-    /// 提供流式API来构建UITabContainer
+    ///     UI标签页容器构建器
+    ///     提供流式API来构建UITabContainer
     /// </summary>
     public class UITabContainerBuilder
     {
@@ -16,7 +16,7 @@ namespace xFrame.Runtime.UI
         private Transform _pageContainer;
 
         /// <summary>
-        /// 构造函数
+        ///     构造函数
         /// </summary>
         /// <param name="container">容器实例</param>
         public UITabContainerBuilder(UITabContainer container)
@@ -25,7 +25,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 设置页面容器
+        ///     设置页面容器
         /// </summary>
         /// <param name="pageContainer">页面父节点</param>
         /// <returns>Builder实例</returns>
@@ -36,7 +36,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 设置按钮容器
+        ///     设置按钮容器
         /// </summary>
         /// <param name="buttonContainer">按钮父节点</param>
         /// <returns>Builder实例</returns>
@@ -47,7 +47,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 设置按钮预制体
+        ///     设置按钮预制体
         /// </summary>
         /// <param name="buttonPrefab">按钮预制体</param>
         /// <returns>Builder实例</returns>
@@ -58,7 +58,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 添加页面
+        ///     添加页面
         /// </summary>
         /// <param name="page">页面实例</param>
         /// <param name="buttonText">按钮文本（可选）</param>
@@ -76,7 +76,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 添加页面（泛型）
+        ///     添加页面（泛型）
         /// </summary>
         /// <typeparam name="T">页面类型</typeparam>
         /// <param name="pagePrefab">页面预制体</param>
@@ -99,7 +99,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 构建容器
+        ///     构建容器
         /// </summary>
         /// <returns>构建好的容器</returns>
         public UITabContainer Build()
@@ -125,7 +125,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 创建标签按钮
+        ///     创建标签按钮
         /// </summary>
         /// <param name="pageIndex">页面索引</param>
         /// <param name="buttonText">按钮文本</param>
@@ -154,7 +154,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 页面配置
+        ///     页面配置
         /// </summary>
         private class TabPageConfig
         {
@@ -165,12 +165,12 @@ namespace xFrame.Runtime.UI
     }
 
     /// <summary>
-    /// UITabContainer扩展方法
+    ///     UITabContainer扩展方法
     /// </summary>
     public static class UITabContainerExtensions
     {
         /// <summary>
-        /// 创建构建器
+        ///     创建构建器
         /// </summary>
         /// <param name="container">容器实例</param>
         /// <returns>Builder实例</returns>

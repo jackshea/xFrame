@@ -3,18 +3,17 @@ using System;
 namespace xFrame.Runtime.Scheduler
 {
     /// <summary>
-    /// 定时重复执行任务
-    /// 按指定间隔重复执行回调，可设置重复次数
+    ///     定时重复执行任务
+    ///     按指定间隔重复执行回调，可设置重复次数
     /// </summary>
     public class IntervalTask : ScheduledTask
     {
-        private float _intervalSeconds;
-        private int _repeatCount; // -1 表示无限重复
-        private int _executedCount;
         private float _elapsedTime;
+        private readonly float _intervalSeconds;
+        private readonly int _repeatCount; // -1 表示无限重复
 
         /// <summary>
-        /// 构造函数
+        ///     构造函数
         /// </summary>
         /// <param name="intervalSeconds">间隔时间（秒）</param>
         /// <param name="callback">回调函数</param>
@@ -28,13 +27,23 @@ namespace xFrame.Runtime.Scheduler
 
             _intervalSeconds = intervalSeconds;
             _repeatCount = repeatCount;
-            _executedCount = 0;
+            ExecutedCount = 0;
             _elapsedTime = 0f;
             Status = TaskStatus.Running;
         }
 
         /// <summary>
-        /// 更新任务
+        ///     获取已执行的次数
+        /// </summary>
+        public int ExecutedCount { get; private set; }
+
+        /// <summary>
+        ///     获取剩余的执行次数（-1表示无限）
+        /// </summary>
+        public int RemainingCount => _repeatCount < 0 ? -1 : _repeatCount - ExecutedCount;
+
+        /// <summary>
+        ///     更新任务
         /// </summary>
         /// <param name="deltaTime">受时间缩放影响的增量时间</param>
         /// <param name="unscaledDeltaTime">不受时间缩放影响的增量时间</param>
@@ -47,7 +56,7 @@ namespace xFrame.Runtime.Scheduler
                 return;
 
             // 检查是否已完成所有重复
-            if (_repeatCount >= 0 && _executedCount >= _repeatCount)
+            if (_repeatCount >= 0 && ExecutedCount >= _repeatCount)
             {
                 Status = TaskStatus.Completed;
                 OnComplete();
@@ -63,13 +72,13 @@ namespace xFrame.Runtime.Scheduler
             {
                 // 执行回调
                 Callback?.Invoke();
-                _executedCount++;
+                ExecutedCount++;
 
                 // 重置计时器，保留超过的时间
                 _elapsedTime %= _intervalSeconds;
 
                 // 检查是否完成所有重复
-                if (_repeatCount >= 0 && _executedCount >= _repeatCount)
+                if (_repeatCount >= 0 && ExecutedCount >= _repeatCount)
                 {
                     Status = TaskStatus.Completed;
                     OnComplete();
@@ -78,30 +87,20 @@ namespace xFrame.Runtime.Scheduler
         }
 
         /// <summary>
-        /// 任务取消时的回调
+        ///     任务取消时的回调
         /// </summary>
         protected override void OnCancel()
         {
             _elapsedTime = 0f;
-            _executedCount = 0;
+            ExecutedCount = 0;
         }
 
         /// <summary>
-        /// 任务暂停时的回调
+        ///     任务暂停时的回调
         /// </summary>
         protected override void OnPause()
         {
             // 保留当前进度
         }
-
-        /// <summary>
-        /// 获取已执行的次数
-        /// </summary>
-        public int ExecutedCount => _executedCount;
-
-        /// <summary>
-        /// 获取剩余的执行次数（-1表示无限）
-        /// </summary>
-        public int RemainingCount => _repeatCount < 0 ? -1 : _repeatCount - _executedCount;
     }
 }

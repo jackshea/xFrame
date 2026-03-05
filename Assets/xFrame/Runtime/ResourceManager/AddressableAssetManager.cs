@@ -12,8 +12,8 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 namespace xFrame.Runtime.ResourceManager
 {
     /// <summary>
-    /// 基于Addressable的资源管理器实现
-    /// 内部封装Unity Addressable系统，对外提供统一的资源管理接口
+    ///     基于Addressable的资源管理器实现
+    ///     内部封装Unity Addressable系统，对外提供统一的资源管理接口
     /// </summary>
     public class AddressableAssetManager : IAssetManager, IDisposable
     {
@@ -31,7 +31,7 @@ namespace xFrame.Runtime.ResourceManager
         private int _cacheMissCount;
 
         /// <summary>
-        /// 构造函数
+        ///     构造函数
         /// </summary>
         /// <param name="cacheCapacity">缓存容量，默认为100</param>
         public AddressableAssetManager(int cacheCapacity = 100)
@@ -47,7 +47,7 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 同步加载资源
+        ///     同步加载资源
         /// </summary>
         /// <typeparam name="T">资源类型</typeparam>
         /// <param name="address">资源地址</param>
@@ -116,7 +116,7 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 异步加载资源
+        ///     异步加载资源
         /// </summary>
         /// <typeparam name="T">资源类型</typeparam>
         /// <param name="address">资源地址</param>
@@ -191,7 +191,7 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 同步加载资源（非泛型版本）
+        ///     同步加载资源（非泛型版本）
         /// </summary>
         /// <param name="address">资源地址</param>
         /// <param name="type">资源类型</param>
@@ -266,7 +266,7 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 异步加载资源（非泛型版本）
+        ///     异步加载资源（非泛型版本）
         /// </summary>
         /// <param name="address">资源地址</param>
         /// <param name="type">资源类型</param>
@@ -347,7 +347,7 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 释放资源
+        ///     释放资源
         /// </summary>
         /// <param name="asset">要释放的资源对象</param>
         public void ReleaseAsset(Object asset)
@@ -366,7 +366,7 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 释放指定地址的资源
+        ///     释放指定地址的资源
         /// </summary>
         /// <param name="address">资源地址</param>
         public void ReleaseAsset(string address)
@@ -401,7 +401,7 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 预加载资源到缓存
+        ///     预加载资源到缓存
         /// </summary>
         /// <param name="address">资源地址</param>
         /// <returns>预加载任务</returns>
@@ -457,7 +457,7 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 检查资源是否已缓存
+        ///     检查资源是否已缓存
         /// </summary>
         /// <param name="address">资源地址</param>
         /// <returns>如果资源已缓存返回true，否则返回false</returns>
@@ -469,7 +469,7 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 清理所有缓存的资源
+        ///     清理所有缓存的资源
         /// </summary>
         public void ClearCache()
         {
@@ -498,7 +498,7 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 获取缓存统计信息
+        ///     获取缓存统计信息
         /// </summary>
         /// <returns>缓存统计信息</returns>
         public AssetCacheStats GetCacheStats()
@@ -515,7 +515,7 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 释放资源
+        ///     释放资源
         /// </summary>
         public void Dispose()
         {

@@ -9,32 +9,24 @@ using xFrame.Runtime.UI;
 namespace xFrame.Examples.UI
 {
     /// <summary>
-    /// 确认对话框示例
-    /// 展示如何创建一个弹窗式对话框
+    ///     确认对话框示例
+    ///     展示如何创建一个弹窗式对话框
     /// </summary>
     public class ConfirmDialog : UIWindow
     {
         #region UI组件
 
-        [Header("文本组件")]
-        [SerializeField]
-        private TextMeshProUGUI titleText;
+        [Header("文本组件")] [SerializeField] private TextMeshProUGUI titleText;
 
-        [SerializeField]
-        private TextMeshProUGUI messageText;
+        [SerializeField] private TextMeshProUGUI messageText;
 
-        [Header("按钮组件")]
-        [SerializeField]
-        private Button confirmButton;
+        [Header("按钮组件")] [SerializeField] private Button confirmButton;
 
-        [SerializeField]
-        private Button cancelButton;
+        [SerializeField] private Button cancelButton;
 
-        [SerializeField]
-        private TextMeshProUGUI confirmButtonText;
+        [SerializeField] private TextMeshProUGUI confirmButtonText;
 
-        [SerializeField]
-        private TextMeshProUGUI cancelButtonText;
+        [SerializeField] private TextMeshProUGUI cancelButtonText;
 
         #endregion
 
@@ -53,32 +45,32 @@ namespace xFrame.Examples.UI
         #region UI配置
 
         /// <summary>
-        /// 设置为弹窗层
+        ///     设置为弹窗层
         /// </summary>
         public override UILayer Layer => UILayer.Popup;
 
         /// <summary>
-        /// 模态窗口，阻挡下层交互
+        ///     模态窗口，阻挡下层交互
         /// </summary>
         public override bool IsModal => true;
 
         /// <summary>
-        /// 点击遮罩不关闭（需要用户明确选择）
+        ///     点击遮罩不关闭（需要用户明确选择）
         /// </summary>
         public override bool CloseOnMaskClick => false;
 
         /// <summary>
-        /// 遮罩透明度
+        ///     遮罩透明度
         /// </summary>
         public override float MaskAlpha => 0.8f;
 
         /// <summary>
-        /// 对话框不使用导航栈
+        ///     对话框不使用导航栈
         /// </summary>
         public override bool UseStack => false;
 
         /// <summary>
-        /// 允许缓存
+        ///     允许缓存
         /// </summary>
         public override bool Cacheable => true;
 
@@ -94,7 +86,7 @@ namespace xFrame.Examples.UI
         #region 生命周期回调
 
         /// <summary>
-        /// UI创建时调用
+        ///     UI创建时调用
         /// </summary>
         protected override void OnCreate()
         {
@@ -111,7 +103,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// UI打开时调用
+        ///     UI打开时调用
         /// </summary>
         protected override void OnOpen(object data)
         {
@@ -147,7 +139,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// UI关闭时调用
+        ///     UI关闭时调用
         /// </summary>
         protected override void OnClose()
         {
@@ -161,7 +153,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// UI销毁时调用
+        ///     UI销毁时调用
         /// </summary>
         protected override void OnUIDestroy()
         {
@@ -181,7 +173,7 @@ namespace xFrame.Examples.UI
         #region 按钮事件
 
         /// <summary>
-        /// 确认按钮点击
+        ///     确认按钮点击
         /// </summary>
         private void OnConfirmButtonClicked()
         {
@@ -195,7 +187,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 取消按钮点击
+        ///     取消按钮点击
         /// </summary>
         private void OnCancelButtonClicked()
         {
@@ -213,7 +205,7 @@ namespace xFrame.Examples.UI
         #region 动画重写（可选）
 
         /// <summary>
-        /// 自定义打开动画
+        ///     自定义打开动画
         /// </summary>
         protected override void PlayOpenAnimation()
         {
@@ -234,7 +226,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 自定义关闭动画
+        ///     自定义关闭动画
         /// </summary>
         protected override void PlayCloseAnimation()
         {
@@ -245,7 +237,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 简单的缩放动画协程
+        ///     简单的缩放动画协程
         /// </summary>
         private IEnumerator ScaleAnimation(Vector3 from, Vector3 to, float duration)
         {
@@ -267,7 +259,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// EaseOutBack缓动函数
+        ///     EaseOutBack缓动函数
         /// </summary>
         private float EaseOutBack(float t)
         {
@@ -283,47 +275,47 @@ namespace xFrame.Examples.UI
     #region 数据类
 
     /// <summary>
-    /// 确认对话框数据
+    ///     确认对话框数据
     /// </summary>
     public class ConfirmDialogData
     {
         /// <summary>
-        /// 标题文本
+        ///     标题文本
         /// </summary>
         public string Title { get; set; } = "提示";
 
         /// <summary>
-        /// 消息文本
+        ///     消息文本
         /// </summary>
         public string Message { get; set; } = "";
 
         /// <summary>
-        /// 确认按钮文本
+        ///     确认按钮文本
         /// </summary>
         public string ConfirmText { get; set; } = "确定";
 
         /// <summary>
-        /// 取消按钮文本
+        ///     取消按钮文本
         /// </summary>
         public string CancelText { get; set; } = "取消";
 
         /// <summary>
-        /// 是否显示取消按钮
+        ///     是否显示取消按钮
         /// </summary>
         public bool ShowCancelButton { get; set; } = true;
 
         /// <summary>
-        /// 确认回调
+        ///     确认回调
         /// </summary>
         public Action OnConfirm { get; set; }
 
         /// <summary>
-        /// 取消回调
+        ///     取消回调
         /// </summary>
         public Action OnCancel { get; set; }
 
         /// <summary>
-        /// 创建一个简单的提示对话框（只有确定按钮）
+        ///     创建一个简单的提示对话框（只有确定按钮）
         /// </summary>
         public static ConfirmDialogData CreateAlert(string message, string title = "提示", Action onConfirm = null)
         {
@@ -337,7 +329,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 创建一个确认对话框（有确定和取消按钮）
+        ///     创建一个确认对话框（有确定和取消按钮）
         /// </summary>
         public static ConfirmDialogData CreateConfirm(string message, string title = "确认",
             Action onConfirm = null, Action onCancel = null)

@@ -3,13 +3,13 @@ using System;
 namespace xFrame.Runtime.MVVM.Core
 {
     /// <summary>
-    /// 单参数命令实现。
+    ///     单参数命令实现。
     /// </summary>
     /// <typeparam name="T">参数类型</typeparam>
     public sealed class RelayCommand<T>
     {
-        private readonly Action<T> _execute;
         private readonly Func<T, bool> _canExecute;
+        private readonly Action<T> _execute;
 
         public RelayCommand(Action<T> execute, Func<T, bool> canExecute = null)
         {
@@ -24,10 +24,7 @@ namespace xFrame.Runtime.MVVM.Core
 
         public void Execute(T parameter)
         {
-            if (!CanExecute(parameter))
-            {
-                return;
-            }
+            if (!CanExecute(parameter)) return;
 
             _execute(parameter);
         }

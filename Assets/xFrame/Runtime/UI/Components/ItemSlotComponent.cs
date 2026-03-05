@@ -6,25 +6,20 @@ using xFrame.Runtime.UI;
 namespace xFrame.Examples.UI.Components
 {
     /// <summary>
-    /// 物品槽组件示例
-    /// 展示可复用的UI组件
+    ///     物品槽组件示例
+    ///     展示可复用的UI组件
     /// </summary>
     public class ItemSlotComponent : UIComponent
     {
         #region UI组件
 
-        [Header("UI引用")]
-        [SerializeField]
-        private Image iconImage;
+        [Header("UI引用")] [SerializeField] private Image iconImage;
 
-        [SerializeField]
-        private TextMeshProUGUI countText;
+        [SerializeField] private TextMeshProUGUI countText;
 
-        [SerializeField]
-        private Button slotButton;
+        [SerializeField] private Button slotButton;
 
-        [SerializeField]
-        private GameObject selectedFrame;
+        [SerializeField] private GameObject selectedFrame;
 
         #endregion
 
@@ -102,7 +97,7 @@ namespace xFrame.Examples.UI.Components
         #region 显示更新
 
         /// <summary>
-        /// 更新显示
+        ///     更新显示
         /// </summary>
         private void UpdateDisplay()
         {
@@ -135,7 +130,7 @@ namespace xFrame.Examples.UI.Components
         }
 
         /// <summary>
-        /// 设置选中状态
+        ///     设置选中状态
         /// </summary>
         /// <param name="selected">是否选中</param>
         public void SetSelected(bool selected)
@@ -150,7 +145,7 @@ namespace xFrame.Examples.UI.Components
         #region 事件处理
 
         /// <summary>
-        /// 槽位点击
+        ///     槽位点击
         /// </summary>
         private void OnSlotClicked()
         {
@@ -165,7 +160,7 @@ namespace xFrame.Examples.UI.Components
         }
 
         /// <summary>
-        /// 获取槽位索引（在父对象中的位置）
+        ///     获取槽位索引（在父对象中的位置）
         /// </summary>
         private int GetSiblingIndex()
         {
@@ -177,7 +172,7 @@ namespace xFrame.Examples.UI.Components
         #region 公开方法
 
         /// <summary>
-        /// 获取当前物品数据
+        ///     获取当前物品数据
         /// </summary>
         public ItemSlotData GetCurrentData()
         {
@@ -185,7 +180,7 @@ namespace xFrame.Examples.UI.Components
         }
 
         /// <summary>
-        /// 是否为空槽
+        ///     是否为空槽
         /// </summary>
         public bool IsEmpty()
         {
@@ -198,7 +193,7 @@ namespace xFrame.Examples.UI.Components
     #region 数据类型
 
     /// <summary>
-    /// 物品槽数据
+    ///     物品槽数据
     /// </summary>
     public class ItemSlotData
     {
@@ -209,7 +204,7 @@ namespace xFrame.Examples.UI.Components
         public int MaxStack { get; set; } = 99;
 
         /// <summary>
-        /// 是否可以堆叠
+        ///     是否可以堆叠
         /// </summary>
         public bool CanStack(ItemSlotData other)
         {
@@ -218,7 +213,7 @@ namespace xFrame.Examples.UI.Components
     }
 
     /// <summary>
-    /// 物品槽点击事件
+    ///     物品槽点击事件
     /// </summary>
     public struct ItemSlotClickedEvent : IUIComponentEvent
     {

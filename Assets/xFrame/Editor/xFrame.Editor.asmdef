@@ -1,18 +1,18 @@
 {
-    "name": "xFrame.Editor",
-    "rootNamespace": "",
-    "references": [
-        "GUID:59270932edc81b24d825b66e1b1a60ff",
-        "GUID:b59ac8ac73f97bc4fa02b21af1cf92f4",
-        "UnityEditor.TestRunner"
-    ],
-    "includePlatforms": [],
-    "excludePlatforms": [],
-    "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
-    "autoReferenced": true,
-    "defineConstraints": [],
-    "versionDefines": [],
-    "noEngineReferences": false
+  "name": "xFrame.Editor",
+  "rootNamespace": "",
+  "references": [
+    "GUID:59270932edc81b24d825b66e1b1a60ff",
+    "GUID:b59ac8ac73f97bc4fa02b21af1cf92f4",
+    "UnityEditor.TestRunner"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
 }

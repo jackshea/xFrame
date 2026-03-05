@@ -1,73 +1,73 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
-using xFrame.Runtime.Core;
 
 namespace xFrame.Runtime.Core.Scheduler
 {
     /// <summary>
-    /// 核心调度器服务 - 与Unity完全解耦
+    ///     核心调度器服务 - 与Unity完全解耦
     /// </summary>
     public interface ICoreScheduler
     {
         /// <summary>
-        /// 延迟执行
-        /// </summary>
-        int Delay(float delaySeconds, Action callback);
-
-        /// <summary>
-        /// 定时重复执行
-        /// </summary>
-        int Interval(float intervalSeconds, Action callback, int repeatCount = -1);
-
-        /// <summary>
-        /// 下一帧执行
-        /// </summary>
-        int NextFrame(Action callback);
-
-        /// <summary>
-        /// 异步方法调度
-        /// </summary>
-        int ScheduleAsync(Func<System.Threading.CancellationToken, UniTask> asyncAction, System.Threading.CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// 取消指定任务
-        /// </summary>
-        bool Cancel(int taskId);
-
-        /// <summary>
-        /// 取消所有任务
-        /// </summary>
-        void CancelAll();
-
-        /// <summary>
-        /// 暂停任务
-        /// </summary>
-        bool Pause(int taskId);
-
-        /// <summary>
-        /// 恢复任务
-        /// </summary>
-        bool Resume(int taskId);
-
-        /// <summary>
-        /// 获取任务状态
-        /// </summary>
-        TaskStatus? GetTaskStatus(int taskId);
-
-        /// <summary>
-        /// 获取当前活动任务数量
+        ///     获取当前活动任务数量
         /// </summary>
         int ActiveTaskCount { get; }
 
         /// <summary>
-        /// 更新调度器（由Runner每帧调用）
+        ///     延迟执行
+        /// </summary>
+        int Delay(float delaySeconds, Action callback);
+
+        /// <summary>
+        ///     定时重复执行
+        /// </summary>
+        int Interval(float intervalSeconds, Action callback, int repeatCount = -1);
+
+        /// <summary>
+        ///     下一帧执行
+        /// </summary>
+        int NextFrame(Action callback);
+
+        /// <summary>
+        ///     异步方法调度
+        /// </summary>
+        int ScheduleAsync(Func<CancellationToken, UniTask> asyncAction, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        ///     取消指定任务
+        /// </summary>
+        bool Cancel(int taskId);
+
+        /// <summary>
+        ///     取消所有任务
+        /// </summary>
+        void CancelAll();
+
+        /// <summary>
+        ///     暂停任务
+        /// </summary>
+        bool Pause(int taskId);
+
+        /// <summary>
+        ///     恢复任务
+        /// </summary>
+        bool Resume(int taskId);
+
+        /// <summary>
+        ///     获取任务状态
+        /// </summary>
+        TaskStatus? GetTaskStatus(int taskId);
+
+        /// <summary>
+        ///     更新调度器（由Runner每帧调用）
         /// </summary>
         void Update(float deltaTime, float unscaledDeltaTime);
     }
 
     /// <summary>
-    /// 任务状态
+    ///     任务状态
     /// </summary>
     public enum TaskStatus
     {
@@ -79,7 +79,7 @@ namespace xFrame.Runtime.Core.Scheduler
     }
 
     /// <summary>
-    /// 调度任务接口
+    ///     调度任务接口
     /// </summary>
     public interface IScheduledTask
     {
@@ -92,14 +92,14 @@ namespace xFrame.Runtime.Core.Scheduler
     }
 
     /// <summary>
-    /// 核心调度器实现
+    ///     核心调度器实现
     /// </summary>
     public class CoreScheduler : ICoreScheduler
     {
-        private readonly Dictionary<int, IScheduledTask> _tasks = new();
-        private readonly List<IScheduledTask> _pendingTasks = new();
-        private readonly List<IScheduledTask> _tasksToRemove = new();
         private readonly ICoreLogger _logger;
+        private readonly List<IScheduledTask> _pendingTasks = new();
+        private readonly Dictionary<int, IScheduledTask> _tasks = new();
+        private readonly List<IScheduledTask> _tasksToRemove = new();
         private int _nextTaskId = 1;
 
         public CoreScheduler(ICoreLogManager logManager)
@@ -114,16 +114,12 @@ namespace xFrame.Runtime.Core.Scheduler
             // 添加待处理的任务
             if (_pendingTasks.Count > 0)
             {
-                foreach (var task in _pendingTasks)
-                {
-                    _tasks[task.TaskId] = task;
-                }
+                foreach (var task in _pendingTasks) _tasks[task.TaskId] = task;
                 _pendingTasks.Clear();
             }
 
             // 更新所有任务
             foreach (var task in _tasks.Values)
-            {
                 try
                 {
                     task.Update(deltaTime, unscaledDeltaTime);
@@ -133,23 +129,15 @@ namespace xFrame.Runtime.Core.Scheduler
                     _logger.Fatal($"任务更新异常: TaskId={task.TaskId}, Status={task.Status}", ex);
                     _tasksToRemove.Add(task);
                 }
-            }
 
             // 清理已完成或已取消的任务
             foreach (var task in _tasks.Values)
-            {
                 if (task.Status == TaskStatus.Completed || task.Status == TaskStatus.Cancelled)
-                {
                     _tasksToRemove.Add(task);
-                }
-            }
 
             if (_tasksToRemove.Count > 0)
             {
-                foreach (var task in _tasksToRemove)
-                {
-                    _tasks.Remove(task.TaskId);
-                }
+                foreach (var task in _tasksToRemove) _tasks.Remove(task.TaskId);
                 _tasksToRemove.Clear();
             }
         }
@@ -178,7 +166,8 @@ namespace xFrame.Runtime.Core.Scheduler
             return task.TaskId;
         }
 
-        public int ScheduleAsync(Func<System.Threading.CancellationToken, UniTask> asyncAction, System.Threading.CancellationToken cancellationToken = default)
+        public int ScheduleAsync(Func<CancellationToken, UniTask> asyncAction,
+            CancellationToken cancellationToken = default)
         {
             var task = new CoreCoroutineTask(GetNextTaskId(), asyncAction, cancellationToken);
             _pendingTasks.Add(task);
@@ -196,7 +185,6 @@ namespace xFrame.Runtime.Core.Scheduler
             }
 
             foreach (var pendingTask in _pendingTasks)
-            {
                 if (pendingTask.TaskId == taskId)
                 {
                     pendingTask.Cancel();
@@ -204,7 +192,6 @@ namespace xFrame.Runtime.Core.Scheduler
                     _logger.Debug($"取消待处理任务: TaskId={taskId}");
                     return true;
                 }
-            }
 
             _logger.Warning($"取消任务失败，任务不存在: TaskId={taskId}");
             return false;
@@ -213,14 +200,8 @@ namespace xFrame.Runtime.Core.Scheduler
         public void CancelAll()
         {
             var count = _tasks.Count + _pendingTasks.Count;
-            foreach (var task in _tasks.Values)
-            {
-                task.Cancel();
-            }
-            foreach (var task in _pendingTasks)
-            {
-                task.Cancel();
-            }
+            foreach (var task in _tasks.Values) task.Cancel();
+            foreach (var task in _pendingTasks) task.Cancel();
             _tasks.Clear();
             _pendingTasks.Clear();
             _logger.Debug($"取消所有任务: Count={count}");
@@ -234,6 +215,7 @@ namespace xFrame.Runtime.Core.Scheduler
                 _logger.Debug($"暂停任务: TaskId={taskId}");
                 return true;
             }
+
             return false;
         }
 
@@ -245,39 +227,34 @@ namespace xFrame.Runtime.Core.Scheduler
                 _logger.Debug($"恢复任务: TaskId={taskId}");
                 return true;
             }
+
             return false;
         }
 
         public TaskStatus? GetTaskStatus(int taskId)
         {
-            if (_tasks.TryGetValue(taskId, out var task))
-            {
-                return task.Status;
-            }
+            if (_tasks.TryGetValue(taskId, out var task)) return task.Status;
 
             foreach (var pendingTask in _pendingTasks)
-            {
                 if (pendingTask.TaskId == taskId)
-                {
                     return pendingTask.Status;
-                }
-            }
 
             return null;
         }
 
-        private int GetNextTaskId() => _nextTaskId++;
+        private int GetNextTaskId()
+        {
+            return _nextTaskId++;
+        }
     }
 
     // === 核心任务实现 ===
 
     internal class CoreDelayedTask : IScheduledTask
     {
-        public int TaskId { get; }
-        public TaskStatus Status { get; private set; } = TaskStatus.Pending;
-        
-        private readonly float _delay;
         private readonly Action _callback;
+
+        private readonly float _delay;
         private readonly bool _useTimeScale;
         private float _elapsed;
 
@@ -289,6 +266,9 @@ namespace xFrame.Runtime.Core.Scheduler
             _useTimeScale = useTimeScale;
         }
 
+        public int TaskId { get; }
+        public TaskStatus Status { get; private set; } = TaskStatus.Pending;
+
         public void Update(float deltaTime, float unscaledDeltaTime)
         {
             if (Status != TaskStatus.Running) return;
@@ -297,7 +277,6 @@ namespace xFrame.Runtime.Core.Scheduler
             _elapsed += dt;
 
             if (_elapsed >= _delay)
-            {
                 try
                 {
                     _callback?.Invoke();
@@ -306,11 +285,18 @@ namespace xFrame.Runtime.Core.Scheduler
                 {
                     Status = TaskStatus.Completed;
                 }
-            }
         }
 
-        public void Cancel() => Status = TaskStatus.Cancelled;
-        public void Pause() => Status = TaskStatus.Paused;
+        public void Cancel()
+        {
+            Status = TaskStatus.Cancelled;
+        }
+
+        public void Pause()
+        {
+            Status = TaskStatus.Paused;
+        }
+
         public void Resume()
         {
             if (Status == TaskStatus.Paused)
@@ -320,11 +306,9 @@ namespace xFrame.Runtime.Core.Scheduler
 
     internal class CoreIntervalTask : IScheduledTask
     {
-        public int TaskId { get; }
-        public TaskStatus Status { get; private set; } = TaskStatus.Pending;
+        private readonly Action _callback;
 
         private readonly float _interval;
-        private readonly Action _callback;
         private readonly int _repeatCount;
         private readonly bool _useTimeScale;
         private float _elapsed;
@@ -338,6 +322,9 @@ namespace xFrame.Runtime.Core.Scheduler
             _repeatCount = repeatCount;
             _useTimeScale = useTimeScale;
         }
+
+        public int TaskId { get; }
+        public TaskStatus Status { get; private set; } = TaskStatus.Pending;
 
         public void Update(float deltaTime, float unscaledDeltaTime)
         {
@@ -360,8 +347,16 @@ namespace xFrame.Runtime.Core.Scheduler
             }
         }
 
-        public void Cancel() => Status = TaskStatus.Cancelled;
-        public void Pause() => Status = TaskStatus.Paused;
+        public void Cancel()
+        {
+            Status = TaskStatus.Cancelled;
+        }
+
+        public void Pause()
+        {
+            Status = TaskStatus.Paused;
+        }
+
         public void Resume()
         {
             if (Status == TaskStatus.Paused)
@@ -371,8 +366,6 @@ namespace xFrame.Runtime.Core.Scheduler
 
     internal class CoreNextFrameTask : IScheduledTask
     {
-        public int TaskId { get; }
-        public TaskStatus Status { get; private set; } = TaskStatus.Pending;
         private readonly Action _callback;
         private bool _hasRun;
 
@@ -382,17 +375,28 @@ namespace xFrame.Runtime.Core.Scheduler
             _callback = callback;
         }
 
+        public int TaskId { get; }
+        public TaskStatus Status { get; private set; } = TaskStatus.Pending;
+
         public void Update(float deltaTime, float unscaledDeltaTime)
         {
             if (Status != TaskStatus.Running || _hasRun) return;
-            
+
             _hasRun = true;
             _callback?.Invoke();
             Status = TaskStatus.Completed;
         }
 
-        public void Cancel() => Status = TaskStatus.Cancelled;
-        public void Pause() => Status = TaskStatus.Paused;
+        public void Cancel()
+        {
+            Status = TaskStatus.Cancelled;
+        }
+
+        public void Pause()
+        {
+            Status = TaskStatus.Paused;
+        }
+
         public void Resume()
         {
             if (Status == TaskStatus.Paused)
@@ -402,20 +406,21 @@ namespace xFrame.Runtime.Core.Scheduler
 
     internal class CoreCoroutineTask : IScheduledTask
     {
-        public int TaskId { get; }
-        public TaskStatus Status { get; private set; } = TaskStatus.Pending;
-
-        private readonly Func<System.Threading.CancellationToken, UniTask> _asyncAction;
-        private readonly System.Threading.CancellationToken _cancellationToken;
+        private readonly Func<CancellationToken, UniTask> _asyncAction;
+        private readonly CancellationToken _cancellationToken;
         private bool _started;
         private UniTask _task;
 
-        public CoreCoroutineTask(int taskId, Func<System.Threading.CancellationToken, UniTask> asyncAction, System.Threading.CancellationToken cancellationToken)
+        public CoreCoroutineTask(int taskId, Func<CancellationToken, UniTask> asyncAction,
+            CancellationToken cancellationToken)
         {
             TaskId = taskId;
             _asyncAction = asyncAction;
             _cancellationToken = cancellationToken;
         }
+
+        public int TaskId { get; }
+        public TaskStatus Status { get; private set; } = TaskStatus.Pending;
 
         public async void Update(float deltaTime, float unscaledDeltaTime)
         {
@@ -442,12 +447,21 @@ namespace xFrame.Runtime.Core.Scheduler
                     Status = TaskStatus.Completed;
                     return;
                 }
+
                 Status = TaskStatus.Completed;
             }
         }
 
-        public void Cancel() => Status = TaskStatus.Cancelled;
-        public void Pause() => Status = TaskStatus.Paused;
+        public void Cancel()
+        {
+            Status = TaskStatus.Cancelled;
+        }
+
+        public void Pause()
+        {
+            Status = TaskStatus.Paused;
+        }
+
         public void Resume()
         {
             if (Status == TaskStatus.Paused)

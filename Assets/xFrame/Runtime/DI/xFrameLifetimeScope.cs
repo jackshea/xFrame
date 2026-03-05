@@ -3,32 +3,31 @@ using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 using xFrame.Runtime.Logging;
-using xFrame.Runtime.ResourceManager;
-using xFrame.Runtime.Serialization;
-using xFrame.Runtime.Scheduler;
-using xFrame.Runtime.StateMachine;
+using xFrame.Runtime.MVVM;
 using xFrame.Runtime.Networking;
 using xFrame.Runtime.Platform;
+using xFrame.Runtime.ResourceManager;
+using xFrame.Runtime.Scheduler;
+using xFrame.Runtime.Serialization;
+using xFrame.Runtime.StateMachine;
 using xFrame.Runtime.Utilities;
-using xFrame.Runtime.MVVM;
 
 namespace xFrame.Runtime.DI
 {
     /// <summary>
-    /// xFrame框架的生命周期容器
-    /// 负责注册框架的核心服务和模块
+    ///     xFrame框架的生命周期容器
+    ///     负责注册框架的核心服务和模块
     /// </summary>
     public class xFrameLifetimeScope : LifetimeScope
     {
         /// <summary>
-        /// 资源管理器缓存容量
+        ///     资源管理器缓存容量
         /// </summary>
-        [SerializeField]
-        private int assetManagerCacheCapacity = 100;
+        [SerializeField] private int assetManagerCacheCapacity = 100;
 
 
         /// <summary>
-        /// 配置容器
+        ///     配置容器
         /// </summary>
         /// <param name="builder">容器构建器</param>
         protected override void Configure(IContainerBuilder builder)
@@ -46,7 +45,7 @@ namespace xFrame.Runtime.DI
 
 
         /// <summary>
-        /// 注册日志系统到VContainer
+        ///     注册日志系统到VContainer
         /// </summary>
         /// <param name="builder">容器构建器</param>
         private void RegisterLoggingSystem(IContainerBuilder builder)
@@ -75,7 +74,7 @@ namespace xFrame.Runtime.DI
         }
 
         /// <summary>
-        /// 注册资源管理系统到VContainer
+        ///     注册资源管理系统到VContainer
         /// </summary>
         /// <param name="builder">容器构建器</param>
         private void RegisterResourceSystem(IContainerBuilder builder)
@@ -93,7 +92,7 @@ namespace xFrame.Runtime.DI
         }
 
         /// <summary>
-        /// 注册状态机模块到VContainer
+        ///     注册状态机模块到VContainer
         /// </summary>
         /// <param name="builder">容器构建器</param>
         private void RegisterStateMachineModule(IContainerBuilder builder)
@@ -103,7 +102,7 @@ namespace xFrame.Runtime.DI
         }
 
         /// <summary>
-        /// 注册序列化模块到VContainer
+        ///     注册序列化模块到VContainer
         /// </summary>
         /// <param name="builder">容器构建器</param>
         private void RegisterSerializationModule(IContainerBuilder builder)
@@ -113,7 +112,7 @@ namespace xFrame.Runtime.DI
         }
 
         /// <summary>
-        /// 注册调度器模块到VContainer
+        ///     注册调度器模块到VContainer
         /// </summary>
         /// <param name="builder">容器构建器</param>
         private void RegisterSchedulerModule(IContainerBuilder builder)
@@ -128,7 +127,7 @@ namespace xFrame.Runtime.DI
         }
 
         /// <summary>
-        /// 注册网络模块到VContainer
+        ///     注册网络模块到VContainer
         /// </summary>
         /// <param name="builder">容器构建器</param>
         private void RegisterNetworkingModule(IContainerBuilder builder)
@@ -137,7 +136,7 @@ namespace xFrame.Runtime.DI
         }
 
         /// <summary>
-        /// 注册平台模块到VContainer
+        ///     注册平台模块到VContainer
         /// </summary>
         /// <param name="builder">容器构建器</param>
         private void RegisterPlatformModule(IContainerBuilder builder)
@@ -146,7 +145,7 @@ namespace xFrame.Runtime.DI
         }
 
         /// <summary>
-        /// 注册工具模块到VContainer
+        ///     注册工具模块到VContainer
         /// </summary>
         /// <param name="builder">容器构建器</param>
         private void RegisterUtilitiesModule(IContainerBuilder builder)
@@ -155,7 +154,7 @@ namespace xFrame.Runtime.DI
         }
 
         /// <summary>
-        /// 注册 MVVM 模块到VContainer
+        ///     注册 MVVM 模块到VContainer
         /// </summary>
         /// <param name="builder">容器构建器</param>
         private void RegisterMVVMModule(IContainerBuilder builder)

@@ -9,8 +9,8 @@ using xFrame.Runtime.UI;
 namespace xFrame.Examples.UI
 {
     /// <summary>
-    /// 玩家信息面板示例
-    /// 展示MVVM模式的使用
+    ///     玩家信息面板示例
+    ///     展示MVVM模式的使用
     /// </summary>
     public class PlayerInfoPanel : UIPanel
     {
@@ -22,45 +22,29 @@ namespace xFrame.Examples.UI
 
         #region UI组件
 
-        [Header("玩家信息")]
-        [SerializeField]
-        private Image avatarImage;
+        [Header("玩家信息")] [SerializeField] private Image avatarImage;
 
-        [SerializeField]
-        private TextMeshProUGUI playerNameText;
+        [SerializeField] private TextMeshProUGUI playerNameText;
 
-        [SerializeField]
-        private TextMeshProUGUI levelText;
+        [SerializeField] private TextMeshProUGUI levelText;
 
-        [Header("属性信息")]
-        [SerializeField]
-        private Slider healthSlider;
+        [Header("属性信息")] [SerializeField] private Slider healthSlider;
 
-        [SerializeField]
-        private TextMeshProUGUI healthText;
+        [SerializeField] private TextMeshProUGUI healthText;
 
-        [SerializeField]
-        private Slider manaSlider;
+        [SerializeField] private Slider manaSlider;
 
-        [SerializeField]
-        private TextMeshProUGUI manaText;
+        [SerializeField] private TextMeshProUGUI manaText;
 
-        [SerializeField]
-        private Slider expSlider;
+        [SerializeField] private Slider expSlider;
 
-        [SerializeField]
-        private TextMeshProUGUI expText;
+        [SerializeField] private TextMeshProUGUI expText;
 
-        [Header("货币信息")]
-        [SerializeField]
-        private TextMeshProUGUI goldText;
+        [Header("货币信息")] [SerializeField] private TextMeshProUGUI goldText;
 
-        [SerializeField]
-        private TextMeshProUGUI diamondText;
+        [SerializeField] private TextMeshProUGUI diamondText;
 
-        [Header("按钮")]
-        [SerializeField]
-        private Button closeButton;
+        [Header("按钮")] [SerializeField] private Button closeButton;
 
         #endregion
 
@@ -155,7 +139,7 @@ namespace xFrame.Examples.UI
         #region 视图更新
 
         /// <summary>
-        /// 更新视图显示
+        ///     更新视图显示
         /// </summary>
         private void UpdateView()
         {
@@ -186,7 +170,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 更新生命值显示
+        ///     更新生命值显示
         /// </summary>
         private void UpdateHealthBar()
         {
@@ -196,7 +180,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 更新魔法值显示
+        ///     更新魔法值显示
         /// </summary>
         private void UpdateManaBar()
         {
@@ -206,7 +190,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 更新经验值显示
+        ///     更新经验值显示
         /// </summary>
         private void UpdateExpBar()
         {
@@ -220,7 +204,7 @@ namespace xFrame.Examples.UI
         #region 事件处理
 
         /// <summary>
-        /// 关闭按钮点击
+        ///     关闭按钮点击
         /// </summary>
         private void OnCloseButtonClicked()
         {
@@ -228,7 +212,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 玩家数据更新事件处理
+        ///     玩家数据更新事件处理
         /// </summary>
         private void OnPlayerDataUpdated(ref PlayerDataUpdatedEvent evt)
         {
@@ -294,8 +278,8 @@ namespace xFrame.Examples.UI
     #region ViewModel
 
     /// <summary>
-    /// 玩家信息ViewModel
-    /// MVVM模式中的数据模型
+    ///     玩家信息ViewModel
+    ///     MVVM模式中的数据模型
     /// </summary>
     public class PlayerInfoViewModel
     {
@@ -317,22 +301,22 @@ namespace xFrame.Examples.UI
         public int Diamond { get; set; }
 
         /// <summary>
-        /// 生命值百分比
+        ///     生命值百分比
         /// </summary>
         public float HealthPercentage => MaxHealth > 0 ? (float)CurrentHealth / MaxHealth : 0f;
 
         /// <summary>
-        /// 魔法值百分比
+        ///     魔法值百分比
         /// </summary>
         public float ManaPercentage => MaxMana > 0 ? (float)CurrentMana / MaxMana : 0f;
 
         /// <summary>
-        /// 经验值百分比
+        ///     经验值百分比
         /// </summary>
         public float ExpPercentage => ExpToNextLevel > 0 ? (float)CurrentExp / ExpToNextLevel : 0f;
 
         /// <summary>
-        /// 创建示例数据
+        ///     创建示例数据
         /// </summary>
         public static PlayerInfoViewModel CreateSample()
         {
@@ -357,7 +341,7 @@ namespace xFrame.Examples.UI
     #region Events
 
     /// <summary>
-    /// 玩家数据更新事件
+    ///     玩家数据更新事件
     /// </summary>
     public struct PlayerDataUpdatedEvent : IEvent
     {

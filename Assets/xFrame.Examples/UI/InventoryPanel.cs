@@ -8,8 +8,8 @@ using xFrame.Runtime.UI;
 namespace xFrame.Examples.UI
 {
     /// <summary>
-    /// 背包面板示例
-    /// 展示如何使用组件系统和父子通讯
+    ///     背包面板示例
+    ///     展示如何使用组件系统和父子通讯
     /// </summary>
     public class InventoryPanel : UIPanel
     {
@@ -27,7 +27,7 @@ namespace xFrame.Examples.UI
         #region 调试方法
 
         /// <summary>
-        /// 获取组件统计信息
+        ///     获取组件统计信息
         /// </summary>
         [ContextMenu("打印组件统计")]
         private void PrintComponentStats()
@@ -45,19 +45,13 @@ namespace xFrame.Examples.UI
 
         #region UI组件
 
-        [Header("UI引用")]
-        [SerializeField]
-        private Transform slotContainer;
+        [Header("UI引用")] [SerializeField] private Transform slotContainer;
 
-        [SerializeField]
-        private ItemSlotComponent slotPrefab;
+        [SerializeField] private ItemSlotComponent slotPrefab;
 
-        [SerializeField]
-        private Button closeButton;
+        [SerializeField] private Button closeButton;
 
-        [Header("配置")]
-        [SerializeField]
-        private int slotCount = 20;
+        [Header("配置")] [SerializeField] private int slotCount = 20;
 
         #endregion
 
@@ -144,7 +138,7 @@ namespace xFrame.Examples.UI
         #region 组件管理
 
         /// <summary>
-        /// 创建物品槽组件
+        ///     创建物品槽组件
         /// </summary>
         private void CreateItemSlots()
         {
@@ -173,7 +167,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 加载背包数据
+        ///     加载背包数据
         /// </summary>
         private void LoadInventoryData(InventoryData data)
         {
@@ -185,7 +179,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 刷新所有槽位
+        ///     刷新所有槽位
         /// </summary>
         private void RefreshAllSlots()
         {
@@ -197,7 +191,7 @@ namespace xFrame.Examples.UI
         #region 组件事件处理（方式1：事件总线）
 
         /// <summary>
-        /// 订阅组件事件
+        ///     订阅组件事件
         /// </summary>
         private void SubscribeComponentEvents()
         {
@@ -206,7 +200,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 取消订阅组件事件
+        ///     取消订阅组件事件
         /// </summary>
         private void UnsubscribeComponentEvents()
         {
@@ -214,7 +208,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 物品槽点击事件处理
+        ///     物品槽点击事件处理
         /// </summary>
         private void OnItemSlotClicked(ref UIComponentEventWrapper<ItemSlotClickedEvent> wrapper)
         {
@@ -240,7 +234,7 @@ namespace xFrame.Examples.UI
         #region 业务逻辑
 
         /// <summary>
-        /// 处理槽位选中
+        ///     处理槽位选中
         /// </summary>
         private void HandleSlotSelection(ItemSlotComponent slot)
         {
@@ -277,7 +271,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 交换两个槽位的物品
+        ///     交换两个槽位的物品
         /// </summary>
         private void SwapSlots(ItemSlotComponent slot1, ItemSlotComponent slot2)
         {
@@ -293,7 +287,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 清除选中状态
+        ///     清除选中状态
         /// </summary>
         private void ClearSelection()
         {
@@ -305,7 +299,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 添加物品到背包
+        ///     添加物品到背包
         /// </summary>
         /// <param name="itemData">物品数据</param>
         /// <returns>是否添加成功</returns>
@@ -327,7 +321,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 移除物品
+        ///     移除物品
         /// </summary>
         /// <param name="itemId">物品ID</param>
         /// <param name="count">数量</param>
@@ -365,14 +359,14 @@ namespace xFrame.Examples.UI
     #region 数据类型
 
     /// <summary>
-    /// 背包数据
+    ///     背包数据
     /// </summary>
     public class InventoryData
     {
         public List<ItemSlotData> Items { get; set; } = new();
 
         /// <summary>
-        /// 创建测试数据
+        ///     创建测试数据
         /// </summary>
         public static InventoryData CreateTestData()
         {

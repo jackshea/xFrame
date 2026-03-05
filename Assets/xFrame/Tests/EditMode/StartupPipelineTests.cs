@@ -52,14 +52,11 @@ namespace xFrame.Tests.EditMode
                 _ =>
                 {
                     attempts++;
-                    if (attempts < 2)
-                    {
-                        throw new InvalidOperationException("transient");
-                    }
+                    if (attempts < 2) throw new InvalidOperationException("transient");
 
                     return Task.FromResult(StartupTaskResult.Success());
                 },
-                executionOptions: new StartupTaskExecutionOptions(maxRetryCount: 1));
+                executionOptions: new StartupTaskExecutionOptions(1));
 
             var pipeline = new StartupPipelineBuilder()
                 .AddTask(retryTask)
@@ -84,7 +81,8 @@ namespace xFrame.Tests.EditMode
             var pipeline = new StartupPipelineBuilder()
                 .WithView(view)
                 .AddTask(new FakeStartupTask("Task-1", 1f, _ => Task.FromResult(StartupTaskResult.Success())))
-                .AddTask(new FakeStartupTask("Task-2", 1f, _ => Task.FromResult(StartupTaskResult.Failed("Network", "failed", isFatal: true))))
+                .AddTask(new FakeStartupTask("Task-2", 1f,
+                    _ => Task.FromResult(StartupTaskResult.Failed("Network", "failed", true))))
                 .AddTask(new FakeStartupTask("Task-3", 1f, _ =>
                 {
                     task3Executed = true;
@@ -113,8 +111,8 @@ namespace xFrame.Tests.EditMode
                 .AddTask(new FakeStartupTask(
                     "Task-2",
                     1f,
-                    _ => Task.FromResult(StartupTaskResult.Failed("SdkInit", "optional sdk failed", isFatal: false)),
-                    failurePolicy: StartupTaskFailurePolicy.ContinuePipeline))
+                    _ => Task.FromResult(StartupTaskResult.Failed("SdkInit", "optional sdk failed", false)),
+                    StartupTaskFailurePolicy.ContinuePipeline))
                 .AddTask(new FakeStartupTask("Task-3", 1f, _ =>
                 {
                     task3Executed = true;
@@ -136,12 +134,14 @@ namespace xFrame.Tests.EditMode
 
             var registry = new StartupTaskRegistry();
             registry.Register(StartupTaskKey.InitLogger, CreateTask(StartupTaskKey.InitLogger, executionOrder));
-            registry.Register(StartupTaskKey.LoadLocalConfig, CreateTask(StartupTaskKey.LoadLocalConfig, executionOrder));
+            registry.Register(StartupTaskKey.LoadLocalConfig,
+                CreateTask(StartupTaskKey.LoadLocalConfig, executionOrder));
             registry.Register(StartupTaskKey.CheckUpdate, CreateTask(StartupTaskKey.CheckUpdate, executionOrder));
             registry.Register(StartupTaskKey.SdkInit, CreateTask(StartupTaskKey.SdkInit, executionOrder));
             registry.Register(StartupTaskKey.NetworkConnect, CreateTask(StartupTaskKey.NetworkConnect, executionOrder));
             registry.Register(StartupTaskKey.MockLogin, CreateTask(StartupTaskKey.MockLogin, executionOrder));
-            registry.Register(StartupTaskKey.LoadTestBattleScene, CreateTask(StartupTaskKey.LoadTestBattleScene, executionOrder));
+            registry.Register(StartupTaskKey.LoadTestBattleScene,
+                CreateTask(StartupTaskKey.LoadTestBattleScene, executionOrder));
             registry.Register(StartupTaskKey.EnterLobby, CreateTask(StartupTaskKey.EnterLobby, executionOrder));
 
             var pipeline = StartupPipelineFactory.Create(BootEnvironment.DevSkipToBattle, registry);
@@ -166,7 +166,8 @@ namespace xFrame.Tests.EditMode
 
             var registry = new StartupTaskRegistry();
             registry.Register(StartupTaskKey.InitLogger, CreateTask(StartupTaskKey.InitLogger, executionOrder));
-            registry.Register(StartupTaskKey.LoadLocalConfig, CreateTask(StartupTaskKey.LoadLocalConfig, executionOrder));
+            registry.Register(StartupTaskKey.LoadLocalConfig,
+                CreateTask(StartupTaskKey.LoadLocalConfig, executionOrder));
             registry.Register(StartupTaskKey.MockLogin, CreateTask(StartupTaskKey.MockLogin, executionOrder));
 
             var profile = new StartupProfileBuilder("CodeConfigured")
@@ -351,9 +352,11 @@ namespace xFrame.Tests.EditMode
             public void Install(StartupTaskRegistry registry)
             {
                 registry.Register(StartupTaskKey.InitLogger, CreateTask(StartupTaskKey.InitLogger, _executionOrder));
-                registry.Register(StartupTaskKey.LoadLocalConfig, CreateTask(StartupTaskKey.LoadLocalConfig, _executionOrder));
+                registry.Register(StartupTaskKey.LoadLocalConfig,
+                    CreateTask(StartupTaskKey.LoadLocalConfig, _executionOrder));
                 registry.Register(StartupTaskKey.MockLogin, CreateTask(StartupTaskKey.MockLogin, _executionOrder));
-                registry.Register(StartupTaskKey.LoadTestBattleScene, CreateTask(StartupTaskKey.LoadTestBattleScene, _executionOrder));
+                registry.Register(StartupTaskKey.LoadTestBattleScene,
+                    CreateTask(StartupTaskKey.LoadTestBattleScene, _executionOrder));
             }
         }
 
@@ -404,7 +407,7 @@ namespace xFrame.Tests.EditMode
 
             public int ErrorDialogShownCount { get; private set; }
 
-            public List<(string Message, float Progress)> LoadingSnapshots { get; } = new List<(string Message, float Progress)>();
+            public List<(string Message, float Progress)> LoadingSnapshots { get; } = new();
 
             public void ShowLoading(string message, float progress)
             {

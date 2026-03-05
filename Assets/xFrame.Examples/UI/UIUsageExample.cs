@@ -8,8 +8,8 @@ using xFrame.Runtime.UI.Events;
 namespace xFrame.Examples.UI
 {
     /// <summary>
-    /// UI框架使用示例
-    /// 展示如何在实际游戏中使用xFrame UI系统
+    ///     UI框架使用示例
+    ///     展示如何在实际游戏中使用xFrame UI系统
     /// </summary>
     public class UIUsageExample : MonoBehaviour
     {
@@ -68,7 +68,7 @@ namespace xFrame.Examples.UI
         private IUIManager _uiManager;
 
         /// <summary>
-        /// VContainer依赖注入
+        ///     VContainer依赖注入
         /// </summary>
         [Inject]
         public void Construct(IUIManager uiManager)
@@ -81,7 +81,7 @@ namespace xFrame.Examples.UI
         #region 示例方法
 
         /// <summary>
-        /// 示例1: 打开主菜单
+        ///     示例1: 打开主菜单
         /// </summary>
         private async Task Example1_OpenMainMenu()
         {
@@ -101,7 +101,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 示例2: 打开确认对话框
+        ///     示例2: 打开确认对话框
         /// </summary>
         private async Task Example2_OpenConfirmDialog()
         {
@@ -131,7 +131,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 示例3: 打开玩家信息面板（MVVM模式）
+        ///     示例3: 打开玩家信息面板（MVVM模式）
         /// </summary>
         private async Task Example3_OpenPlayerInfoPanel()
         {
@@ -169,7 +169,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 示例4: UI导航栈
+        ///     示例4: UI导航栈
         /// </summary>
         private async Task Example4_NavigationStack()
         {
@@ -206,7 +206,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 示例5: 事件通信
+        ///     示例5: 事件通信
         /// </summary>
         private void Example5_EventCommunication()
         {
@@ -222,7 +222,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// UI打开事件处理
+        ///     UI打开事件处理
         /// </summary>
         private void OnUIOpened(ref UIOpenedEvent evt)
         {
@@ -230,7 +230,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// UI关闭事件处理
+        ///     UI关闭事件处理
         /// </summary>
         private void OnUIClosed(ref UIClosedEvent evt)
         {
@@ -238,7 +238,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 示例6: UI查询
+        ///     示例6: UI查询
         /// </summary>
         private void Example6_QueryUI()
         {
@@ -265,7 +265,7 @@ namespace xFrame.Examples.UI
         #region 高级示例
 
         /// <summary>
-        /// 高级示例: UI预加载
+        ///     高级示例: UI预加载
         /// </summary>
         private async Task AdvancedExample_Preload()
         {
@@ -286,7 +286,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 高级示例: 设置层级交互性
+        ///     高级示例: 设置层级交互性
         /// </summary>
         private void AdvancedExample_LayerInteraction()
         {
@@ -300,7 +300,7 @@ namespace xFrame.Examples.UI
         }
 
         /// <summary>
-        /// 高级示例: 关闭指定层级的所有UI
+        ///     高级示例: 关闭指定层级的所有UI
         /// </summary>
         private void AdvancedExample_CloseLayer()
         {

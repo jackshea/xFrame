@@ -5,55 +5,52 @@ using UnityEngine;
 namespace xFrame.Runtime.UI
 {
     /// <summary>
-    /// UI标签页容器
-    /// 使用组合模式管理多个UITabPage，支持页面切换
-    /// 子页面既可以独立打开，也可以作为容器的一部分（对子页面无感）
+    ///     UI标签页容器
+    ///     使用组合模式管理多个UITabPage，支持页面切换
+    ///     子页面既可以独立打开，也可以作为容器的一部分（对子页面无感）
     /// </summary>
     public class UITabContainer : UIPanel
     {
-        [Header("标签页容器配置")]
-        [SerializeField]
-        [Tooltip("页面容器（所有子页面的父节点）")]
+        [Header("标签页容器配置")] [SerializeField] [Tooltip("页面容器（所有子页面的父节点）")]
         private Transform pageContainer;
 
-        [SerializeField]
-        [Tooltip("默认激活的页面索引")]
+        [SerializeField] [Tooltip("默认激活的页面索引")]
         private int defaultPageIndex;
 
         /// <summary>
-        /// 所有子页面列表
+        ///     所有子页面列表
         /// </summary>
         private readonly List<UITabPage> _pages = new();
 
         /// <summary>
-        /// 页面索引映射（通过名称查找）
+        ///     页面索引映射（通过名称查找）
         /// </summary>
         private readonly Dictionary<string, UITabPage> _pagesByName = new();
 
         /// <summary>
-        /// 页面索引映射（通过类型查找）
+        ///     页面索引映射（通过类型查找）
         /// </summary>
         private readonly Dictionary<Type, UITabPage> _pagesByType = new();
 
         /// <summary>
-        /// 当前激活的页面索引
+        ///     当前激活的页面索引
         /// </summary>
         public int CurrentPageIndex { get; private set; } = -1;
 
         /// <summary>
-        /// 当前激活的页面
+        ///     当前激活的页面
         /// </summary>
         public UITabPage CurrentPage => CurrentPageIndex >= 0 && CurrentPageIndex < _pages.Count
             ? _pages[CurrentPageIndex]
             : null;
 
         /// <summary>
-        /// 页面总数
+        ///     页面总数
         /// </summary>
         public int PageCount => _pages.Count;
 
         /// <summary>
-        /// 初始化容器
+        ///     初始化容器
         /// </summary>
         protected override void Awake()
         {
@@ -64,14 +61,14 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 页面切换事件
+        ///     页面切换事件
         /// </summary>
         public event Action<int, int> OnPageChanged; // (oldIndex, newIndex)
 
         #region 页面管理
 
         /// <summary>
-        /// 添加页面
+        ///     添加页面
         /// </summary>
         /// <typeparam name="T">页面类型</typeparam>
         /// <param name="page">页面实例</param>
@@ -114,7 +111,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 移除页面
+        ///     移除页面
         /// </summary>
         /// <param name="index">页面索引</param>
         public void RemovePage(int index)
@@ -156,7 +153,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 获取页面
+        ///     获取页面
         /// </summary>
         /// <param name="index">页面索引</param>
         /// <returns>页面实例</returns>
@@ -167,7 +164,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 获取页面（通过类型）
+        ///     获取页面（通过类型）
         /// </summary>
         /// <typeparam name="T">页面类型</typeparam>
         /// <returns>页面实例</returns>
@@ -178,7 +175,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 获取页面（通过名称）
+        ///     获取页面（通过名称）
         /// </summary>
         /// <param name="pageName">页面名称</param>
         /// <returns>页面实例</returns>
@@ -189,7 +186,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 获取所有页面
+        ///     获取所有页面
         /// </summary>
         /// <returns>页面列表</returns>
         public List<UITabPage> GetAllPages()
@@ -202,7 +199,7 @@ namespace xFrame.Runtime.UI
         #region 页面切换
 
         /// <summary>
-        /// 切换到指定页面
+        ///     切换到指定页面
         /// </summary>
         /// <param name="index">页面索引</param>
         /// <param name="data">传递给页面的数据（可选）</param>
@@ -248,7 +245,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 切换到指定页面（通过类型）
+        ///     切换到指定页面（通过类型）
         /// </summary>
         /// <typeparam name="T">页面类型</typeparam>
         /// <param name="data">传递给页面的数据（可选）</param>
@@ -261,7 +258,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 切换到指定页面（通过名称）
+        ///     切换到指定页面（通过名称）
         /// </summary>
         /// <param name="pageName">页面名称</param>
         /// <param name="data">传递给页面的数据（可选）</param>
@@ -274,7 +271,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 切换到下一个页面
+        ///     切换到下一个页面
         /// </summary>
         public void NextPage()
         {
@@ -285,7 +282,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 切换到上一个页面
+        ///     切换到上一个页面
         /// </summary>
         public void PreviousPage()
         {
@@ -301,7 +298,7 @@ namespace xFrame.Runtime.UI
         #region 生命周期管理
 
         /// <summary>
-        /// 容器创建时
+        ///     容器创建时
         /// </summary>
         protected override void OnCreate()
         {
@@ -311,7 +308,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 容器打开时
+        ///     容器打开时
         /// </summary>
         /// <param name="data">数据</param>
         protected override void OnOpen(object data)
@@ -327,7 +324,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 容器显示时
+        ///     容器显示时
         /// </summary>
         protected override void OnShow()
         {
@@ -338,7 +335,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 容器隐藏时
+        ///     容器隐藏时
         /// </summary>
         protected override void OnHide()
         {
@@ -349,7 +346,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 容器关闭时
+        ///     容器关闭时
         /// </summary>
         protected override void OnClose()
         {
@@ -364,7 +361,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 容器销毁时
+        ///     容器销毁时
         /// </summary>
         protected override void OnUIDestroy()
         {

@@ -13,4 +13,3 @@ namespace Fleck
         byte[] FrameClose(int code);
     }
 }
-

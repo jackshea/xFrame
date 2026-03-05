@@ -7,14 +7,14 @@ using xFrame.Runtime.DataStructures;
 namespace xFrame.Tests
 {
     /// <summary>
-    /// LRU缓存系统单元测试
-    /// 测试LRU缓存的核心功能和边界情况
+    ///     LRU缓存系统单元测试
+    ///     测试LRU缓存的核心功能和边界情况
     /// </summary>
     [TestFixture]
     public class LRUCacheTests
     {
         /// <summary>
-        /// 测试基本的Put和Get操作
+        ///     测试基本的Put和Get操作
         /// </summary>
         [Test]
         public void TestBasicPutAndGet()
@@ -36,7 +36,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试TryGet方法
+        ///     测试TryGet方法
         /// </summary>
         [Test]
         public void TestTryGet()
@@ -56,7 +56,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试LRU淘汰机制
+        ///     测试LRU淘汰机制
         /// </summary>
         [Test]
         public void TestLRUEviction()
@@ -80,7 +80,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试更新现有键的值
+        ///     测试更新现有键的值
         /// </summary>
         [Test]
         public void TestUpdateExistingKey()
@@ -104,7 +104,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试Remove方法
+        ///     测试Remove方法
         /// </summary>
         [Test]
         public void TestRemove()
@@ -126,7 +126,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试Clear方法
+        ///     测试Clear方法
         /// </summary>
         [Test]
         public void TestClear()
@@ -148,7 +148,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试ContainsKey方法
+        ///     测试ContainsKey方法
         /// </summary>
         [Test]
         public void TestContainsKey()
@@ -164,7 +164,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试Keys和Values属性
+        ///     测试Keys和Values属性
         /// </summary>
         [Test]
         public void TestKeysAndValues()
@@ -190,7 +190,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试访问顺序
+        ///     测试访问顺序
         /// </summary>
         [Test]
         public void TestAccessOrder()
@@ -215,7 +215,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试异常情况
+        ///     测试异常情况
         /// </summary>
         [Test]
         public void TestExceptions()
@@ -231,7 +231,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试单个元素的缓存
+        ///     测试单个元素的缓存
         /// </summary>
         [Test]
         public void TestSingleElementCache()
@@ -249,7 +249,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试大量数据的性能
+        ///     测试大量数据的性能
         /// </summary>
         [Test]
         public void TestLargeDataPerformance()
@@ -274,7 +274,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试null值处理
+        ///     测试null值处理
         /// </summary>
         [Test]
         public void TestNullValues()
@@ -295,7 +295,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试ToString方法
+        ///     测试ToString方法
         /// </summary>
         [Test]
         public void TestToString()

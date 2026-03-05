@@ -7,8 +7,8 @@ using Random = UnityEngine.Random;
 namespace xFrame.Examples
 {
     /// <summary>
-    /// LRU缓存系统使用示例
-    /// 演示如何使用LRU缓存来提高数据访问性能
+    ///     LRU缓存系统使用示例
+    ///     演示如何使用LRU缓存来提高数据访问性能
     /// </summary>
     public class LRUCacheExample : MonoBehaviour
     {
@@ -20,7 +20,7 @@ namespace xFrame.Examples
         private ThreadSafeLRUCache<string, object> _threadSafeCache;
 
         /// <summary>
-        /// 初始化各种缓存示例
+        ///     初始化各种缓存示例
         /// </summary>
         private void Start()
         {
@@ -43,7 +43,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 清理资源
+        ///     清理资源
         /// </summary>
         private void OnDestroy()
         {
@@ -57,7 +57,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 在Inspector中显示缓存状态
+        ///     在Inspector中显示缓存状态
         /// </summary>
         private void OnGUI()
         {
@@ -115,7 +115,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 创建玩家数据缓存
+        ///     创建玩家数据缓存
         /// </summary>
         private void CreatePlayerDataCache()
         {
@@ -141,7 +141,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 创建配置缓存
+        ///     创建配置缓存
         /// </summary>
         private void CreateConfigCache()
         {
@@ -161,7 +161,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 创建线程安全缓存
+        ///     创建线程安全缓存
         /// </summary>
         private void CreateThreadSafeCache()
         {
@@ -181,7 +181,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 创建纹理缓存
+        ///     创建纹理缓存
         /// </summary>
         private void CreateTextureCache()
         {
@@ -194,7 +194,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 演示缓存的各种功能
+        ///     演示缓存的各种功能
         /// </summary>
         private void DemonstrateCacheFeatures()
         {
@@ -217,7 +217,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 演示玩家数据缓存功能
+        ///     演示玩家数据缓存功能
         /// </summary>
         private void DemonstratePlayerCache()
         {
@@ -239,7 +239,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 演示配置缓存功能
+        ///     演示配置缓存功能
         /// </summary>
         private void DemonstrateConfigCache()
         {
@@ -261,7 +261,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 演示LRU淘汰机制
+        ///     演示LRU淘汰机制
         /// </summary>
         private void DemonstrateLRUEviction()
         {
@@ -296,7 +296,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 演示纹理缓存功能
+        ///     演示纹理缓存功能
         /// </summary>
         private void DemonstrateTextureCache()
         {
@@ -330,7 +330,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 演示缓存统计信息
+        ///     演示缓存统计信息
         /// </summary>
         private void DemonstrateCacheStatistics()
         {
@@ -351,7 +351,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 示例数据类
+        ///     示例数据类
         /// </summary>
         [Serializable]
         public class PlayerData
@@ -378,7 +378,7 @@ namespace xFrame.Examples
         }
 
         /// <summary>
-        /// 示例纹理缓存类
+        ///     示例纹理缓存类
         /// </summary>
         public class TextureCache
         {

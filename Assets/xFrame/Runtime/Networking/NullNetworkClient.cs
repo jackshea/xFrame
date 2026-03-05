@@ -5,8 +5,8 @@ using Cysharp.Threading.Tasks;
 namespace xFrame.Runtime.Networking
 {
     /// <summary>
-    /// 空网络客户端默认实现。
-    /// 用于框架初始阶段或离线场景，保证依赖可解析。
+    ///     空网络客户端默认实现。
+    ///     用于框架初始阶段或离线场景，保证依赖可解析。
     /// </summary>
     public sealed class NullNetworkClient : INetworkClient
     {
@@ -21,10 +21,7 @@ namespace xFrame.Runtime.Networking
 
         public UniTask ConnectAsync(string endpoint, CancellationToken ct = default)
         {
-            if (string.IsNullOrWhiteSpace(endpoint))
-            {
-                throw new ArgumentException("endpoint 不能为空", nameof(endpoint));
-            }
+            if (string.IsNullOrWhiteSpace(endpoint)) throw new ArgumentException("endpoint 不能为空", nameof(endpoint));
 
             ct.ThrowIfCancellationRequested();
             IsConnected = true;
@@ -35,10 +32,7 @@ namespace xFrame.Runtime.Networking
         {
             ct.ThrowIfCancellationRequested();
 
-            if (!IsConnected)
-            {
-                throw new InvalidOperationException("尚未建立网络连接");
-            }
+            if (!IsConnected) throw new InvalidOperationException("尚未建立网络连接");
 
             _ = payload ?? throw new ArgumentNullException(nameof(payload));
             _ = _options.SendBufferSize;
@@ -50,10 +44,7 @@ namespace xFrame.Runtime.Networking
         {
             ct.ThrowIfCancellationRequested();
 
-            if (!IsConnected)
-            {
-                throw new InvalidOperationException("尚未建立网络连接");
-            }
+            if (!IsConnected) throw new InvalidOperationException("尚未建立网络连接");
 
             _ = _options.ReceiveBufferSize;
             return UniTask.FromResult(Array.Empty<byte>());

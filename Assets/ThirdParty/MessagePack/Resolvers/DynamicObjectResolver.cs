@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #if !(UNITY_2018_3_OR_NEWER && NET_STANDARD_2_0)
-
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -86,24 +85,28 @@ namespace MessagePack.Resolvers
                         return;
                     }
 
-                    Formatter = (IMessagePackFormatter<T>?)Activator.CreateInstance(typeof(StaticNullableFormatter<>).MakeGenericType(ti.AsType()), new object[] { innerFormatter });
+                    Formatter =
+ (IMessagePackFormatter<T>?)Activator.CreateInstance(typeof(StaticNullableFormatter<>).MakeGenericType(ti.AsType()), new object[] { innerFormatter });
                     return;
                 }
 
                 if (ti.IsAnonymous())
                 {
-                    Formatter = (IMessagePackFormatter<T>?)DynamicObjectTypeBuilder.BuildFormatterToDynamicMethod(typeof(T), true, true, false);
+                    Formatter =
+ (IMessagePackFormatter<T>?)DynamicObjectTypeBuilder.BuildFormatterToDynamicMethod(typeof(T), true, true, false);
                     return;
                 }
 
                 TypeInfo? formatterTypeInfo;
                 try
                 {
-                    formatterTypeInfo = DynamicObjectTypeBuilder.BuildType(DynamicAssembly.Value, typeof(T), false, false);
+                    formatterTypeInfo =
+ DynamicObjectTypeBuilder.BuildType(DynamicAssembly.Value, typeof(T), false, false);
                 }
                 catch (InitAccessorInGenericClassNotSupportedException)
                 {
-                    Formatter = (IMessagePackFormatter<T>?)DynamicObjectTypeBuilder.BuildFormatterToDynamicMethod(typeof(T), false, false, false);
+                    Formatter =
+ (IMessagePackFormatter<T>?)DynamicObjectTypeBuilder.BuildFormatterToDynamicMethod(typeof(T), false, false, false);
                     return;
                 }
 
@@ -156,17 +159,20 @@ namespace MessagePack.Resolvers
                         return;
                     }
 
-                    Formatter = (IMessagePackFormatter<T>?)Activator.CreateInstance(typeof(StaticNullableFormatter<>).MakeGenericType(ti.AsType()), new object[] { innerFormatter });
+                    Formatter =
+ (IMessagePackFormatter<T>?)Activator.CreateInstance(typeof(StaticNullableFormatter<>).MakeGenericType(ti.AsType()), new object[] { innerFormatter });
                     return;
                 }
 
                 if (ti.IsAnonymous())
                 {
-                    Formatter = (IMessagePackFormatter<T>?)DynamicObjectTypeBuilder.BuildFormatterToDynamicMethod(typeof(T), true, true, false);
+                    Formatter =
+ (IMessagePackFormatter<T>?)DynamicObjectTypeBuilder.BuildFormatterToDynamicMethod(typeof(T), true, true, false);
                 }
                 else
                 {
-                    Formatter = (IMessagePackFormatter<T>?)DynamicObjectTypeBuilder.BuildFormatterToDynamicMethod(typeof(T), false, false, true);
+                    Formatter =
+ (IMessagePackFormatter<T>?)DynamicObjectTypeBuilder.BuildFormatterToDynamicMethod(typeof(T), false, false, true);
                 }
             }
         }
@@ -232,17 +238,20 @@ namespace MessagePack.Resolvers
                         return;
                     }
 
-                    Formatter = (IMessagePackFormatter<T>?)Activator.CreateInstance(typeof(StaticNullableFormatter<>).MakeGenericType(ti.AsType()), new object[] { innerFormatter });
+                    Formatter =
+ (IMessagePackFormatter<T>?)Activator.CreateInstance(typeof(StaticNullableFormatter<>).MakeGenericType(ti.AsType()), new object[] { innerFormatter });
                     return;
                 }
 
                 if (ti.IsAnonymous() || ti.HasPrivateCtorForSerialization())
                 {
-                    Formatter = (IMessagePackFormatter<T>?)DynamicObjectTypeBuilder.BuildFormatterToDynamicMethod(typeof(T), true, true, false);
+                    Formatter =
+ (IMessagePackFormatter<T>?)DynamicObjectTypeBuilder.BuildFormatterToDynamicMethod(typeof(T), true, true, false);
                     return;
                 }
 
-                TypeInfo? formatterTypeInfo = DynamicObjectTypeBuilder.BuildType(DynamicAssembly.Value, typeof(T), true, true);
+                TypeInfo? formatterTypeInfo =
+ DynamicObjectTypeBuilder.BuildType(DynamicAssembly.Value, typeof(T), true, true);
                 if (formatterTypeInfo == null)
                 {
                     return;
@@ -258,7 +267,8 @@ namespace MessagePack.Resolvers
     /// </summary>
     public sealed class DynamicContractlessObjectResolverAllowPrivate : IFormatterResolver
     {
-        public static readonly DynamicContractlessObjectResolverAllowPrivate Instance = new DynamicContractlessObjectResolverAllowPrivate();
+        public static readonly DynamicContractlessObjectResolverAllowPrivate Instance =
+ new DynamicContractlessObjectResolverAllowPrivate();
 
         public IMessagePackFormatter<T>? GetFormatter<T>()
         {
@@ -287,23 +297,27 @@ namespace MessagePack.Resolvers
                 {
                     ti = ti.GenericTypeArguments[0].GetTypeInfo();
 
-                    var innerFormatter = DynamicContractlessObjectResolverAllowPrivate.Instance.GetFormatterDynamic(ti.AsType());
+                    var innerFormatter =
+ DynamicContractlessObjectResolverAllowPrivate.Instance.GetFormatterDynamic(ti.AsType());
                     if (innerFormatter == null)
                     {
                         return;
                     }
 
-                    Formatter = (IMessagePackFormatter<T>?)Activator.CreateInstance(typeof(StaticNullableFormatter<>).MakeGenericType(ti.AsType()), new object[] { innerFormatter });
+                    Formatter =
+ (IMessagePackFormatter<T>?)Activator.CreateInstance(typeof(StaticNullableFormatter<>).MakeGenericType(ti.AsType()), new object[] { innerFormatter });
                     return;
                 }
 
                 if (ti.IsAnonymous())
                 {
-                    Formatter = (IMessagePackFormatter<T>?)DynamicObjectTypeBuilder.BuildFormatterToDynamicMethod(typeof(T), true, true, false);
+                    Formatter =
+ (IMessagePackFormatter<T>?)DynamicObjectTypeBuilder.BuildFormatterToDynamicMethod(typeof(T), true, true, false);
                 }
                 else
                 {
-                    Formatter = (IMessagePackFormatter<T>?)DynamicObjectTypeBuilder.BuildFormatterToDynamicMethod(typeof(T), true, true, true);
+                    Formatter =
+ (IMessagePackFormatter<T>?)DynamicObjectTypeBuilder.BuildFormatterToDynamicMethod(typeof(T), true, true, true);
                 }
             }
         }
@@ -315,9 +329,11 @@ namespace MessagePack.Internal
     internal static class DynamicObjectTypeBuilder
     {
 #if !UNITY_2018_3_OR_NEWER
-        private static readonly Regex SubtractFullNameRegex = new Regex(@", Version=\d+.\d+.\d+.\d+, Culture=\w+, PublicKeyToken=\w+", RegexOptions.Compiled);
+        private static readonly Regex SubtractFullNameRegex =
+ new Regex(@", Version=\d+.\d+.\d+.\d+, Culture=\w+, PublicKeyToken=\w+", RegexOptions.Compiled);
 #else
-        static readonly Regex SubtractFullNameRegex = new Regex(@", Version=\d+.\d+.\d+.\d+, Culture=\w+, PublicKeyToken=\w+");
+        static readonly Regex SubtractFullNameRegex =
+ new Regex(@", Version=\d+.\d+.\d+.\d+, Culture=\w+, PublicKeyToken=\w+");
 #endif
 
         private static int nameSequence = 0;
@@ -353,7 +369,8 @@ namespace MessagePack.Internal
                 return null;
             }
 
-            var serializationInfo = MessagePack.Internal.ObjectSerializationInfo.CreateOrNull(type, forceStringKey, contractless, false, dynamicMethod: false);
+            var serializationInfo =
+ MessagePack.Internal.ObjectSerializationInfo.CreateOrNull(type, forceStringKey, contractless, false, dynamicMethod: false);
             if (serializationInfo == null)
             {
                 return null;
@@ -370,7 +387,8 @@ namespace MessagePack.Internal
                 using (MonoProtection.EnterRefEmitLock())
                 {
                     Type formatterType = typeof(IMessagePackFormatter<>).MakeGenericType(type);
-                    TypeBuilder typeBuilder = assembly.DefineType("MessagePack.Formatters." + SubtractFullNameRegex.Replace(type.FullName!, string.Empty).Replace(".", "_") + "Formatter" + Interlocked.Increment(ref nameSequence), TypeAttributes.Public | TypeAttributes.Sealed, null, new[] { formatterType });
+                    TypeBuilder typeBuilder =
+ assembly.DefineType("MessagePack.Formatters." + SubtractFullNameRegex.Replace(type.FullName!, string.Empty).Replace(".", "_") + "Formatter" + Interlocked.Increment(ref nameSequence), TypeAttributes.Public | TypeAttributes.Sealed, null, new[] { formatterType });
 
                     FieldBuilder? stringByteKeysField = null;
                     Dictionary<ObjectSerializationInfo.EmittableMember, FieldInfo>? customFormatterLookup = null;
@@ -378,8 +396,10 @@ namespace MessagePack.Internal
                     // string key needs string->int mapper for deserialize switch statement
                     if (serializationInfo.IsStringKey)
                     {
-                        ConstructorBuilder method = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, Type.EmptyTypes);
-                        stringByteKeysField = typeBuilder.DefineField("stringByteKeys", typeof(byte[][]), FieldAttributes.Private | FieldAttributes.InitOnly);
+                        ConstructorBuilder method =
+ typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, Type.EmptyTypes);
+                        stringByteKeysField =
+ typeBuilder.DefineField("stringByteKeys", typeof(byte[][]), FieldAttributes.Private | FieldAttributes.InitOnly);
 
                         ILGenerator il = method.GetILGenerator();
                         BuildConstructor(type, serializationInfo, method, stringByteKeysField, il);
@@ -388,7 +408,8 @@ namespace MessagePack.Internal
                     }
                     else
                     {
-                        ConstructorBuilder method = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, Type.EmptyTypes);
+                        ConstructorBuilder method =
+ typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, Type.EmptyTypes);
                         ILGenerator il = method.GetILGenerator();
                         il.EmitLoadThis();
                         il.Emit(OpCodes.Call, objectCtor);
@@ -473,7 +494,8 @@ namespace MessagePack.Internal
 
         public static object? BuildFormatterToDynamicMethod(Type type, bool forceStringKey, bool contractless, bool allowPrivate)
         {
-            var serializationInfo = ObjectSerializationInfo.CreateOrNull(type, forceStringKey, contractless, allowPrivate, dynamicMethod: true);
+            var serializationInfo =
+ ObjectSerializationInfo.CreateOrNull(type, forceStringKey, contractless, allowPrivate, dynamicMethod: true);
             if (serializationInfo == null)
             {
                 return null;
@@ -484,7 +506,8 @@ namespace MessagePack.Internal
             {
                 // internal delegate void AnonymousSerializeFunc<T>(byte[][] stringByteKeysField, object[] customFormatters, ref MessagePackWriter writer, T value, MessagePackSerializerOptions options);
                 // internal delegate T AnonymousDeserializeFunc<T>(object[] customFormatters, ref MessagePackReader reader, MessagePackSerializerOptions options);
-                var serialize = new DynamicMethod("Serialize", null, new[] { typeof(byte[][]), typeof(object[]), typeof(MessagePackWriter).MakeByRefType(), type, typeof(MessagePackSerializerOptions) }, type, true);
+                var serialize =
+ new DynamicMethod("Serialize", null, new[] { typeof(byte[][]), typeof(object[]), typeof(MessagePackWriter).MakeByRefType(), type, typeof(MessagePackSerializerOptions) }, type, true);
                 DynamicMethod? deserialize = null;
 
                 List<byte[]> stringByteKeysField = new List<byte[]>();
@@ -506,7 +529,8 @@ namespace MessagePack.Internal
                     MessagePackFormatterAttribute? attr = item.GetMessagePackFormatterAttribute();
                     if (attr != null)
                     {
-                        IMessagePackFormatter formatter = ResolverUtilities.ActivateFormatter(attr.FormatterType, attr.Arguments);
+                        IMessagePackFormatter formatter =
+ ResolverUtilities.ActivateFormatter(attr.FormatterType, attr.Arguments);
                         serializeCustomFormatters.Add(formatter);
                     }
                     else
@@ -521,7 +545,8 @@ namespace MessagePack.Internal
                     MessagePackFormatterAttribute? attr = item.GetMessagePackFormatterAttribute();
                     if (attr != null)
                     {
-                        IMessagePackFormatter formatter = ResolverUtilities.ActivateFormatter(attr.FormatterType, attr.Arguments);
+                        IMessagePackFormatter formatter =
+ ResolverUtilities.ActivateFormatter(attr.FormatterType, attr.Arguments);
                         deserializeCustomFormatters.Add(formatter);
                     }
                     else
@@ -562,7 +587,8 @@ namespace MessagePack.Internal
 
                 if (serializationInfo.IsStruct || serializationInfo.BestmatchConstructor != null)
                 {
-                    deserialize = new DynamicMethod("Deserialize", type, new[] { typeof(object[]), refMessagePackReader, typeof(MessagePackSerializerOptions) }, type, true);
+                    deserialize =
+ new DynamicMethod("Deserialize", type, new[] { typeof(object[]), refMessagePackReader, typeof(MessagePackSerializerOptions) }, type, true);
 
                     ILGenerator il = deserialize.GetILGenerator();
                     BuildDeserialize(
@@ -589,8 +615,10 @@ namespace MessagePack.Internal
                         1);
                 }
 
-                object serializeDelegate = serialize.CreateDelegate(typeof(AnonymousSerializeFunc<>).MakeGenericType(type));
-                object? deserializeDelegate = deserialize?.CreateDelegate(typeof(AnonymousDeserializeFunc<>).MakeGenericType(type));
+                object serializeDelegate =
+ serialize.CreateDelegate(typeof(AnonymousSerializeFunc<>).MakeGenericType(type));
+                object? deserializeDelegate =
+ deserialize?.CreateDelegate(typeof(AnonymousDeserializeFunc<>).MakeGenericType(type));
                 var resultFormatter = Activator.CreateInstance(
                     typeof(AnonymousSerializableFormatter<>).MakeGenericType(type),
                     new[] { stringByteKeysField.ToArray(), serializeCustomFormatters.ToArray(), deserializeCustomFormatters.ToArray(), serializeDelegate, deserializeDelegate });
@@ -628,7 +656,8 @@ namespace MessagePack.Internal
 
         private static Dictionary<ObjectSerializationInfo.EmittableMember, FieldInfo> BuildCustomFormatterField(TypeBuilder builder, ObjectSerializationInfo info, ILGenerator il)
         {
-            Dictionary<ObjectSerializationInfo.EmittableMember, FieldInfo> dict = new Dictionary<ObjectSerializationInfo.EmittableMember, FieldInfo>();
+            Dictionary<ObjectSerializationInfo.EmittableMember, FieldInfo> dict =
+ new Dictionary<ObjectSerializationInfo.EmittableMember, FieldInfo>();
             foreach (ObjectSerializationInfo.EmittableMember item in info.Members.Where(x => x.IsReadable || x.IsActuallyWritable))
             {
                 MessagePackFormatterAttribute? attr = item.GetMessagePackFormatterAttribute();
@@ -641,7 +670,8 @@ namespace MessagePack.Internal
                         throw new MessagePackSerializationException($"{info.Type.FullName}.{item.Name} is declared as type {item.Type.FullName}, but the prescribed {attr.FormatterType.FullName} does not implement IMessagePackFormatter<{item.Type.Name}>.");
                     }
 
-                    FieldBuilder f = builder.DefineField(item.Name + "_formatter", attr.FormatterType, FieldAttributes.Private | FieldAttributes.InitOnly);
+                    FieldBuilder f =
+ builder.DefineField(item.Name + "_formatter", attr.FormatterType, FieldAttributes.Private | FieldAttributes.InitOnly);
 
                     // If no args were provided and the formatter implements the singleton pattern, fetch the formatter from the field.
                     if ((attr.Arguments == null || attr.Arguments.Length == 0) && ResolverUtilities.FetchSingletonField(attr.FormatterType) is FieldInfo singletonField)
@@ -717,7 +747,8 @@ namespace MessagePack.Internal
             if (type.GetTypeInfo().ImplementedInterfaces.Any(x => x == typeof(IMessagePackSerializationCallbackReceiver)))
             {
                 // call directly
-                MethodInfo[] runtimeMethods = type.GetRuntimeMethods().Where(x => x.Name == "OnBeforeSerialize").ToArray();
+                MethodInfo[] runtimeMethods =
+ type.GetRuntimeMethods().Where(x => x.Name == "OnBeforeSerialize").ToArray();
                 if (runtimeMethods.Length == 1)
                 {
                     argValue.EmitLoad();
@@ -956,7 +987,8 @@ namespace MessagePack.Internal
         private static void BuildDeserializeInternalDeserializeEachPropertyIntKey(ObjectSerializationInfo info, ILGenerator il, Func<int, ObjectSerializationInfo.EmittableMember, Action?> tryEmitLoadCustomFormatter, bool canOverwrite, ref ArgumentField argReader, ref ArgumentField argOptions, LocalBuilder localResolver, LocalBuilder localResult, LocalBuilder localLength)
         {
             // Prepare local variables or assignment fields/properties
-            var infoList = BuildDeserializeInternalDeserializationInfoArrayIntKey(info, il, canOverwrite, out var gotoDefault, out var maxKey);
+            var infoList =
+ BuildDeserializeInternalDeserializationInfoArrayIntKey(info, il, canOverwrite, out var gotoDefault, out var maxKey);
 
             // Read Loop(for var i = 0; i < length; i++)
             BuildDeserializeInternalDeserializeLoopIntKey(il, tryEmitLoadCustomFormatter, ref argReader, ref argOptions, infoList, localResolver, localResult, localLength, canOverwrite, gotoDefault);
@@ -1011,7 +1043,8 @@ namespace MessagePack.Internal
             }
 
             Label? memberAssignmentDoneLabel = null;
-            var intKeyMap = infoList.Where(x => x.MemberInfo != null && x.MemberInfo.IsActuallyWritable).ToDictionary(x => x.MemberInfo!.IntKey);
+            var intKeyMap =
+ infoList.Where(x => x.MemberInfo != null && x.MemberInfo.IsActuallyWritable).ToDictionary(x => x.MemberInfo!.IntKey);
             for (var key = 0; key <= maxKey; key++)
             {
                 if (!intKeyMap.TryGetValue(key, out var item))
@@ -1560,31 +1593,46 @@ namespace MessagePack.Internal
         // EmitInfos...
         private static readonly Type refMessagePackReader = typeof(MessagePackReader).MakeByRefType();
 
-        private static readonly MethodInfo ReadOnlySpanFromByteArray = typeof(ReadOnlySpan<byte>).GetRuntimeMethod("op_Implicit", new[] { typeof(byte[]) })!;
-        private static readonly MethodInfo ReadStringSpan = typeof(CodeGenHelpers).GetRuntimeMethod(nameof(CodeGenHelpers.ReadStringSpan), new[] { typeof(MessagePackReader).MakeByRefType() })!;
-        private static readonly MethodInfo ArrayFromNullableReadOnlySequence = typeof(CodeGenHelpers).GetRuntimeMethod(nameof(CodeGenHelpers.GetArrayFromNullableSequence), new[] { typeof(ReadOnlySequence<byte>?).MakeByRefType() })!;
+        private static readonly MethodInfo ReadOnlySpanFromByteArray =
+ typeof(ReadOnlySpan<byte>).GetRuntimeMethod("op_Implicit", new[] { typeof(byte[]) })!;
+        private static readonly MethodInfo ReadStringSpan =
+ typeof(CodeGenHelpers).GetRuntimeMethod(nameof(CodeGenHelpers.ReadStringSpan), new[] { typeof(MessagePackReader).MakeByRefType() })!;
+        private static readonly MethodInfo ArrayFromNullableReadOnlySequence =
+ typeof(CodeGenHelpers).GetRuntimeMethod(nameof(CodeGenHelpers.GetArrayFromNullableSequence), new[] { typeof(ReadOnlySequence<byte>?).MakeByRefType() })!;
 
-        private static readonly MethodInfo getFormatterWithVerify = typeof(FormatterResolverExtensions).GetRuntimeMethods().First(x => x.Name == nameof(FormatterResolverExtensions.GetFormatterWithVerify));
-        private static readonly MethodInfo getResolverFromOptions = typeof(MessagePackSerializerOptions).GetRuntimeProperty(nameof(MessagePackSerializerOptions.Resolver))!.GetMethod!;
-        private static readonly MethodInfo getSecurityFromOptions = typeof(MessagePackSerializerOptions).GetRuntimeProperty(nameof(MessagePackSerializerOptions.Security))!.GetMethod!;
-        private static readonly MethodInfo securityDepthStep = typeof(MessagePackSecurity).GetRuntimeMethod(nameof(MessagePackSecurity.DepthStep), new[] { typeof(MessagePackReader).MakeByRefType() })!;
-        private static readonly MethodInfo readerDepthGet = typeof(MessagePackReader).GetRuntimeProperty(nameof(MessagePackReader.Depth))!.GetMethod!;
-        private static readonly MethodInfo readerDepthSet = typeof(MessagePackReader).GetRuntimeProperty(nameof(MessagePackReader.Depth))!.SetMethod!;
-        private static readonly Func<Type, MethodInfo> getSerialize = t => typeof(IMessagePackFormatter<>).MakeGenericType(t).GetRuntimeMethod(nameof(IMessagePackFormatter<int>.Serialize), new[] { typeof(MessagePackWriter).MakeByRefType(), t, typeof(MessagePackSerializerOptions) })!;
-        private static readonly Func<Type, MethodInfo> getDeserialize = t => typeof(IMessagePackFormatter<>).MakeGenericType(t).GetRuntimeMethod(nameof(IMessagePackFormatter<int>.Deserialize), new[] { refMessagePackReader, typeof(MessagePackSerializerOptions) })!;
+        private static readonly MethodInfo getFormatterWithVerify =
+ typeof(FormatterResolverExtensions).GetRuntimeMethods().First(x => x.Name == nameof(FormatterResolverExtensions.GetFormatterWithVerify));
+        private static readonly MethodInfo getResolverFromOptions =
+ typeof(MessagePackSerializerOptions).GetRuntimeProperty(nameof(MessagePackSerializerOptions.Resolver))!.GetMethod!;
+        private static readonly MethodInfo getSecurityFromOptions =
+ typeof(MessagePackSerializerOptions).GetRuntimeProperty(nameof(MessagePackSerializerOptions.Security))!.GetMethod!;
+        private static readonly MethodInfo securityDepthStep =
+ typeof(MessagePackSecurity).GetRuntimeMethod(nameof(MessagePackSecurity.DepthStep), new[] { typeof(MessagePackReader).MakeByRefType() })!;
+        private static readonly MethodInfo readerDepthGet =
+ typeof(MessagePackReader).GetRuntimeProperty(nameof(MessagePackReader.Depth))!.GetMethod!;
+        private static readonly MethodInfo readerDepthSet =
+ typeof(MessagePackReader).GetRuntimeProperty(nameof(MessagePackReader.Depth))!.SetMethod!;
+        private static readonly Func<Type, MethodInfo> getSerialize =
+ t => typeof(IMessagePackFormatter<>).MakeGenericType(t).GetRuntimeMethod(nameof(IMessagePackFormatter<int>.Serialize), new[] { typeof(MessagePackWriter).MakeByRefType(), t, typeof(MessagePackSerializerOptions) })!;
+        private static readonly Func<Type, MethodInfo> getDeserialize =
+ t => typeof(IMessagePackFormatter<>).MakeGenericType(t).GetRuntimeMethod(nameof(IMessagePackFormatter<int>.Deserialize), new[] { refMessagePackReader, typeof(MessagePackSerializerOptions) })!;
         //// static readonly ConstructorInfo dictionaryConstructor = typeof(ByteArrayStringHashTable).GetTypeInfo().DeclaredConstructors.First(x => { var p = x.GetParameters(); return p.Length == 1 && p[0].ParameterType == typeof(int); });
         //// static readonly MethodInfo dictionaryAdd = typeof(ByteArrayStringHashTable).GetRuntimeMethod("Add", new[] { typeof(string), typeof(int) });
         //// static readonly MethodInfo dictionaryTryGetValue = typeof(ByteArrayStringHashTable).GetRuntimeMethod("TryGetValue", new[] { typeof(ArraySegment<byte>), refInt });
-        private static readonly ConstructorInfo messagePackSerializationExceptionMessageOnlyConstructor = typeof(MessagePackSerializationException).GetTypeInfo().DeclaredConstructors.First(x =>
+        private static readonly ConstructorInfo messagePackSerializationExceptionMessageOnlyConstructor =
+ typeof(MessagePackSerializationException).GetTypeInfo().DeclaredConstructors.First(x =>
         {
             ParameterInfo[] p = x.GetParameters();
             return p.Length == 1 && p[0].ParameterType == typeof(string);
         });
 
-        private static readonly MethodInfo onBeforeSerialize = typeof(IMessagePackSerializationCallbackReceiver).GetRuntimeMethod(nameof(IMessagePackSerializationCallbackReceiver.OnBeforeSerialize), Type.EmptyTypes)!;
-        private static readonly MethodInfo onAfterDeserialize = typeof(IMessagePackSerializationCallbackReceiver).GetRuntimeMethod(nameof(IMessagePackSerializationCallbackReceiver.OnAfterDeserialize), Type.EmptyTypes)!;
+        private static readonly MethodInfo onBeforeSerialize =
+ typeof(IMessagePackSerializationCallbackReceiver).GetRuntimeMethod(nameof(IMessagePackSerializationCallbackReceiver.OnBeforeSerialize), Type.EmptyTypes)!;
+        private static readonly MethodInfo onAfterDeserialize =
+ typeof(IMessagePackSerializationCallbackReceiver).GetRuntimeMethod(nameof(IMessagePackSerializationCallbackReceiver.OnAfterDeserialize), Type.EmptyTypes)!;
 
-        private static readonly ConstructorInfo objectCtor = typeof(object).GetTypeInfo().DeclaredConstructors.First(x => x.GetParameters().Length == 0);
+        private static readonly ConstructorInfo objectCtor =
+ typeof(object).GetTypeInfo().DeclaredConstructors.First(x => x.GetParameters().Length == 0);
 
 #pragma warning restore SA1311 // Static readonly fields should begin with upper-case letter
 
@@ -1604,41 +1652,59 @@ namespace MessagePack.Internal
         {
             internal static readonly TypeInfo TypeInfo = typeof(MessagePackWriter).GetTypeInfo();
 
-            internal static readonly MethodInfo WriteMapHeader = typeof(MessagePackWriter).GetRuntimeMethod(nameof(MessagePackWriter.WriteMapHeader), new[] { typeof(int) })!;
-            internal static readonly MethodInfo WriteArrayHeader = typeof(MessagePackWriter).GetRuntimeMethod(nameof(MessagePackWriter.WriteArrayHeader), new[] { typeof(int) })!;
-            internal static readonly MethodInfo WriteBytes = typeof(MessagePackWriter).GetRuntimeMethod(nameof(MessagePackWriter.Write), new[] { typeof(ReadOnlySpan<byte>) })!;
-            internal static readonly MethodInfo WriteNil = typeof(MessagePackWriter).GetRuntimeMethod(nameof(MessagePackWriter.WriteNil), Type.EmptyTypes)!;
-            internal static readonly MethodInfo WriteRaw = typeof(MessagePackWriter).GetRuntimeMethod(nameof(MessagePackWriter.WriteRaw), new[] { typeof(ReadOnlySpan<byte>) })!;
+            internal static readonly MethodInfo WriteMapHeader =
+ typeof(MessagePackWriter).GetRuntimeMethod(nameof(MessagePackWriter.WriteMapHeader), new[] { typeof(int) })!;
+            internal static readonly MethodInfo WriteArrayHeader =
+ typeof(MessagePackWriter).GetRuntimeMethod(nameof(MessagePackWriter.WriteArrayHeader), new[] { typeof(int) })!;
+            internal static readonly MethodInfo WriteBytes =
+ typeof(MessagePackWriter).GetRuntimeMethod(nameof(MessagePackWriter.Write), new[] { typeof(ReadOnlySpan<byte>) })!;
+            internal static readonly MethodInfo WriteNil =
+ typeof(MessagePackWriter).GetRuntimeMethod(nameof(MessagePackWriter.WriteNil), Type.EmptyTypes)!;
+            internal static readonly MethodInfo WriteRaw =
+ typeof(MessagePackWriter).GetRuntimeMethod(nameof(MessagePackWriter.WriteRaw), new[] { typeof(ReadOnlySpan<byte>) })!;
         }
 
         internal static class MessagePackReaderTypeInfo
         {
             internal static readonly TypeInfo TypeInfo = typeof(MessagePackReader).GetTypeInfo();
 
-            internal static readonly MethodInfo ReadArrayHeader = typeof(MessagePackReader).GetRuntimeMethod(nameof(MessagePackReader.ReadArrayHeader), Type.EmptyTypes)!;
-            internal static readonly MethodInfo ReadMapHeader = typeof(MessagePackReader).GetRuntimeMethod(nameof(MessagePackReader.ReadMapHeader), Type.EmptyTypes)!;
-            internal static readonly MethodInfo ReadBytes = typeof(MessagePackReader).GetRuntimeMethod(nameof(MessagePackReader.ReadBytes), Type.EmptyTypes)!;
-            internal static readonly MethodInfo TryReadNil = typeof(MessagePackReader).GetRuntimeMethod(nameof(MessagePackReader.TryReadNil), Type.EmptyTypes)!;
-            internal static readonly MethodInfo Skip = typeof(MessagePackReader).GetRuntimeMethod(nameof(MessagePackReader.Skip), Type.EmptyTypes)!;
+            internal static readonly MethodInfo ReadArrayHeader =
+ typeof(MessagePackReader).GetRuntimeMethod(nameof(MessagePackReader.ReadArrayHeader), Type.EmptyTypes)!;
+            internal static readonly MethodInfo ReadMapHeader =
+ typeof(MessagePackReader).GetRuntimeMethod(nameof(MessagePackReader.ReadMapHeader), Type.EmptyTypes)!;
+            internal static readonly MethodInfo ReadBytes =
+ typeof(MessagePackReader).GetRuntimeMethod(nameof(MessagePackReader.ReadBytes), Type.EmptyTypes)!;
+            internal static readonly MethodInfo TryReadNil =
+ typeof(MessagePackReader).GetRuntimeMethod(nameof(MessagePackReader.TryReadNil), Type.EmptyTypes)!;
+            internal static readonly MethodInfo Skip =
+ typeof(MessagePackReader).GetRuntimeMethod(nameof(MessagePackReader.Skip), Type.EmptyTypes)!;
         }
 
         internal static class CodeGenHelpersTypeInfo
         {
-            public static readonly MethodInfo GetEncodedStringBytes = typeof(CodeGenHelpers).GetRuntimeMethod(nameof(CodeGenHelpers.GetEncodedStringBytes), new[] { typeof(string) })!;
+            public static readonly MethodInfo GetEncodedStringBytes =
+ typeof(CodeGenHelpers).GetRuntimeMethod(nameof(CodeGenHelpers.GetEncodedStringBytes), new[] { typeof(string) })!;
         }
 
         internal static class EmitInfo
         {
-            public static readonly MethodInfo GetTypeFromHandle = ExpressionUtility.GetMethodInfo(() => Type.GetTypeFromHandle(default(RuntimeTypeHandle)));
-            public static readonly MethodInfo TypeGetProperty = ExpressionUtility.GetMethodInfo((Type t) => t.GetTypeInfo().GetProperty(default(string)!, default(BindingFlags)));
-            public static readonly MethodInfo TypeGetField = ExpressionUtility.GetMethodInfo((Type t) => t.GetTypeInfo().GetField(default(string)!, default(BindingFlags)));
-            public static readonly MethodInfo GetCustomAttributeMessagePackFormatterAttribute = ExpressionUtility.GetMethodInfo(() => CustomAttributeExtensions.GetCustomAttribute<MessagePackFormatterAttribute>(default(MemberInfo)!, default(bool)));
-            public static readonly MethodInfo ActivatorCreateInstance = ExpressionUtility.GetMethodInfo(() => Activator.CreateInstance(default(Type)!, default(object[])));
+            public static readonly MethodInfo GetTypeFromHandle =
+ ExpressionUtility.GetMethodInfo(() => Type.GetTypeFromHandle(default(RuntimeTypeHandle)));
+            public static readonly MethodInfo TypeGetProperty =
+ ExpressionUtility.GetMethodInfo((Type t) => t.GetTypeInfo().GetProperty(default(string)!, default(BindingFlags)));
+            public static readonly MethodInfo TypeGetField =
+ ExpressionUtility.GetMethodInfo((Type t) => t.GetTypeInfo().GetField(default(string)!, default(BindingFlags)));
+            public static readonly MethodInfo GetCustomAttributeMessagePackFormatterAttribute =
+ ExpressionUtility.GetMethodInfo(() => CustomAttributeExtensions.GetCustomAttribute<MessagePackFormatterAttribute>(default(MemberInfo)!, default(bool)));
+            public static readonly MethodInfo ActivatorCreateInstance =
+ ExpressionUtility.GetMethodInfo(() => Activator.CreateInstance(default(Type)!, default(object[])));
 
             internal static class MessagePackFormatterAttr
             {
-                internal static readonly MethodInfo FormatterType = ExpressionUtility.GetPropertyInfo((MessagePackFormatterAttribute attr) => attr.FormatterType).GetGetMethod()!;
-                internal static readonly MethodInfo Arguments = ExpressionUtility.GetPropertyInfo((MessagePackFormatterAttribute attr) => attr.Arguments).GetGetMethod()!;
+                internal static readonly MethodInfo FormatterType =
+ ExpressionUtility.GetPropertyInfo((MessagePackFormatterAttribute attr) => attr.FormatterType).GetGetMethod()!;
+                internal static readonly MethodInfo Arguments =
+ ExpressionUtility.GetPropertyInfo((MessagePackFormatterAttribute attr) => attr.Arguments).GetGetMethod()!;
             }
         }
 
@@ -1739,7 +1805,8 @@ namespace MessagePack.Internal
             var isClassRecord = isClass && IsClassRecord(ti);
             var isStruct = ti.IsValueType;
 
-            MessagePackObjectAttribute? contractAttr = ti.GetCustomAttributes<MessagePackObjectAttribute>().FirstOrDefault();
+            MessagePackObjectAttribute? contractAttr =
+ ti.GetCustomAttributes<MessagePackObjectAttribute>().FirstOrDefault();
             DataContractAttribute? dataContractAttr = ti.GetCustomAttribute<DataContractAttribute>();
             if (contractAttr == null && dataContractAttr == null && !forceStringKey && !contractless)
             {
@@ -1805,8 +1872,10 @@ namespace MessagePack.Internal
                         var setMethod = property.GetSetMethod(true);
                         result = new EmittableMember(dynamicMethod, property)
                         {
-                            IsReadable = (getMethod != null) && (allowPrivate || getMethod.IsPublic) && !getMethod.IsStatic,
-                            IsWritable = (setMethod != null) && (allowPrivate || setMethod.IsPublic) && !setMethod.IsStatic,
+                            IsReadable =
+ (getMethod != null) && (allowPrivate || getMethod.IsPublic) && !getMethod.IsStatic,
+                            IsWritable =
+ (setMethod != null) && (allowPrivate || setMethod.IsPublic) && !setMethod.IsStatic,
                         };
                         break;
                     case FieldInfo field:
@@ -1947,7 +2016,8 @@ namespace MessagePack.Internal
 
             // GetConstructor
             IEnumerator<ConstructorInfo>? ctorEnumerator = null;
-            ConstructorInfo? ctor = ti.DeclaredConstructors.SingleOrDefault(x => x.GetCustomAttribute<SerializationConstructorAttribute>(false) != null);
+            ConstructorInfo? ctor =
+ ti.DeclaredConstructors.SingleOrDefault(x => x.GetCustomAttribute<SerializationConstructorAttribute>(false) != null);
             if (ctor == null)
             {
                 ctorEnumerator =
@@ -1969,9 +2039,12 @@ namespace MessagePack.Internal
             var constructorParameters = new List<EmittableMemberAndConstructorParameter>();
             if (ctor != null)
             {
-                IReadOnlyDictionary<int, EmittableMember> ctorParamIndexIntMembersDictionary = intMembers.OrderBy(x => x.Key).Select((x, i) => (Key: x.Value, Index: i)).ToDictionary(x => x.Index, x => x.Key);
-                ILookup<string, KeyValuePair<string, EmittableMember>> constructorLookupByKeyDictionary = stringMembers.ToLookup(x => x.Key, x => x, StringComparer.OrdinalIgnoreCase);
-                ILookup<string, KeyValuePair<string, EmittableMember>> constructorLookupByMemberNameDictionary = stringMembers.ToLookup(x => x.Value.Name, x => x, StringComparer.OrdinalIgnoreCase);
+                IReadOnlyDictionary<int, EmittableMember> ctorParamIndexIntMembersDictionary =
+ intMembers.OrderBy(x => x.Key).Select((x, i) => (Key: x.Value, Index: i)).ToDictionary(x => x.Index, x => x.Key);
+                ILookup<string, KeyValuePair<string, EmittableMember>> constructorLookupByKeyDictionary =
+ stringMembers.ToLookup(x => x.Key, x => x, StringComparer.OrdinalIgnoreCase);
+                ILookup<string, KeyValuePair<string, EmittableMember>> constructorLookupByMemberNameDictionary =
+ stringMembers.ToLookup(x => x.Value.Name, x => x, StringComparer.OrdinalIgnoreCase);
                 do
                 {
                     constructorParameters.Clear();
@@ -2018,8 +2091,10 @@ namespace MessagePack.Internal
                         else
                         {
                             // Lookup by both string key name and member name
-                            IEnumerable<KeyValuePair<string, EmittableMember>> hasKey = constructorLookupByKeyDictionary[item.Name!];
-                            IEnumerable<KeyValuePair<string, EmittableMember>> hasKeyByMemberName = constructorLookupByMemberNameDictionary[item.Name!];
+                            IEnumerable<KeyValuePair<string, EmittableMember>> hasKey =
+ constructorLookupByKeyDictionary[item.Name!];
+                            IEnumerable<KeyValuePair<string, EmittableMember>> hasKeyByMemberName =
+ constructorLookupByMemberNameDictionary[item.Name!];
 
                             var lenByKey = hasKey.Count();
                             var lenByMemberName = hasKeyByMemberName.Count();
@@ -2107,7 +2182,8 @@ namespace MessagePack.Internal
                 item.MemberInfo.IsWrittenByConstructor = true;
             }
 
-            var membersArray = members.Where(m => m.IsExplicitContract || m.IsWrittenByConstructor || m.IsWritable).ToArray();
+            var membersArray =
+ members.Where(m => m.IsExplicitContract || m.IsWrittenByConstructor || m.IsWritable).ToArray();
             foreach (var member in membersArray)
             {
                 if (IsOptimizeTargetType(member.Type))

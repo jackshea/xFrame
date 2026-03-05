@@ -3,8 +3,8 @@ using System;
 namespace xFrame.Runtime.Logging
 {
     /// <summary>
-    /// 静态日志访问接口
-    /// 提供全局的静态日志访问方法，便于在任何地方使用日志功能
+    ///     静态日志访问接口
+    ///     提供全局的静态日志访问方法，便于在任何地方使用日志功能
     /// </summary>
     public static class XLog
     {
@@ -12,7 +12,7 @@ namespace xFrame.Runtime.Logging
         private static readonly object _lock = new();
 
         /// <summary>
-        /// 初始化静态日志系统
+        ///     初始化静态日志系统
         /// </summary>
         /// <param name="logManager">日志管理器实例</param>
         public static void Initialize(IXLogManager logManager)
@@ -24,7 +24,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 获取指定模块的日志记录器
+        ///     获取指定模块的日志记录器
         /// </summary>
         /// <param name="moduleName">模块名称</param>
         /// <returns>日志记录器</returns>
@@ -35,7 +35,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 获取指定类型的日志记录器
+        ///     获取指定类型的日志记录器
         /// </summary>
         /// <param name="type">类型</param>
         /// <returns>日志记录器</returns>
@@ -46,7 +46,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 获取泛型类型的日志记录器
+        ///     获取泛型类型的日志记录器
         /// </summary>
         /// <typeparam name="T">类型</typeparam>
         /// <returns>日志记录器</returns>
@@ -57,7 +57,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 记录详细日志
+        ///     记录详细日志
         /// </summary>
         /// <param name="message">日志消息</param>
         /// <param name="moduleName">模块名称</param>
@@ -67,7 +67,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 记录调试日志
+        ///     记录调试日志
         /// </summary>
         /// <param name="message">日志消息</param>
         /// <param name="moduleName">模块名称</param>
@@ -77,7 +77,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 记录信息日志
+        ///     记录信息日志
         /// </summary>
         /// <param name="message">日志消息</param>
         /// <param name="moduleName">模块名称</param>
@@ -87,7 +87,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 记录警告日志
+        ///     记录警告日志
         /// </summary>
         /// <param name="message">日志消息</param>
         /// <param name="moduleName">模块名称</param>
@@ -97,7 +97,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 记录错误日志
+        ///     记录错误日志
         /// </summary>
         /// <param name="message">日志消息</param>
         /// <param name="moduleName">模块名称</param>
@@ -107,7 +107,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 记录错误日志（带异常）
+        ///     记录错误日志（带异常）
         /// </summary>
         /// <param name="message">日志消息</param>
         /// <param name="exception">异常信息</param>
@@ -118,7 +118,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 记录致命日志
+        ///     记录致命日志
         /// </summary>
         /// <param name="message">日志消息</param>
         /// <param name="moduleName">模块名称</param>
@@ -128,7 +128,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 记录致命日志（带异常）
+        ///     记录致命日志（带异常）
         /// </summary>
         /// <param name="message">日志消息</param>
         /// <param name="exception">异常信息</param>
@@ -139,7 +139,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 刷新所有日志记录器的缓冲区
+        ///     刷新所有日志记录器的缓冲区
         /// </summary>
         public static void FlushAll()
         {
@@ -148,7 +148,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 关闭日志系统
+        ///     关闭日志系统
         /// </summary>
         public static void Shutdown()
         {
@@ -160,7 +160,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 确保日志系统已初始化
+        ///     确保日志系统已初始化
         /// </summary>
         private static void EnsureInitialized()
         {

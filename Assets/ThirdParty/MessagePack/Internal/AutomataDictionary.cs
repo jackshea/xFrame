@@ -5,10 +5,7 @@ using System;
 using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
-using System.Runtime.InteropServices;
 using System.Text;
 
 #pragma warning disable SA1402 // File may only contain a single type
@@ -19,8 +16,8 @@ namespace MessagePack.Internal
     // Key = long, Value = int for UTF8String Dictionary
 
     /// <remarks>
-    /// This code is used by dynamically generated code as well as AOT generated code,
-    /// and thus must be public for the "C# generated and compiled into saved assembly" scenario.
+    ///     This code is used by dynamically generated code as well as AOT generated code,
+    ///     and thus must be public for the "C# generated and compiled into saved assembly" scenario.
     /// </remarks>
     public class AutomataDictionary : IEnumerable<KeyValuePair<string?, int>>
     {
@@ -28,68 +25,59 @@ namespace MessagePack.Internal
 
         public AutomataDictionary()
         {
-            this.root = new AutomataNode(0);
+            root = new AutomataNode(0);
         }
 
         public void Add(string str, int value)
         {
             ReadOnlySpan<byte> bytes = Encoding.UTF8.GetBytes(str);
-            AutomataNode node = this.root;
+            var node = root;
 
             while (bytes.Length > 0)
             {
                 var key = AutomataKeyGen.GetKey(ref bytes);
 
                 if (bytes.Length == 0)
-                {
                     node = node.Add(key, value, str);
-                }
                 else
-                {
                     node = node.Add(key);
-                }
             }
         }
 
-        public bool TryGetValue(in ReadOnlySequence<byte> bytes, out int value) => this.TryGetValue(bytes.ToArray(), out value);
+        public bool TryGetValue(in ReadOnlySequence<byte> bytes, out int value)
+        {
+            return TryGetValue(bytes.ToArray(), out value);
+        }
 
         public bool TryGetValue(ReadOnlySpan<byte> bytes, out int value)
         {
-            AutomataNode? node = this.root;
+            var node = root;
 
-            while (bytes.Length > 0 && node != null)
-            {
-                node = node.SearchNext(ref bytes);
-            }
+            while (bytes.Length > 0 && node != null) node = node.SearchNext(ref bytes);
 
             if (node == null)
             {
                 value = -1;
                 return false;
             }
-            else
-            {
-                value = node.Value;
-                return true;
-            }
+
+            value = node.Value;
+            return true;
         }
 
         // for debugging
         public override string ToString()
         {
             var sb = new StringBuilder();
-            ToStringCore(this.root.YieldChildren(), sb, 0);
+            ToStringCore(root.YieldChildren(), sb, 0);
             return sb.ToString();
         }
 
         private static void ToStringCore(IEnumerable<AutomataNode> nexts, StringBuilder sb, int depth)
         {
-            foreach (AutomataNode item in nexts)
+            foreach (var item in nexts)
             {
-                if (depth != 0)
-                {
-                    sb.Append(' ', depth * 2);
-                }
+                if (depth != 0) sb.Append(' ', depth * 2);
 
                 sb.Append("[" + item.Key + "]");
                 if (item.Value != -1)
@@ -106,34 +94,27 @@ namespace MessagePack.Internal
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return this.GetEnumerator();
+            return GetEnumerator();
         }
 
         public IEnumerator<KeyValuePair<string?, int>> GetEnumerator()
         {
-            return YieldCore(this.root.YieldChildren()).GetEnumerator();
+            return YieldCore(root.YieldChildren()).GetEnumerator();
         }
 
         private static IEnumerable<KeyValuePair<string?, int>> YieldCore(IEnumerable<AutomataNode> nexts)
         {
-            foreach (AutomataNode item in nexts)
+            foreach (var item in nexts)
             {
-                if (item.Value != -1)
-                {
-                    yield return new KeyValuePair<string?, int>(item.OriginalKey, item.Value);
-                }
+                if (item.Value != -1) yield return new KeyValuePair<string?, int>(item.OriginalKey, item.Value);
 
-                foreach (KeyValuePair<string?, int> x in YieldCore(item.YieldChildren()))
-                {
-                    yield return x;
-                }
+                foreach (var x in YieldCore(item.YieldChildren())) yield return x;
             }
         }
 
         /* IL Emit */
 
 #if !NET_STANDARD_2_0
-
         public void EmitMatch(ILGenerator il, LocalBuilder bytesSpan, LocalBuilder key, Action<KeyValuePair<string?, int>> onFound, Action onNotFound)
         {
             this.root.EmitSearchNext(il, bytesSpan, key, onFound, onNotFound);
@@ -144,7 +125,7 @@ namespace MessagePack.Internal
         private class AutomataNode : IComparable<AutomataNode>
         {
 #pragma warning disable SA1401 // Fields should be private
-            internal ulong Key;
+            internal readonly ulong Key;
             internal int Value;
             internal string? OriginalKey;
 #pragma warning restore SA1401 // Fields should be private
@@ -153,50 +134,45 @@ namespace MessagePack.Internal
             private ulong[] nextKeys;
             private int count;
 
-            public bool HasChildren
-            {
-                get { return this.count != 0; }
-            }
+            public bool HasChildren => count != 0;
 
             public AutomataNode(ulong key)
             {
-                this.Key = key;
-                this.Value = -1;
-                this.nexts = Array.Empty<AutomataNode>();
-                this.nextKeys = Array.Empty<ulong>();
-                this.count = 0;
-                this.OriginalKey = null;
+                Key = key;
+                Value = -1;
+                nexts = Array.Empty<AutomataNode>();
+                nextKeys = Array.Empty<ulong>();
+                count = 0;
+                OriginalKey = null;
             }
 
             public AutomataNode Add(ulong key)
             {
-                var index = Array.BinarySearch(this.nextKeys, 0, this.count, key);
+                var index = Array.BinarySearch(nextKeys, 0, count, key);
                 if (index < 0)
                 {
-                    if (this.nexts.Length == this.count)
+                    if (nexts.Length == count)
                     {
-                        Array.Resize<AutomataNode>(ref this.nexts, (this.count == 0) ? 4 : (this.count * 2));
-                        Array.Resize<ulong>(ref this.nextKeys, (this.count == 0) ? 4 : (this.count * 2));
+                        Array.Resize(ref nexts, count == 0 ? 4 : count * 2);
+                        Array.Resize(ref nextKeys, count == 0 ? 4 : count * 2);
                     }
 
-                    this.count++;
+                    count++;
 
                     var nextNode = new AutomataNode(key);
-                    this.nexts[this.count - 1] = nextNode;
-                    this.nextKeys[this.count - 1] = key;
-                    Array.Sort(this.nexts, 0, this.count);
-                    Array.Sort(this.nextKeys, 0, this.count);
+                    nexts[count - 1] = nextNode;
+                    nextKeys[count - 1] = key;
+                    Array.Sort(nexts, 0, count);
+                    Array.Sort(nextKeys, 0, count);
                     return nextNode;
                 }
-                else
-                {
-                    return this.nexts[index];
-                }
+
+                return nexts[index];
             }
 
             public AutomataNode Add(ulong key, int value, string originalKey)
             {
-                AutomataNode v = this.Add(key);
+                var v = Add(key);
                 v.Value = value;
                 v.OriginalKey = originalKey;
                 return v;
@@ -205,25 +181,18 @@ namespace MessagePack.Internal
             public AutomataNode? SearchNext(ref ReadOnlySpan<byte> value)
             {
                 var key = AutomataKeyGen.GetKey(ref value);
-                if (this.count < 4)
+                if (count < 4)
                 {
                     // linear search
-                    for (int i = 0; i < this.count; i++)
-                    {
-                        if (this.nextKeys[i] == key)
-                        {
-                            return this.nexts[i];
-                        }
-                    }
+                    for (var i = 0; i < count; i++)
+                        if (nextKeys[i] == key)
+                            return nexts[i];
                 }
                 else
                 {
                     // binary search
-                    var index = BinarySearch(this.nextKeys, 0, this.count, key);
-                    if (index >= 0)
-                    {
-                        return this.nexts[index];
-                    }
+                    var index = BinarySearch(nextKeys, 0, count, key);
+                    if (index >= 0) return nexts[index];
                 }
 
                 return null;
@@ -231,40 +200,27 @@ namespace MessagePack.Internal
 
             internal static int BinarySearch(ulong[] array, int index, int length, ulong value)
             {
-                int lo = index;
-                int hi = index + length - 1;
+                var lo = index;
+                var hi = index + length - 1;
                 while (lo <= hi)
                 {
-                    int i = lo + ((hi - lo) >> 1);
+                    var i = lo + ((hi - lo) >> 1);
 
                     var arrayValue = array[i];
                     int order;
                     if (arrayValue < value)
-                    {
                         order = -1;
-                    }
                     else if (arrayValue > value)
-                    {
                         order = 1;
-                    }
                     else
-                    {
                         order = 0;
-                    }
 
-                    if (order == 0)
-                    {
-                        return i;
-                    }
+                    if (order == 0) return i;
 
                     if (order < 0)
-                    {
                         lo = i + 1;
-                    }
                     else
-                    {
                         hi = i - 1;
-                    }
                 }
 
                 return ~lo;
@@ -272,19 +228,15 @@ namespace MessagePack.Internal
 
             public int CompareTo(AutomataNode? other)
             {
-                return this.Key.CompareTo(other?.Key);
+                return Key.CompareTo(other?.Key);
             }
 
             public IEnumerable<AutomataNode> YieldChildren()
             {
-                for (int i = 0; i < this.count; i++)
-                {
-                    yield return this.nexts[i];
-                }
+                for (var i = 0; i < count; i++) yield return nexts[i];
             }
 
 #if !NET_STANDARD_2_0
-
             // SearchNext(ref ReadOnlySpan<byte> bytes)
             public void EmitSearchNext(ILGenerator il, LocalBuilder bytesSpan, LocalBuilder key, Action<KeyValuePair<string?, int>> onFound, Action onNotFound)
             {
@@ -322,7 +274,8 @@ namespace MessagePack.Internal
                     }
 
                     {
-                        Label[] ifValueNexts = Enumerable.Range(0, Math.Max(valueExists.Length - 1, 0)).Select(_ => il.DefineLabel()).ToArray();
+                        Label[] ifValueNexts =
+ Enumerable.Range(0, Math.Max(valueExists.Length - 1, 0)).Select(_ => il.DefineLabel()).ToArray();
                         for (int i = 0; i < valueExists.Length; i++)
                         {
                             Label notFoundLabel = il.DefineLabel();
@@ -352,7 +305,8 @@ namespace MessagePack.Internal
                     }
 
                     il.MarkLabel(gotoSearchNext);
-                    Label[] ifRecNext = Enumerable.Range(0, Math.Max(childrenExists.Length - 1, 0)).Select(_ => il.DefineLabel()).ToArray();
+                    Label[] ifRecNext =
+ Enumerable.Range(0, Math.Max(childrenExists.Length - 1, 0)).Select(_ => il.DefineLabel()).ToArray();
                     for (int i = 0; i < childrenExists.Length; i++)
                     {
                         Label notFoundLabel = il.DefineLabel();
@@ -410,12 +364,16 @@ namespace MessagePack.Internal
     }
 
     /// <remarks>
-    /// This is used by dynamically generated code. It can be made internal after we enable our dynamic assemblies to access internals.
-    /// But that trick may require net46, so maybe we should leave this as public.
+    ///     This is used by dynamically generated code. It can be made internal after we enable our dynamic assemblies to
+    ///     access internals.
+    ///     But that trick may require net46, so maybe we should leave this as public.
     /// </remarks>
     public static class AutomataKeyGen
     {
-        public static readonly MethodInfo GetKeyMethod = typeof(AutomataKeyGen).GetRuntimeMethod(nameof(GetKey), new[] { typeof(ReadOnlySpan<byte>).MakeByRefType() }) ?? throw new Exception("Unable to find our own APIs.");
+        public static readonly MethodInfo GetKeyMethod =
+            typeof(AutomataKeyGen).GetRuntimeMethod(nameof(GetKey),
+                new[] { typeof(ReadOnlySpan<byte>).MakeByRefType() }) ??
+            throw new Exception("Unable to find our own APIs.");
 
         public static ulong GetKey(ref ReadOnlySpan<byte> span)
         {
@@ -433,62 +391,62 @@ namespace MessagePack.Internal
                     switch (span.Length)
                     {
                         case 1:
-                            {
-                                key = span[0];
-                                span = span.Slice(1);
-                                break;
-                            }
+                        {
+                            key = span[0];
+                            span = span.Slice(1);
+                            break;
+                        }
 
                         case 2:
-                            {
-                                key = SafeBitConverter.ToUInt16(span);
-                                span = span.Slice(2);
-                                break;
-                            }
+                        {
+                            key = SafeBitConverter.ToUInt16(span);
+                            span = span.Slice(2);
+                            break;
+                        }
 
                         case 3:
-                            {
-                                var a = span[0];
-                                var b = SafeBitConverter.ToUInt16(span.Slice(1));
-                                key = a | (ulong)b << 8;
-                                span = span.Slice(3);
-                                break;
-                            }
+                        {
+                            var a = span[0];
+                            var b = SafeBitConverter.ToUInt16(span.Slice(1));
+                            key = a | ((ulong)b << 8);
+                            span = span.Slice(3);
+                            break;
+                        }
 
                         case 4:
-                            {
-                                key = SafeBitConverter.ToUInt32(span);
-                                span = span.Slice(4);
-                                break;
-                            }
+                        {
+                            key = SafeBitConverter.ToUInt32(span);
+                            span = span.Slice(4);
+                            break;
+                        }
 
                         case 5:
-                            {
-                                var a = span[0];
-                                var b = SafeBitConverter.ToUInt32(span.Slice(1));
-                                key = a | (ulong)b << 8;
-                                span = span.Slice(5);
-                                break;
-                            }
+                        {
+                            var a = span[0];
+                            var b = SafeBitConverter.ToUInt32(span.Slice(1));
+                            key = a | ((ulong)b << 8);
+                            span = span.Slice(5);
+                            break;
+                        }
 
                         case 6:
-                            {
-                                ulong a = SafeBitConverter.ToUInt16(span);
-                                ulong b = SafeBitConverter.ToUInt32(span.Slice(2));
-                                key = a | (b << 16);
-                                span = span.Slice(6);
-                                break;
-                            }
+                        {
+                            ulong a = SafeBitConverter.ToUInt16(span);
+                            ulong b = SafeBitConverter.ToUInt32(span.Slice(2));
+                            key = a | (b << 16);
+                            span = span.Slice(6);
+                            break;
+                        }
 
                         case 7:
-                            {
-                                var a = span[0];
-                                var b = SafeBitConverter.ToUInt16(span.Slice(1));
-                                var c = SafeBitConverter.ToUInt32(span.Slice(3));
-                                key = a | (ulong)b << 8 | (ulong)c << 24;
-                                span = span.Slice(7);
-                                break;
-                            }
+                        {
+                            var a = span[0];
+                            var b = SafeBitConverter.ToUInt16(span.Slice(1));
+                            var c = SafeBitConverter.ToUInt32(span.Slice(3));
+                            key = a | ((ulong)b << 8) | ((ulong)c << 24);
+                            span = span.Slice(7);
+                            break;
+                        }
 
                         default:
                             throw new MessagePackSerializationException("Not Supported Length");

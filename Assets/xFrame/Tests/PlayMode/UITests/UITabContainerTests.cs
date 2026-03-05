@@ -7,13 +7,11 @@ using xFrame.Runtime.UI;
 namespace xFrame.Tests.PlayMode.UITests
 {
     /// <summary>
-    /// UITabContainer标签页容器的PlayMode测试
+    ///     UITabContainer标签页容器的PlayMode测试
     /// </summary>
     [TestFixture]
     public class UITabContainerTests
     {
-        private GameObject _testRoot;
-
         [SetUp]
         public void SetUp()
         {
@@ -23,16 +21,13 @@ namespace xFrame.Tests.PlayMode.UITests
         [TearDown]
         public void TearDown()
         {
-            if (_testRoot != null)
-            {
-                Object.Destroy(_testRoot);
-            }
+            if (_testRoot != null) Object.Destroy(_testRoot);
         }
 
-        #region 页面管理测试
+        private GameObject _testRoot;
 
         /// <summary>
-        /// 测试添加页面
+        ///     测试添加页面
         /// </summary>
         [UnityTest]
         public IEnumerator AddPage_ShouldAddPageToContainer()
@@ -48,7 +43,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试添加多个页面
+        ///     测试添加多个页面
         /// </summary>
         [UnityTest]
         public IEnumerator AddPage_MultiplePages_ShouldAddAll()
@@ -67,7 +62,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试添加null页面
+        ///     测试添加null页面
         /// </summary>
         [UnityTest]
         public IEnumerator AddPage_NullPage_ShouldReturnNegativeOne()
@@ -83,7 +78,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试添加页面后页面被初始化
+        ///     测试添加页面后页面被初始化
         /// </summary>
         [UnityTest]
         public IEnumerator AddPage_ShouldInitializePage()
@@ -99,7 +94,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试移除页面
+        ///     测试移除页面
         /// </summary>
         [UnityTest]
         public IEnumerator RemovePage_ShouldRemoveFromContainer()
@@ -119,7 +114,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试移除页面后索引更新
+        ///     测试移除页面后索引更新
         /// </summary>
         [UnityTest]
         public IEnumerator RemovePage_ShouldUpdateIndices()
@@ -139,12 +134,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.AreEqual(1, page3.PageIndex, "page3索引应更新为1");
         }
 
-        #endregion
-
-        #region 页面获取测试
-
         /// <summary>
-        /// 测试通过索引获取页面
+        ///     测试通过索引获取页面
         /// </summary>
         [UnityTest]
         public IEnumerator GetPage_ByIndex_ShouldReturnCorrectPage()
@@ -162,7 +153,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试通过无效索引获取页面
+        ///     测试通过无效索引获取页面
         /// </summary>
         [UnityTest]
         public IEnumerator GetPage_InvalidIndex_ShouldReturnNull()
@@ -178,7 +169,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试通过类型获取页面
+        ///     测试通过类型获取页面
         /// </summary>
         [UnityTest]
         public IEnumerator GetPage_ByType_ShouldReturnCorrectPage()
@@ -196,7 +187,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试通过名称获取页面
+        ///     测试通过名称获取页面
         /// </summary>
         [UnityTest]
         public IEnumerator GetPage_ByName_ShouldReturnCorrectPage()
@@ -212,7 +203,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试获取所有页面
+        ///     测试获取所有页面
         /// </summary>
         [UnityTest]
         public IEnumerator GetAllPages_ShouldReturnAllPages()
@@ -231,12 +222,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.Contains(page2, pages);
         }
 
-        #endregion
-
-        #region 页面切换测试
-
         /// <summary>
-        /// 测试切换页面
+        ///     测试切换页面
         /// </summary>
         [UnityTest]
         public IEnumerator SwitchPage_ByIndex_ShouldSwitchToPage()
@@ -255,7 +242,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试切换到同一页面
+        ///     测试切换到同一页面
         /// </summary>
         [UnityTest]
         public IEnumerator SwitchPage_SamePage_ShouldNotSwitch()
@@ -273,7 +260,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试切换页面触发事件
+        ///     测试切换页面触发事件
         /// </summary>
         [UnityTest]
         public IEnumerator SwitchPage_ShouldTriggerOnPageChanged()
@@ -302,7 +289,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试通过类型切换页面
+        ///     测试通过类型切换页面
         /// </summary>
         [UnityTest]
         public IEnumerator SwitchPage_ByType_ShouldSwitchToPage()
@@ -320,7 +307,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试通过名称切换页面
+        ///     测试通过名称切换页面
         /// </summary>
         [UnityTest]
         public IEnumerator SwitchPage_ByName_ShouldSwitchToPage()
@@ -338,7 +325,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试切换到下一页
+        ///     测试切换到下一页
         /// </summary>
         [UnityTest]
         public IEnumerator NextPage_ShouldSwitchToNextPage()
@@ -357,7 +344,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试切换到下一页循环
+        ///     测试切换到下一页循环
         /// </summary>
         [UnityTest]
         public IEnumerator NextPage_AtLastPage_ShouldWrapToFirst()
@@ -376,7 +363,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试切换到上一页
+        ///     测试切换到上一页
         /// </summary>
         [UnityTest]
         public IEnumerator PreviousPage_ShouldSwitchToPreviousPage()
@@ -395,7 +382,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试切换到上一页循环
+        ///     测试切换到上一页循环
         /// </summary>
         [UnityTest]
         public IEnumerator PreviousPage_AtFirstPage_ShouldWrapToLast()
@@ -413,12 +400,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.AreEqual(1, container.CurrentPageIndex, "应循环到最后一页");
         }
 
-        #endregion
-
-        #region 页面生命周期测试
-
         /// <summary>
-        /// 测试切换页面时调用OnPageEnter
+        ///     测试切换页面时调用OnPageEnter
         /// </summary>
         [UnityTest]
         public IEnumerator SwitchPage_ShouldCallOnPageEnter()
@@ -434,7 +417,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试切换页面时调用OnPageExit
+        ///     测试切换页面时调用OnPageExit
         /// </summary>
         [UnityTest]
         public IEnumerator SwitchPage_ShouldCallOnPageExit()
@@ -452,12 +435,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.AreEqual(1, page1.ExitCount, "OnPageExit应被调用");
         }
 
-        #endregion
-
-        #region 初始状态测试
-
         /// <summary>
-        /// 测试初始CurrentPageIndex
+        ///     测试初始CurrentPageIndex
         /// </summary>
         [UnityTest]
         public IEnumerator CurrentPageIndex_Initial_ShouldBeNegativeOne()
@@ -469,7 +448,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试初始CurrentPage
+        ///     测试初始CurrentPage
         /// </summary>
         [UnityTest]
         public IEnumerator CurrentPage_Initial_ShouldBeNull()
@@ -481,7 +460,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 测试初始PageCount
+        ///     测试初始PageCount
         /// </summary>
         [UnityTest]
         public IEnumerator PageCount_Initial_ShouldBeZero()
@@ -492,12 +471,8 @@ namespace xFrame.Tests.PlayMode.UITests
             Assert.AreEqual(0, container.PageCount, "初始PageCount应为0");
         }
 
-        #endregion
-
-        #region 辅助方法
-
         /// <summary>
-        /// 创建测试容器
+        ///     创建测试容器
         /// </summary>
         private TestTabContainer CreateTestContainer()
         {
@@ -507,7 +482,7 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
-        /// 创建测试页面
+        ///     创建测试页面
         /// </summary>
         private T CreateTestPage<T>() where T : UITabPage
         {
@@ -516,33 +491,29 @@ namespace xFrame.Tests.PlayMode.UITests
             return go.AddComponent<T>();
         }
 
-        #endregion
-
-        #region 测试辅助类
-
         /// <summary>
-        /// 测试用容器
+        ///     测试用容器
         /// </summary>
         private class TestTabContainer : UITabContainer
         {
         }
 
         /// <summary>
-        /// 测试用页面1
+        ///     测试用页面1
         /// </summary>
         private class TestTabPage1 : UITabPage
         {
         }
 
         /// <summary>
-        /// 测试用页面2
+        ///     测试用页面2
         /// </summary>
         private class TestTabPage2 : UITabPage
         {
         }
 
         /// <summary>
-        /// 带计数器的测试页面
+        ///     带计数器的测试页面
         /// </summary>
         private class TestTabPageWithCounter : UITabPage
         {
@@ -561,7 +532,5 @@ namespace xFrame.Tests.PlayMode.UITests
                 ExitCount++;
             }
         }
-
-        #endregion
     }
 }

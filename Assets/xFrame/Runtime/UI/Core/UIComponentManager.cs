@@ -5,9 +5,9 @@ using UnityEngine;
 namespace xFrame.Runtime.UI
 {
     /// <summary>
-    /// UI组件管理器
-    /// 用于管理UIView下的所有子组件
-    /// 依赖关系：父组件通过管理器管理子组件，子组件不知道父组件
+    ///     UI组件管理器
+    ///     用于管理UIView下的所有子组件
+    ///     依赖关系：父组件通过管理器管理子组件，子组件不知道父组件
     /// </summary>
     public class UIComponentManager
     {
@@ -15,7 +15,7 @@ namespace xFrame.Runtime.UI
         private readonly Dictionary<Type, List<UIComponent>> _componentsByType = new();
 
         /// <summary>
-        /// 构造函数
+        ///     构造函数
         /// </summary>
         public UIComponentManager()
         {
@@ -24,7 +24,7 @@ namespace xFrame.Runtime.UI
         #region 组件注册和管理
 
         /// <summary>
-        /// 注册组件
+        ///     注册组件
         /// </summary>
         /// <typeparam name="T">组件类型</typeparam>
         /// <param name="component">组件实例</param>
@@ -56,7 +56,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 自动查找并注册所有子组件
+        ///     自动查找并注册所有子组件
         /// </summary>
         /// <param name="rootTransform">根节点</param>
         public void AutoRegisterComponents(Transform rootTransform)
@@ -88,7 +88,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 注销组件
+        ///     注销组件
         /// </summary>
         /// <param name="componentId">组件ID</param>
         public void UnregisterComponent(string componentId)
@@ -110,7 +110,7 @@ namespace xFrame.Runtime.UI
         #region 组件查询
 
         /// <summary>
-        /// 通过ID获取组件
+        ///     通过ID获取组件
         /// </summary>
         /// <param name="componentId">组件ID</param>
         /// <returns>组件实例</returns>
@@ -121,7 +121,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 通过ID获取组件（泛型）
+        ///     通过ID获取组件（泛型）
         /// </summary>
         /// <typeparam name="T">组件类型</typeparam>
         /// <param name="componentId">组件ID</param>
@@ -132,7 +132,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 获取指定类型的第一个组件
+        ///     获取指定类型的第一个组件
         /// </summary>
         /// <typeparam name="T">组件类型</typeparam>
         /// <returns>组件实例</returns>
@@ -144,7 +144,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 获取指定类型的所有组件
+        ///     获取指定类型的所有组件
         /// </summary>
         /// <typeparam name="T">组件类型</typeparam>
         /// <returns>组件列表</returns>
@@ -162,7 +162,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 获取所有组件
+        ///     获取所有组件
         /// </summary>
         /// <returns>所有组件列表</returns>
         public List<UIComponent> GetAllComponents()
@@ -175,7 +175,7 @@ namespace xFrame.Runtime.UI
         #region 生命周期传递
 
         /// <summary>
-        /// 当父UI显示时，通知所有可见的子组件
+        ///     当父UI显示时，通知所有可见的子组件
         /// </summary>
         public void OnParentShow()
         {
@@ -185,7 +185,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 当父UI隐藏时，通知所有子组件
+        ///     当父UI隐藏时，通知所有子组件
         /// </summary>
         public void OnParentHide()
         {
@@ -195,7 +195,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 当父UI关闭时，重置所有子组件
+        ///     当父UI关闭时，重置所有子组件
         /// </summary>
         public void OnParentClose()
         {
@@ -203,7 +203,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 当父UI销毁时，销毁所有子组件
+        ///     当父UI销毁时，销毁所有子组件
         /// </summary>
         public void OnParentDestroy()
         {
@@ -218,7 +218,7 @@ namespace xFrame.Runtime.UI
         #region 批量操作
 
         /// <summary>
-        /// 显示所有组件
+        ///     显示所有组件
         /// </summary>
         public void ShowAll()
         {
@@ -226,7 +226,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 隐藏所有组件
+        ///     隐藏所有组件
         /// </summary>
         public void HideAll()
         {
@@ -234,7 +234,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 显示指定类型的所有组件
+        ///     显示指定类型的所有组件
         /// </summary>
         /// <typeparam name="T">组件类型</typeparam>
         public void ShowComponentsOfType<T>() where T : UIComponent
@@ -244,7 +244,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 隐藏指定类型的所有组件
+        ///     隐藏指定类型的所有组件
         /// </summary>
         /// <typeparam name="T">组件类型</typeparam>
         public void HideComponentsOfType<T>() where T : UIComponent
@@ -254,7 +254,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 刷新所有组件
+        ///     刷新所有组件
         /// </summary>
         public void RefreshAll()
         {
@@ -266,7 +266,7 @@ namespace xFrame.Runtime.UI
         #region 统计信息
 
         /// <summary>
-        /// 获取组件总数
+        ///     获取组件总数
         /// </summary>
         /// <returns>组件数量</returns>
         public int GetComponentCount()
@@ -275,7 +275,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 获取指定类型的组件数量
+        ///     获取指定类型的组件数量
         /// </summary>
         /// <typeparam name="T">组件类型</typeparam>
         /// <returns>组件数量</returns>

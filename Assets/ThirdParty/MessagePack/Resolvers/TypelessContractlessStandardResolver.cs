@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #if !UNITY_2018_3_OR_NEWER
-
 #if !(MESSAGEPACK_FORCE_AOT || ENABLE_IL2CPP)
 #define DYNAMIC_GENERATION
 #endif

@@ -4,8 +4,8 @@ using System.Collections.Generic;
 namespace xFrame.Runtime.DataStructures
 {
     /// <summary>
-    /// LRU缓存实现
-    /// 使用双向链表和哈希表实现O(1)的Get和Put操作
+    ///     LRU缓存实现
+    ///     使用双向链表和哈希表实现O(1)的Get和Put操作
     /// </summary>
     /// <typeparam name="TKey">键的类型</typeparam>
     /// <typeparam name="TValue">值的类型</typeparam>
@@ -17,7 +17,7 @@ namespace xFrame.Runtime.DataStructures
         private readonly Node _tail;
 
         /// <summary>
-        /// 构造函数
+        ///     构造函数
         /// </summary>
         /// <param name="capacity">缓存的最大容量，必须大于0</param>
         /// <exception cref="ArgumentException">当容量小于等于0时抛出</exception>
@@ -37,17 +37,17 @@ namespace xFrame.Runtime.DataStructures
         }
 
         /// <summary>
-        /// 缓存的最大容量
+        ///     缓存的最大容量
         /// </summary>
         public int Capacity { get; }
 
         /// <summary>
-        /// 当前缓存中的元素数量
+        ///     当前缓存中的元素数量
         /// </summary>
         public int Count => _cache.Count;
 
         /// <summary>
-        /// 获取所有键的集合（按最近使用顺序排列，最近使用的在前）
+        ///     获取所有键的集合（按最近使用顺序排列，最近使用的在前）
         /// </summary>
         public IEnumerable<TKey> Keys
         {
@@ -63,7 +63,7 @@ namespace xFrame.Runtime.DataStructures
         }
 
         /// <summary>
-        /// 获取所有值的集合（按最近使用顺序排列，最近使用的在前）
+        ///     获取所有值的集合（按最近使用顺序排列，最近使用的在前）
         /// </summary>
         public IEnumerable<TValue> Values
         {
@@ -79,7 +79,7 @@ namespace xFrame.Runtime.DataStructures
         }
 
         /// <summary>
-        /// 获取指定键对应的值
+        ///     获取指定键对应的值
         /// </summary>
         /// <param name="key">要查找的键</param>
         /// <param name="value">输出参数，如果找到则包含对应的值</param>
@@ -99,7 +99,7 @@ namespace xFrame.Runtime.DataStructures
         }
 
         /// <summary>
-        /// 获取指定键对应的值
+        ///     获取指定键对应的值
         /// </summary>
         /// <param name="key">要查找的键</param>
         /// <returns>如果找到键则返回对应的值，否则抛出异常</returns>
@@ -112,7 +112,7 @@ namespace xFrame.Runtime.DataStructures
         }
 
         /// <summary>
-        /// 设置指定键的值
+        ///     设置指定键的值
         /// </summary>
         /// <param name="key">要设置的键</param>
         /// <param name="value">要设置的值</param>
@@ -139,7 +139,7 @@ namespace xFrame.Runtime.DataStructures
         }
 
         /// <summary>
-        /// 检查缓存中是否包含指定的键
+        ///     检查缓存中是否包含指定的键
         /// </summary>
         /// <param name="key">要检查的键</param>
         /// <returns>如果包含键则返回true，否则返回false</returns>
@@ -149,7 +149,7 @@ namespace xFrame.Runtime.DataStructures
         }
 
         /// <summary>
-        /// 从缓存中移除指定的键
+        ///     从缓存中移除指定的键
         /// </summary>
         /// <param name="key">要移除的键</param>
         /// <returns>如果成功移除则返回true，否则返回false</returns>
@@ -166,7 +166,7 @@ namespace xFrame.Runtime.DataStructures
         }
 
         /// <summary>
-        /// 清空缓存中的所有元素
+        ///     清空缓存中的所有元素
         /// </summary>
         public void Clear()
         {
@@ -176,7 +176,7 @@ namespace xFrame.Runtime.DataStructures
         }
 
         /// <summary>
-        /// 将节点添加到链表头部（最近使用位置）
+        ///     将节点添加到链表头部（最近使用位置）
         /// </summary>
         /// <param name="node">要添加的节点</param>
         private void AddToHead(Node node)
@@ -188,7 +188,7 @@ namespace xFrame.Runtime.DataStructures
         }
 
         /// <summary>
-        /// 从链表中移除指定节点
+        ///     从链表中移除指定节点
         /// </summary>
         /// <param name="node">要移除的节点</param>
         private void RemoveNode(Node node)
@@ -198,7 +198,7 @@ namespace xFrame.Runtime.DataStructures
         }
 
         /// <summary>
-        /// 将节点移动到链表头部
+        ///     将节点移动到链表头部
         /// </summary>
         /// <param name="node">要移动的节点</param>
         private void MoveToHead(Node node)
@@ -208,7 +208,7 @@ namespace xFrame.Runtime.DataStructures
         }
 
         /// <summary>
-        /// 移除最久未使用的项（链表尾部的节点）
+        ///     移除最久未使用的项（链表尾部的节点）
         /// </summary>
         private void RemoveLeastRecentlyUsed()
         {
@@ -221,7 +221,7 @@ namespace xFrame.Runtime.DataStructures
         }
 
         /// <summary>
-        /// 获取缓存的统计信息
+        ///     获取缓存的统计信息
         /// </summary>
         /// <returns>包含容量、当前数量等信息的字符串</returns>
         public override string ToString()
@@ -230,7 +230,7 @@ namespace xFrame.Runtime.DataStructures
         }
 
         /// <summary>
-        /// 双向链表节点
+        ///     双向链表节点
         /// </summary>
         private class Node
         {

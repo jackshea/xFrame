@@ -6,8 +6,8 @@ using Object = UnityEngine.Object;
 namespace xFrame.Runtime.ResourceManager
 {
     /// <summary>
-    /// 基于Unity Resources系统的资源提供者
-    /// 用于演示如何实现不同的资源加载方案
+    ///     基于Unity Resources系统的资源提供者
+    ///     用于演示如何实现不同的资源加载方案
     /// </summary>
     public class ResourcesAssetProvider : IAssetProvider
     {
@@ -20,17 +20,17 @@ namespace xFrame.Runtime.ResourceManager
         private int _releaseCount;
 
         /// <summary>
-        /// 提供者名称
+        ///     提供者名称
         /// </summary>
         public string ProviderName => "Resources";
 
         /// <summary>
-        /// 是否支持异步加载（Resources系统支持异步）
+        ///     是否支持异步加载（Resources系统支持异步）
         /// </summary>
         public bool SupportsAsync => true;
 
         /// <summary>
-        /// 同步加载资源
+        ///     同步加载资源
         /// </summary>
         /// <typeparam name="T">资源类型</typeparam>
         /// <param name="address">资源地址（Resources路径）</param>
@@ -80,7 +80,7 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 异步加载资源
+        ///     异步加载资源
         /// </summary>
         /// <typeparam name="T">资源类型</typeparam>
         /// <param name="address">资源地址</param>
@@ -136,7 +136,7 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 同步加载资源（非泛型版本）
+        ///     同步加载资源（非泛型版本）
         /// </summary>
         /// <param name="address">资源地址</param>
         /// <param name="type">资源类型</param>
@@ -197,7 +197,7 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 异步加载资源（非泛型版本）
+        ///     异步加载资源（非泛型版本）
         /// </summary>
         /// <param name="address">资源地址</param>
         /// <param name="type">资源类型</param>
@@ -264,8 +264,8 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 释放资源
-        /// Resources系统加载的资源通常由Unity自动管理，这里主要用于统计
+        ///     释放资源
+        ///     Resources系统加载的资源通常由Unity自动管理，这里主要用于统计
         /// </summary>
         /// <param name="address">资源地址</param>
         /// <param name="asset">资源对象</param>
@@ -291,8 +291,8 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 检查资源是否存在
-        /// Resources系统没有直接的存在性检查，这里尝试加载来判断
+        ///     检查资源是否存在
+        ///     Resources系统没有直接的存在性检查，这里尝试加载来判断
         /// </summary>
         /// <param name="address">资源地址</param>
         /// <returns>如果资源存在返回true，否则返回false</returns>
@@ -313,8 +313,8 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 预加载资源
-        /// Resources系统的预加载实际上就是加载资源
+        ///     预加载资源
+        ///     Resources系统的预加载实际上就是加载资源
         /// </summary>
         /// <param name="address">资源地址</param>
         /// <returns>预加载任务</returns>
@@ -325,7 +325,7 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 获取提供者统计信息
+        ///     获取提供者统计信息
         /// </summary>
         /// <returns>提供者统计信息</returns>
         public AssetProviderStats GetStats()
@@ -343,7 +343,7 @@ namespace xFrame.Runtime.ResourceManager
         }
 
         /// <summary>
-        /// 释放资源
+        ///     释放资源
         /// </summary>
         public void Dispose()
         {

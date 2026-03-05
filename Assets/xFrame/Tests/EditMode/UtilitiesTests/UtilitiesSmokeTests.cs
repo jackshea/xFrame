@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using NUnit.Framework;
 using VContainer;
 using xFrame.Runtime.Utilities;
@@ -15,10 +16,10 @@ namespace xFrame.Tests
             builder.RegisterUtilitiesModule();
             var resolver = builder.Build();
 
-            IGuidService guidService = resolver.Resolve<IGuidService>();
-            string value = guidService.NewGuid();
+            var guidService = resolver.Resolve<IGuidService>();
+            var value = guidService.NewGuid();
 
-            bool parsed = guidService.TryParse(value, out Guid guid);
+            var parsed = guidService.TryParse(value, out var guid);
 
             Assert.IsTrue(parsed);
             Assert.AreNotEqual(Guid.Empty, guid);
@@ -27,17 +28,14 @@ namespace xFrame.Tests
         [Test]
         public void RetryUtility_ExecuteAsync_ShouldRetryUntilSuccess()
         {
-            int attempts = 0;
+            var attempts = 0;
 
-            int result = RetryUtility.ExecuteAsync(async () =>
+            var result = RetryUtility.ExecuteAsync(async () =>
             {
                 attempts++;
-                if (attempts < 3)
-                {
-                    throw new InvalidOperationException("failed");
-                }
+                if (attempts < 3) throw new InvalidOperationException("failed");
 
-                return await Cysharp.Threading.Tasks.UniTask.FromResult(7);
+                return await UniTask.FromResult(7);
             }, 3, TimeSpan.Zero).GetAwaiter().GetResult();
 
             Assert.AreEqual(7, result);

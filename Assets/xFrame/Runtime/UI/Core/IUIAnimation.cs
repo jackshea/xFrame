@@ -1,66 +1,65 @@
 using System;
+using System.Collections;
 using System.Threading.Tasks;
 using UnityEngine;
 #if DOTWEEN
 using DG.Tweening;
-using DG.Tweening.Core;
-using DG.Tweening.Plugins.Options;
 #endif
 
 namespace xFrame.Runtime.UI
 {
     /// <summary>
-    /// UI动画接口
-    /// 定义UI动画的标准行为
+    ///     UI动画接口
+    ///     定义UI动画的标准行为
     /// </summary>
     public interface IUIAnimation
     {
         /// <summary>
-        /// 动画持续时间（秒）
+        ///     动画持续时间（秒）
         /// </summary>
         float Duration { get; }
 
         /// <summary>
-        /// 播放动画
+        ///     播放动画
         /// </summary>
         /// <param name="target">动画目标</param>
         /// <param name="onComplete">完成回调</param>
         void Play(RectTransform target, Action onComplete = null);
 
         /// <summary>
-        /// 异步播放动画
+        ///     异步播放动画
         /// </summary>
         /// <param name="target">动画目标</param>
         /// <returns>动画任务</returns>
         Task PlayAsync(RectTransform target);
 
         /// <summary>
-        /// 停止动画
+        ///     停止动画
         /// </summary>
         /// <param name="target">动画目标</param>
         void Stop(RectTransform target);
     }
 
     /// <summary>
-    /// UI动画基类
-    /// 提供动画的基础实现
+    ///     UI动画基类
+    ///     提供动画的基础实现
     /// </summary>
     public abstract class UIAnimationBase : IUIAnimation
     {
         /// <summary>
-        /// 动画持续时间（秒）
+        ///     动画持续时间（秒）
         /// </summary>
         public virtual float Duration => 0.3f;
 
         /// <summary>
-        /// 播放动画
+        ///     播放动画
         /// </summary>
         /// <param name="target">动画目标</param>
         /// <param name="onComplete">完成回调</param>
         public abstract void Play(RectTransform target, Action onComplete = null);
 
         /// <summary>
-        /// 异步播放动画
+        ///     异步播放动画
         /// </summary>
         /// <param name="target">动画目标</param>
         /// <returns>动画任务</returns>
@@ -72,24 +71,24 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 停止动画
+        ///     停止动画
         /// </summary>
         /// <param name="target">动画目标</param>
         public abstract void Stop(RectTransform target);
     }
 
     /// <summary>
-    /// 缩放弹出动画
-    /// 从小到大的弹出效果
+    ///     缩放弹出动画
+    ///     从小到大的弹出效果
     /// </summary>
     public class ScalePopAnimation : UIAnimationBase
     {
         private readonly float _duration;
-        private readonly Vector3 _startScale;
         private readonly Vector3 _endScale;
+        private readonly Vector3 _startScale;
 
         /// <summary>
-        /// 构造函数
+        ///     构造函数
         /// </summary>
         /// <param name="duration">动画持续时间</param>
         /// <param name="startScale">起始缩放</param>
@@ -116,7 +115,7 @@ namespace xFrame.Runtime.UI
 #if DOTWEEN
             // 使用DOTween实现
             target.DOScale(_endScale, _duration)
-                .SetEase(DG.Tweening.Ease.OutBack)
+                .SetEase(Ease.OutBack)
                 .OnComplete(() => onComplete?.Invoke());
 #else
             // 使用协程实现（需要MonoBehaviour）
@@ -143,17 +142,17 @@ namespace xFrame.Runtime.UI
     }
 
     /// <summary>
-    /// 缩放收缩动画
-    /// 从大到小的收缩效果
+    ///     缩放收缩动画
+    ///     从大到小的收缩效果
     /// </summary>
     public class ScaleShrinkAnimation : UIAnimationBase
     {
         private readonly float _duration;
-        private readonly Vector3 _startScale;
         private readonly Vector3 _endScale;
+        private readonly Vector3 _startScale;
 
         /// <summary>
-        /// 构造函数
+        ///     构造函数
         /// </summary>
         /// <param name="duration">动画持续时间</param>
         /// <param name="startScale">起始缩放</param>
@@ -179,7 +178,7 @@ namespace xFrame.Runtime.UI
 
 #if DOTWEEN
             target.DOScale(_endScale, _duration)
-                .SetEase(DG.Tweening.Ease.InBack)
+                .SetEase(Ease.InBack)
                 .OnComplete(() => onComplete?.Invoke());
 #else
             var coroutineRunner = target.GetComponent<UIAnimationCoroutineRunner>();
@@ -205,7 +204,7 @@ namespace xFrame.Runtime.UI
     }
 
     /// <summary>
-    /// 淡入动画
+    ///     淡入动画
     /// </summary>
     public class FadeInAnimation : UIAnimationBase
     {
@@ -261,7 +260,7 @@ namespace xFrame.Runtime.UI
     }
 
     /// <summary>
-    /// 淡出动画
+    ///     淡出动画
     /// </summary>
     public class FadeOutAnimation : UIAnimationBase
     {
@@ -317,13 +316,10 @@ namespace xFrame.Runtime.UI
     }
 
     /// <summary>
-    /// 滑入动画
+    ///     滑入动画
     /// </summary>
     public class SlideInAnimation : UIAnimationBase
     {
-        private readonly float _duration;
-        private readonly SlideDirection _direction;
-
         public enum SlideDirection
         {
             Left,
@@ -331,6 +327,9 @@ namespace xFrame.Runtime.UI
             Top,
             Bottom
         }
+
+        private readonly SlideDirection _direction;
+        private readonly float _duration;
 
         public SlideInAnimation(SlideDirection direction = SlideDirection.Bottom, float duration = 0.3f)
         {
@@ -395,21 +394,22 @@ namespace xFrame.Runtime.UI
     }
 
     /// <summary>
-    /// UI动画协程运行器
-    /// 用于在没有DOTween时运行动画
+    ///     UI动画协程运行器
+    ///     用于在没有DOTween时运行动画
     /// </summary>
     public class UIAnimationCoroutineRunner : MonoBehaviour
     {
         /// <summary>
-        /// 开始缩放动画
+        ///     开始缩放动画
         /// </summary>
-        public void StartScaleAnimation(RectTransform target, Vector3 from, Vector3 to, float duration, Action onComplete)
+        public void StartScaleAnimation(RectTransform target, Vector3 from, Vector3 to, float duration,
+            Action onComplete)
         {
             StartCoroutine(ScaleCoroutine(target, from, to, duration, onComplete));
         }
 
         /// <summary>
-        /// 开始淡入淡出动画
+        ///     开始淡入淡出动画
         /// </summary>
         public void StartFadeAnimation(CanvasGroup canvasGroup, float from, float to, float duration, Action onComplete)
         {
@@ -417,14 +417,16 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// 开始移动动画
+        ///     开始移动动画
         /// </summary>
-        public void StartMoveAnimation(RectTransform target, Vector2 from, Vector2 to, float duration, Action onComplete)
+        public void StartMoveAnimation(RectTransform target, Vector2 from, Vector2 to, float duration,
+            Action onComplete)
         {
             StartCoroutine(MoveCoroutine(target, from, to, duration, onComplete));
         }
 
-        private System.Collections.IEnumerator ScaleCoroutine(RectTransform target, Vector3 from, Vector3 to, float duration, Action onComplete)
+        private IEnumerator ScaleCoroutine(RectTransform target, Vector3 from, Vector3 to, float duration,
+            Action onComplete)
         {
             var elapsed = 0f;
             while (elapsed < duration)
@@ -434,11 +436,13 @@ namespace xFrame.Runtime.UI
                 target.localScale = Vector3.Lerp(from, to, t);
                 yield return null;
             }
+
             target.localScale = to;
             onComplete?.Invoke();
         }
 
-        private System.Collections.IEnumerator FadeCoroutine(CanvasGroup canvasGroup, float from, float to, float duration, Action onComplete)
+        private IEnumerator FadeCoroutine(CanvasGroup canvasGroup, float from, float to, float duration,
+            Action onComplete)
         {
             var elapsed = 0f;
             while (elapsed < duration)
@@ -448,11 +452,13 @@ namespace xFrame.Runtime.UI
                 canvasGroup.alpha = Mathf.Lerp(from, to, t);
                 yield return null;
             }
+
             canvasGroup.alpha = to;
             onComplete?.Invoke();
         }
 
-        private System.Collections.IEnumerator MoveCoroutine(RectTransform target, Vector2 from, Vector2 to, float duration, Action onComplete)
+        private IEnumerator MoveCoroutine(RectTransform target, Vector2 from, Vector2 to, float duration,
+            Action onComplete)
         {
             var elapsed = 0f;
             while (elapsed < duration)
@@ -462,12 +468,13 @@ namespace xFrame.Runtime.UI
                 target.anchoredPosition = Vector2.Lerp(from, to, t);
                 yield return null;
             }
+
             target.anchoredPosition = to;
             onComplete?.Invoke();
         }
 
         /// <summary>
-        /// EaseOutBack缓动函数
+        ///     EaseOutBack缓动函数
         /// </summary>
         private float EaseOutBack(float t)
         {
@@ -477,7 +484,7 @@ namespace xFrame.Runtime.UI
         }
 
         /// <summary>
-        /// EaseOutCubic缓动函数
+        ///     EaseOutCubic缓动函数
         /// </summary>
         private float EaseOutCubic(float t)
         {
@@ -486,47 +493,47 @@ namespace xFrame.Runtime.UI
     }
 
     /// <summary>
-    /// 预定义的UI动画集合
+    ///     预定义的UI动画集合
     /// </summary>
     public static class UIAnimations
     {
         /// <summary>
-        /// 默认弹出动画
+        ///     默认弹出动画
         /// </summary>
         public static IUIAnimation PopIn => new ScalePopAnimation();
 
         /// <summary>
-        /// 默认收缩动画
+        ///     默认收缩动画
         /// </summary>
         public static IUIAnimation PopOut => new ScaleShrinkAnimation();
 
         /// <summary>
-        /// 默认淡入动画
+        ///     默认淡入动画
         /// </summary>
         public static IUIAnimation FadeIn => new FadeInAnimation();
 
         /// <summary>
-        /// 默认淡出动画
+        ///     默认淡出动画
         /// </summary>
         public static IUIAnimation FadeOut => new FadeOutAnimation();
 
         /// <summary>
-        /// 从底部滑入
+        ///     从底部滑入
         /// </summary>
-        public static IUIAnimation SlideInFromBottom => new SlideInAnimation(SlideInAnimation.SlideDirection.Bottom);
+        public static IUIAnimation SlideInFromBottom => new SlideInAnimation();
 
         /// <summary>
-        /// 从顶部滑入
+        ///     从顶部滑入
         /// </summary>
         public static IUIAnimation SlideInFromTop => new SlideInAnimation(SlideInAnimation.SlideDirection.Top);
 
         /// <summary>
-        /// 从左侧滑入
+        ///     从左侧滑入
         /// </summary>
         public static IUIAnimation SlideInFromLeft => new SlideInAnimation(SlideInAnimation.SlideDirection.Left);
 
         /// <summary>
-        /// 从右侧滑入
+        ///     从右侧滑入
         /// </summary>
         public static IUIAnimation SlideInFromRight => new SlideInAnimation(SlideInAnimation.SlideDirection.Right);
     }

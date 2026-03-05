@@ -22,7 +22,8 @@ namespace xFrame.Tests
 
             using var server = new FleckAgentBridgeServer(new AgentBridgeOptions(), logger, persistence);
 
-            Assert.That(server.Endpoint, Is.EqualTo($"ws://{AgentBridgeOptions.DefaultHost}:{AgentBridgeOptions.DefaultPort}"));
+            Assert.That(server.Endpoint,
+                Is.EqualTo($"ws://{AgentBridgeOptions.DefaultHost}:{AgentBridgeOptions.DefaultPort}"));
             Assert.That(logger.Levels, Has.Member(LogLevel.Warning));
             Assert.That(logger.Messages, Has.Some.Contains("fallback to default"));
         }
@@ -57,15 +58,15 @@ namespace xFrame.Tests
         {
             public AgentBridgeEndpointLoadResult LoadResult { get; set; }
 
-            public string LoadHost { get; set; } = AgentBridgeOptions.DefaultHost;
+            public string LoadHost { get; } = AgentBridgeOptions.DefaultHost;
 
-            public int LoadPort { get; set; } = AgentBridgeOptions.DefaultPort;
+            public int LoadPort { get; } = AgentBridgeOptions.DefaultPort;
 
             public string LoadError { get; set; }
 
             public int SaveCallCount { get; private set; }
 
-            public bool SaveResult { get; set; } = true;
+            public bool SaveResult { get; } = true;
 
             public string SaveError { get; set; }
 
@@ -87,15 +88,14 @@ namespace xFrame.Tests
 
         private sealed class CapturingLogger : IXLogger
         {
+            public List<string> Messages { get; } = new();
+
+            public List<LogLevel> Levels { get; } = new();
             public string ModuleName => "AgentBridgeTests";
 
             public bool IsEnabled { get; set; } = true;
 
             public LogLevel MinLevel { get; set; } = LogLevel.Debug;
-
-            public List<string> Messages { get; } = new();
-
-            public List<LogLevel> Levels { get; } = new();
 
             public void Verbose(string message)
             {
@@ -149,10 +149,7 @@ namespace xFrame.Tests
 
             private void Record(LogLevel level, string message)
             {
-                if (!IsLevelEnabled(level))
-                {
-                    return;
-                }
+                if (!IsLevelEnabled(level)) return;
 
                 Levels.Add(level);
                 Messages.Add(message);

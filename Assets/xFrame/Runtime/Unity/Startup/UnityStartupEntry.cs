@@ -6,20 +6,21 @@ using xFrame.Runtime.Startup;
 namespace xFrame.Runtime.Unity.Startup
 {
     /// <summary>
-    /// Unity 启动入口薄层，仅负责拼装并触发纯 C# 流程。
+    ///     Unity 启动入口薄层，仅负责拼装并触发纯 C# 流程。
     /// </summary>
     public class UnityStartupEntry : MonoBehaviour
     {
-        [Header("Startup")]
-        [SerializeField] private BootEnvironment _environment = BootEnvironment.DevFull;
+        [Header("Startup")] [SerializeField] private BootEnvironment _environment = BootEnvironment.DevFull;
+
         [SerializeField] private bool _autoRunOnStart = true;
 
-        [Header("Dependencies")]
-        [SerializeField] private UnityStartupView _view;
+        [Header("Dependencies")] [SerializeField]
+        private UnityStartupView _view;
+
         [SerializeField] private UnityStartupInstallerBase _installer;
+        private CancellationTokenSource _lifetimeTokenSource;
 
         private IStartupOrchestrator _orchestrator;
-        private CancellationTokenSource _lifetimeTokenSource;
 
         private void Awake()
         {
@@ -29,26 +30,14 @@ namespace xFrame.Runtime.Unity.Startup
 
         private async void Start()
         {
-            if (!_autoRunOnStart)
-            {
-                return;
-            }
+            if (!_autoRunOnStart) return;
 
             await RunAsync();
         }
 
-        public async Task<StartupPipelineResult> RunAsync()
-        {
-            EnsureOrchestrator();
-            return await _orchestrator.RunAsync(_environment, _lifetimeTokenSource.Token);
-        }
-
         private void OnDestroy()
         {
-            if (_lifetimeTokenSource == null)
-            {
-                return;
-            }
+            if (_lifetimeTokenSource == null) return;
 
             _lifetimeTokenSource.Cancel();
 
@@ -62,15 +51,18 @@ namespace xFrame.Runtime.Unity.Startup
             _lifetimeTokenSource = null;
         }
 
+        public async Task<StartupPipelineResult> RunAsync()
+        {
+            EnsureOrchestrator();
+            return await _orchestrator.RunAsync(_environment, _lifetimeTokenSource.Token);
+        }
+
         private void EnsureOrchestrator()
         {
-            if (_orchestrator != null)
-            {
-                return;
-            }
+            if (_orchestrator != null) return;
 
             StartupOrchestratorHost.Configure(
-                installer: _installer,
+                _installer,
                 view: (IStartupView)_view ?? NullStartupView.Instance);
 
             _orchestrator = StartupOrchestratorHost.GetOrCreate();

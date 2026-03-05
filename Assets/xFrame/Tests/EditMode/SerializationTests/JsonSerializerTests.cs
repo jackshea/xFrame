@@ -1,18 +1,26 @@
 using System;
+using System.Text;
 using NUnit.Framework;
 using xFrame.Runtime.Serialization;
 
 namespace xFrame.Tests.SerializationTests
 {
     /// <summary>
-    /// JSON序列化器单元测试
-    /// 测试JsonSerializer的核心功能
+    ///     JSON序列化器单元测试
+    ///     测试JsonSerializer的核心功能
     /// </summary>
     [TestFixture]
     public class JsonSerializerTests
     {
+        [SetUp]
+        public void SetUp()
+        {
+            _serializer = new JsonSerializer();
+            _prettySerializer = new JsonSerializer(true);
+        }
+
         /// <summary>
-        /// 测试用的简单数据类
+        ///     测试用的简单数据类
         /// </summary>
         [Serializable]
         private class SimpleData
@@ -24,7 +32,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试用的数组数据类
+        ///     测试用的数组数据类
         /// </summary>
         [Serializable]
         private class ArrayData
@@ -34,7 +42,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试用的嵌套数据类
+        ///     测试用的嵌套数据类
         /// </summary>
         [Serializable]
         private class NestedData
@@ -46,17 +54,8 @@ namespace xFrame.Tests.SerializationTests
         private JsonSerializer _serializer;
         private JsonSerializer _prettySerializer;
 
-        [SetUp]
-        public void SetUp()
-        {
-            _serializer = new JsonSerializer(false);
-            _prettySerializer = new JsonSerializer(true);
-        }
-
-        #region 基础属性测试
-
         /// <summary>
-        /// 测试序列化器名称
+        ///     测试序列化器名称
         /// </summary>
         [Test]
         public void Name_ShouldReturnJson()
@@ -66,12 +65,8 @@ namespace xFrame.Tests.SerializationTests
             Assert.AreEqual("Json", _serializer.Name);
         }
 
-        #endregion
-
-        #region 字符串序列化测试
-
         /// <summary>
-        /// 测试简单对象序列化为字符串
+        ///     测试简单对象序列化为字符串
         /// </summary>
         [Test]
         public void SerializeToString_SimpleObject_ShouldWork()
@@ -96,7 +91,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试null对象序列化
+        ///     测试null对象序列化
         /// </summary>
         [Test]
         public void SerializeToString_NullObject_ShouldReturnNull()
@@ -109,7 +104,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试格式化输出
+        ///     测试格式化输出
         /// </summary>
         [Test]
         public void SerializeToString_WithPrettyPrint_ShouldBeFormatted()
@@ -122,12 +117,12 @@ namespace xFrame.Tests.SerializationTests
             var prettyJson = _prettySerializer.SerializeToString(data);
 
             // Assert
-            Assert.IsTrue(prettyJson.Length >= normalJson.Length, 
+            Assert.IsTrue(prettyJson.Length >= normalJson.Length,
                 "格式化输出应该包含更多字符（换行和缩进）");
         }
 
         /// <summary>
-        /// 测试数组序列化
+        ///     测试数组序列化
         /// </summary>
         [Test]
         public void SerializeToString_ArrayData_ShouldWork()
@@ -149,7 +144,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试嵌套对象序列化
+        ///     测试嵌套对象序列化
         /// </summary>
         [Test]
         public void SerializeToString_NestedData_ShouldWork()
@@ -170,12 +165,8 @@ namespace xFrame.Tests.SerializationTests
             Assert.IsTrue(json.Contains("Child"));
         }
 
-        #endregion
-
-        #region 字节数组序列化测试
-
         /// <summary>
-        /// 测试序列化为字节数组
+        ///     测试序列化为字节数组
         /// </summary>
         [Test]
         public void Serialize_ShouldReturnUtf8Bytes()
@@ -191,16 +182,12 @@ namespace xFrame.Tests.SerializationTests
             Assert.IsTrue(bytes.Length > 0);
 
             // 验证是UTF-8编码
-            var json = System.Text.Encoding.UTF8.GetString(bytes);
+            var json = Encoding.UTF8.GetString(bytes);
             Assert.IsTrue(json.Contains("Test"));
         }
 
-        #endregion
-
-        #region 字符串反序列化测试
-
         /// <summary>
-        /// 测试从字符串反序列化简单对象
+        ///     测试从字符串反序列化简单对象
         /// </summary>
         [Test]
         public void DeserializeFromString_SimpleObject_ShouldWork()
@@ -220,7 +207,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试反序列化空字符串
+        ///     测试反序列化空字符串
         /// </summary>
         [Test]
         public void DeserializeFromString_EmptyString_ShouldReturnDefault()
@@ -233,7 +220,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试反序列化null字符串
+        ///     测试反序列化null字符串
         /// </summary>
         [Test]
         public void DeserializeFromString_NullString_ShouldReturnDefault()
@@ -246,7 +233,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试反序列化数组数据
+        ///     测试反序列化数组数据
         /// </summary>
         [Test]
         public void DeserializeFromString_ArrayData_ShouldWork()
@@ -266,7 +253,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试反序列化嵌套数据
+        ///     测试反序列化嵌套数据
         /// </summary>
         [Test]
         public void DeserializeFromString_NestedData_ShouldWork()
@@ -285,19 +272,15 @@ namespace xFrame.Tests.SerializationTests
             Assert.AreEqual(10, data.Inner.IntField);
         }
 
-        #endregion
-
-        #region 字节数组反序列化测试
-
         /// <summary>
-        /// 测试从字节数组反序列化
+        ///     测试从字节数组反序列化
         /// </summary>
         [Test]
         public void Deserialize_FromBytes_ShouldWork()
         {
             // Arrange
             var json = "{\"StringField\":\"ByteTest\",\"IntField\":99}";
-            var bytes = System.Text.Encoding.UTF8.GetBytes(json);
+            var bytes = Encoding.UTF8.GetBytes(json);
 
             // Act
             var data = _serializer.Deserialize<SimpleData>(bytes);
@@ -309,7 +292,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试反序列化空字节数组
+        ///     测试反序列化空字节数组
         /// </summary>
         [Test]
         public void Deserialize_EmptyBytes_ShouldReturnDefault()
@@ -322,7 +305,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试反序列化null字节数组
+        ///     测试反序列化null字节数组
         /// </summary>
         [Test]
         public void Deserialize_NullBytes_ShouldReturnDefault()
@@ -334,12 +317,8 @@ namespace xFrame.Tests.SerializationTests
             Assert.IsNull(data);
         }
 
-        #endregion
-
-        #region 类型反序列化测试
-
         /// <summary>
-        /// 测试使用Type参数从字符串反序列化
+        ///     测试使用Type参数从字符串反序列化
         /// </summary>
         [Test]
         public void DeserializeFromString_WithType_ShouldWork()
@@ -357,14 +336,14 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试使用Type参数从字节数组反序列化
+        ///     测试使用Type参数从字节数组反序列化
         /// </summary>
         [Test]
         public void Deserialize_WithType_ShouldWork()
         {
             // Arrange
             var json = "{\"StringField\":\"TypeByteTest\",\"IntField\":75}";
-            var bytes = System.Text.Encoding.UTF8.GetBytes(json);
+            var bytes = Encoding.UTF8.GetBytes(json);
 
             // Act
             var data = _serializer.Deserialize(typeof(SimpleData), bytes) as SimpleData;
@@ -376,7 +355,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试使用Type参数反序列化空数据
+        ///     测试使用Type参数反序列化空数据
         /// </summary>
         [Test]
         public void DeserializeFromString_WithType_EmptyString_ShouldReturnNull()
@@ -388,12 +367,8 @@ namespace xFrame.Tests.SerializationTests
             Assert.IsNull(data);
         }
 
-        #endregion
-
-        #region 往返测试
-
         /// <summary>
-        /// 测试序列化和反序列化的往返一致性
+        ///     测试序列化和反序列化的往返一致性
         /// </summary>
         [Test]
         public void RoundTrip_ShouldPreserveData()
@@ -419,7 +394,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试字节数组往返一致性
+        ///     测试字节数组往返一致性
         /// </summary>
         [Test]
         public void RoundTrip_Bytes_ShouldPreserveData()
@@ -445,7 +420,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试嵌套对象往返一致性
+        ///     测试嵌套对象往返一致性
         /// </summary>
         [Test]
         public void RoundTrip_NestedData_ShouldPreserveData()
@@ -475,7 +450,5 @@ namespace xFrame.Tests.SerializationTests
             Assert.AreEqual(original.Inner.FloatField, restored.Inner.FloatField, 0.01f);
             Assert.AreEqual(original.Inner.BoolField, restored.Inner.BoolField);
         }
-
-        #endregion
     }
 }

@@ -1,21 +1,39 @@
 using System;
 using NUnit.Framework;
-using xFrame.Runtime.StateMachine;
 using xFrame.Runtime.EventBus;
+using xFrame.Runtime.StateMachine;
 
 namespace xFrame.Tests
 {
     /// <summary>
-    /// 状态机单元测试
-    /// 测试状态机的核心功能，包括状态添加、切换、更新和事件触发等
+    ///     状态机单元测试
+    ///     测试状态机的核心功能，包括状态添加、切换、更新和事件触发等
     /// </summary>
     [TestFixture]
     public class StateMachineTests
     {
-        #region 测试用状态类
+        [SetUp]
+        public void SetUp()
+        {
+            _lastEvent = default;
+            _lastEventWithContext = default;
+            _eventCallCount = 0;
+
+            // 清理事件监听器
+            xFrameEventBus.ClearListeners<StateChangedEvent>();
+            xFrameEventBus.ClearListeners<StateChangedEvent<TestContext>>();
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            // 清理事件监听器
+            xFrameEventBus.ClearListeners<StateChangedEvent>();
+            xFrameEventBus.ClearListeners<StateChangedEvent<TestContext>>();
+        }
 
         /// <summary>
-        /// 测试用的简单上下文
+        ///     测试用的简单上下文
         /// </summary>
         private class TestContext
         {
@@ -26,7 +44,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试用的空状态（不带上下文）
+        ///     测试用的空状态（不带上下文）
         /// </summary>
         private class SimpleState : StateBase
         {
@@ -51,7 +69,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 另一个简单状态
+        ///     另一个简单状态
         /// </summary>
         private class AnotherSimpleState : StateBase
         {
@@ -64,7 +82,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试用的状态A（带上下文）
+        ///     测试用的状态A（带上下文）
         /// </summary>
         private class StateA : StateBase<TestContext>
         {
@@ -86,7 +104,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试用的状态B（带上下文）
+        ///     测试用的状态B（带上下文）
         /// </summary>
         private class StateB : StateBase<TestContext>
         {
@@ -108,7 +126,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试用的状态C（带上下文）
+        ///     测试用的状态C（带上下文）
         /// </summary>
         private class StateC : StateBase<TestContext>
         {
@@ -119,12 +137,8 @@ namespace xFrame.Tests
             }
         }
 
-        #endregion
-
-        #region 不带上下文的状态机测试
-
         /// <summary>
-        /// 测试创建状态机
+        ///     测试创建状态机
         /// </summary>
         [Test]
         public void CreateStateMachine_ShouldInitializeCorrectly()
@@ -141,7 +155,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试添加状态
+        ///     测试添加状态
         /// </summary>
         [Test]
         public void AddState_ShouldAddStateSuccessfully()
@@ -160,7 +174,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试添加重复状态应该抛出异常
+        ///     测试添加重复状态应该抛出异常
         /// </summary>
         [Test]
         public void AddState_DuplicateState_ShouldThrowException()
@@ -179,7 +193,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试切换状态
+        ///     测试切换状态
         /// </summary>
         [Test]
         public void ChangeState_ShouldSwitchStateCorrectly()
@@ -200,7 +214,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试切换到不存在的状态应该抛出异常
+        ///     测试切换到不存在的状态应该抛出异常
         /// </summary>
         [Test]
         public void ChangeState_NonExistentState_ShouldThrowException()
@@ -214,7 +228,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试状态切换时的生命周期
+        ///     测试状态切换时的生命周期
         /// </summary>
         [Test]
         public void ChangeState_ShouldCallExitAndEnter()
@@ -238,7 +252,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试状态更新
+        ///     测试状态更新
         /// </summary>
         [Test]
         public void Update_ShouldCallCurrentStateUpdate()
@@ -259,7 +273,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试停止状态机
+        ///     测试停止状态机
         /// </summary>
         [Test]
         public void Stop_ShouldStopStateMachine()
@@ -280,7 +294,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试移除状态
+        ///     测试移除状态
         /// </summary>
         [Test]
         public void RemoveState_ShouldRemoveStateSuccessfully()
@@ -299,7 +313,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试移除当前状态应该抛出异常
+        ///     测试移除当前状态应该抛出异常
         /// </summary>
         [Test]
         public void RemoveState_CurrentState_ShouldThrowException()
@@ -316,7 +330,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试清空状态机
+        ///     测试清空状态机
         /// </summary>
         [Test]
         public void Clear_ShouldClearAllStates()
@@ -339,12 +353,8 @@ namespace xFrame.Tests
             Assert.IsNull(stateMachine.GetState<AnotherSimpleState>(), "所有状态应该被清空");
         }
 
-        #endregion
-
-        #region 带上下文的状态机测试
-
         /// <summary>
-        /// 测试创建带上下文的状态机
+        ///     测试创建带上下文的状态机
         /// </summary>
         [Test]
         public void CreateStateMachineWithContext_ShouldInitializeCorrectly()
@@ -365,7 +375,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试带上下文的状态切换
+        ///     测试带上下文的状态切换
         /// </summary>
         [Test]
         public void ChangeStateWithContext_ShouldPassContextCorrectly()
@@ -384,7 +394,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试带上下文的状态更新
+        ///     测试带上下文的状态更新
         /// </summary>
         [Test]
         public void UpdateWithContext_ShouldPassContextCorrectly()
@@ -404,7 +414,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试带上下文的状态切换生命周期
+        ///     测试带上下文的状态切换生命周期
         /// </summary>
         [Test]
         public void ChangeStateWithContext_ShouldCallExitAndEnter()
@@ -418,7 +428,7 @@ namespace xFrame.Tests
             // Act
             stateMachine.ChangeState<StateA>();
             Assert.AreEqual("StateA", context.LastState, "应该进入StateA");
-            
+
             stateMachine.ChangeState<StateB>();
 
             // Assert
@@ -428,7 +438,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试带上下文的状态机停止
+        ///     测试带上下文的状态机停止
         /// </summary>
         [Test]
         public void StopWithContext_ShouldCallExitWithContext()
@@ -448,7 +458,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试修改上下文
+        ///     测试修改上下文
         /// </summary>
         [Test]
         public void ModifyContext_ShouldUpdateContext()
@@ -465,36 +475,12 @@ namespace xFrame.Tests
             Assert.AreSame(context2, stateMachine.Context, "上下文应该被成功修改");
         }
 
-        #endregion
-
-        #region 事件测试
-
         private StateChangedEvent _lastEvent;
         private StateChangedEvent<TestContext> _lastEventWithContext;
         private int _eventCallCount;
 
-        [SetUp]
-        public void SetUp()
-        {
-            _lastEvent = default;
-            _lastEventWithContext = default;
-            _eventCallCount = 0;
-            
-            // 清理事件监听器
-            xFrameEventBus.ClearListeners<StateChangedEvent>();
-            xFrameEventBus.ClearListeners<StateChangedEvent<TestContext>>();
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            // 清理事件监听器
-            xFrameEventBus.ClearListeners<StateChangedEvent>();
-            xFrameEventBus.ClearListeners<StateChangedEvent<TestContext>>();
-        }
-
         /// <summary>
-        /// 测试状态改变事件（不带上下文）
+        ///     测试状态改变事件（不带上下文）
         /// </summary>
         [Test]
         public void ChangeState_ShouldRaiseStateChangedEvent()
@@ -527,7 +513,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试状态改变事件（带上下文）
+        ///     测试状态改变事件（带上下文）
         /// </summary>
         [Test]
         public void ChangeStateWithContext_ShouldRaiseStateChangedEvent()
@@ -573,12 +559,8 @@ namespace xFrame.Tests
             _eventCallCount++;
         }
 
-        #endregion
-
-        #region 边界情况测试
-
         /// <summary>
-        /// 测试在没有状态时更新状态机
+        ///     测试在没有状态时更新状态机
         /// </summary>
         [Test]
         public void Update_WithoutState_ShouldNotThrow()
@@ -591,7 +573,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试在停止后更新状态机
+        ///     测试在停止后更新状态机
         /// </summary>
         [Test]
         public void Update_AfterStop_ShouldNotCallUpdate()
@@ -611,7 +593,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试多次停止状态机
+        ///     测试多次停止状态机
         /// </summary>
         [Test]
         public void Stop_MultipleTimes_ShouldNotThrow()
@@ -634,7 +616,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试获取不存在的状态
+        ///     测试获取不存在的状态
         /// </summary>
         [Test]
         public void GetState_NonExistentState_ShouldReturnNull()
@@ -648,7 +630,5 @@ namespace xFrame.Tests
             // Assert
             Assert.IsNull(state, "获取不存在的状态应该返回null");
         }
-
-        #endregion
     }
 }

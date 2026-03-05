@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -7,14 +6,11 @@ using xFrame.Runtime.UI;
 namespace xFrame.Tests.EditMode.UITests
 {
     /// <summary>
-    /// UIComponentManager组件管理器的单元测试
+    ///     UIComponentManager组件管理器的单元测试
     /// </summary>
     [TestFixture]
     public class UIComponentManagerTests
     {
-        private UIComponentManager _manager;
-        private GameObject _testRoot;
-
         [SetUp]
         public void SetUp()
         {
@@ -25,16 +21,14 @@ namespace xFrame.Tests.EditMode.UITests
         [TearDown]
         public void TearDown()
         {
-            if (_testRoot != null)
-            {
-                Object.DestroyImmediate(_testRoot);
-            }
+            if (_testRoot != null) Object.DestroyImmediate(_testRoot);
         }
 
-        #region 构造函数测试
+        private UIComponentManager _manager;
+        private GameObject _testRoot;
 
         /// <summary>
-        /// 测试默认构造函数
+        ///     测试默认构造函数
         /// </summary>
         [Test]
         public void Constructor_Default_ShouldCreateEmptyManager()
@@ -43,12 +37,8 @@ namespace xFrame.Tests.EditMode.UITests
             Assert.AreEqual(0, manager.GetComponentCount(), "新创建的管理器应无组件");
         }
 
-        #endregion
-
-        #region 组件注册测试
-
         /// <summary>
-        /// 测试注册组件
+        ///     测试注册组件
         /// </summary>
         [Test]
         public void RegisterComponent_ValidComponent_ShouldRegisterSuccessfully()
@@ -62,7 +52,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试注册null组件
+        ///     测试注册null组件
         /// </summary>
         [Test]
         public void RegisterComponent_NullComponent_ShouldNotThrow()
@@ -73,7 +63,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试注册多个组件
+        ///     测试注册多个组件
         /// </summary>
         [Test]
         public void RegisterComponent_MultipleComponents_ShouldRegisterAll()
@@ -90,7 +80,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试重复注册同一组件
+        ///     测试重复注册同一组件
         /// </summary>
         [Test]
         public void RegisterComponent_SameComponentTwice_ShouldNotDuplicate()
@@ -103,12 +93,8 @@ namespace xFrame.Tests.EditMode.UITests
             Assert.AreEqual(1, _manager.GetComponentCount(), "不应重复注册同一组件");
         }
 
-        #endregion
-
-        #region 组件注销测试
-
         /// <summary>
-        /// 测试注销组件
+        ///     测试注销组件
         /// </summary>
         [Test]
         public void UnregisterComponent_ExistingComponent_ShouldRemove()
@@ -123,7 +109,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试注销不存在的组件
+        ///     测试注销不存在的组件
         /// </summary>
         [Test]
         public void UnregisterComponent_NonExistingId_ShouldNotThrow()
@@ -131,12 +117,8 @@ namespace xFrame.Tests.EditMode.UITests
             Assert.DoesNotThrow(() => _manager.UnregisterComponent("non_existing_id"));
         }
 
-        #endregion
-
-        #region 组件查询测试
-
         /// <summary>
-        /// 测试通过ID获取组件
+        ///     测试通过ID获取组件
         /// </summary>
         [Test]
         public void GetComponent_ById_ShouldReturnCorrectComponent()
@@ -150,7 +132,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试通过ID获取不存在的组件
+        ///     测试通过ID获取不存在的组件
         /// </summary>
         [Test]
         public void GetComponent_NonExistingId_ShouldReturnNull()
@@ -160,7 +142,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试通过ID获取组件（泛型）
+        ///     测试通过ID获取组件（泛型）
         /// </summary>
         [Test]
         public void GetComponent_Generic_ShouldReturnTypedComponent()
@@ -175,7 +157,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试获取指定类型的第一个组件
+        ///     测试获取指定类型的第一个组件
         /// </summary>
         [Test]
         public void GetComponentOfType_ExistingType_ShouldReturnFirst()
@@ -192,7 +174,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试获取不存在类型的组件
+        ///     测试获取不存在类型的组件
         /// </summary>
         [Test]
         public void GetComponentOfType_NonExistingType_ShouldReturnNull()
@@ -206,7 +188,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试获取指定类型的所有组件
+        ///     测试获取指定类型的所有组件
         /// </summary>
         [Test]
         public void GetComponentsOfType_MultipleComponents_ShouldReturnAll()
@@ -226,7 +208,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试获取所有组件
+        ///     测试获取所有组件
         /// </summary>
         [Test]
         public void GetAllComponents_ShouldReturnAllRegistered()
@@ -241,12 +223,8 @@ namespace xFrame.Tests.EditMode.UITests
             Assert.AreEqual(2, results.Count, "应返回所有组件");
         }
 
-        #endregion
-
-        #region 统计信息测试
-
         /// <summary>
-        /// 测试获取组件总数
+        ///     测试获取组件总数
         /// </summary>
         [Test]
         public void GetComponentCount_ShouldReturnCorrectCount()
@@ -263,7 +241,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试获取指定类型的组件数量
+        ///     测试获取指定类型的组件数量
         /// </summary>
         [Test]
         public void GetComponentCountOfType_ShouldReturnCorrectCount()
@@ -280,7 +258,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试获取不存在类型的组件数量
+        ///     测试获取不存在类型的组件数量
         /// </summary>
         [Test]
         public void GetComponentCountOfType_NonExistingType_ShouldReturnZero()
@@ -291,12 +269,8 @@ namespace xFrame.Tests.EditMode.UITests
             Assert.AreEqual(0, _manager.GetComponentCountOfType<TestUIComponent2>(), "不存在的类型应返回0");
         }
 
-        #endregion
-
-        #region 生命周期传递测试
-
         /// <summary>
-        /// 测试OnParentDestroy清理所有组件
+        ///     测试OnParentDestroy清理所有组件
         /// </summary>
         [Test]
         public void OnParentDestroy_ShouldClearAllComponents()
@@ -311,12 +285,8 @@ namespace xFrame.Tests.EditMode.UITests
             Assert.AreEqual(0, _manager.GetComponentCount(), "所有组件应被清理");
         }
 
-        #endregion
-
-        #region 辅助方法
-
         /// <summary>
-        /// 创建测试组件
+        ///     创建测试组件
         /// </summary>
         private T CreateTestComponent<T>() where T : UIComponent
         {
@@ -325,24 +295,18 @@ namespace xFrame.Tests.EditMode.UITests
             return go.AddComponent<T>();
         }
 
-        #endregion
-
-        #region 测试辅助类
-
         /// <summary>
-        /// 测试用UIComponent类型1
+        ///     测试用UIComponent类型1
         /// </summary>
         private class TestUIComponent : UIComponent
         {
         }
 
         /// <summary>
-        /// 测试用UIComponent类型2
+        ///     测试用UIComponent类型2
         /// </summary>
         private class TestUIComponent2 : UIComponent
         {
         }
-
-        #endregion
     }
 }

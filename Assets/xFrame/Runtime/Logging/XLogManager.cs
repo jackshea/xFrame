@@ -6,8 +6,8 @@ using UnityEngine;
 namespace xFrame.Runtime.Logging
 {
     /// <summary>
-    /// 日志管理器实现
-    /// 提供全局的日志管理功能，包括Logger创建、全局配置等
+    ///     日志管理器实现
+    ///     提供全局的日志管理功能，包括Logger创建、全局配置等
     /// </summary>
     public class XLogManager : IXLogManager
     {
@@ -16,7 +16,7 @@ namespace xFrame.Runtime.Logging
         private readonly ConcurrentDictionary<string, IXLogger> _loggers;
 
         /// <summary>
-        /// 构造函数
+        ///     构造函数
         /// </summary>
         public XLogManager()
         {
@@ -28,17 +28,17 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 全局日志等级
+        ///     全局日志等级
         /// </summary>
         public LogLevel GlobalMinLevel { get; set; } = LogLevel.Debug;
 
         /// <summary>
-        /// 是否启用全局日志
+        ///     是否启用全局日志
         /// </summary>
         public bool IsGlobalEnabled { get; set; } = true;
 
         /// <summary>
-        /// 获取指定模块的日志记录器
+        ///     获取指定模块的日志记录器
         /// </summary>
         /// <param name="moduleName">模块名称</param>
         /// <returns>日志记录器</returns>
@@ -66,7 +66,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 获取指定类型的日志记录器
+        ///     获取指定类型的日志记录器
         /// </summary>
         /// <param name="type">类型</param>
         /// <returns>日志记录器</returns>
@@ -79,7 +79,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 获取泛型类型的日志记录器
+        ///     获取泛型类型的日志记录器
         /// </summary>
         /// <typeparam name="T">类型</typeparam>
         /// <returns>日志记录器</returns>
@@ -89,7 +89,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 添加全局日志输出器
+        ///     添加全局日志输出器
         /// </summary>
         /// <param name="appender">日志输出器</param>
         public void AddGlobalAppender(ILogAppender appender)
@@ -109,7 +109,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 移除全局日志输出器
+        ///     移除全局日志输出器
         /// </summary>
         /// <param name="appender">日志输出器</param>
         public void RemoveGlobalAppender(ILogAppender appender)
@@ -129,7 +129,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 刷新所有日志记录器的缓冲区
+        ///     刷新所有日志记录器的缓冲区
         /// </summary>
         public void FlushAll()
         {
@@ -139,7 +139,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 关闭日志系统并释放资源
+        ///     关闭日志系统并释放资源
         /// </summary>
         public void Shutdown()
         {
@@ -159,7 +159,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 注册Unity异常处理器
+        ///     注册Unity异常处理器
         /// </summary>
         private void RegisterUnityExceptionHandler()
         {
@@ -167,7 +167,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// Unity日志消息接收处理
+        ///     Unity日志消息接收处理
         /// </summary>
         /// <param name="logString">日志字符串</param>
         /// <param name="stackTrace">堆栈跟踪</param>

@@ -3,7 +3,7 @@ using System;
 namespace xFrame.Runtime.Networking.AgentBridge
 {
     /// <summary>
-    /// Agent Bridge 配置。
+    ///     Agent Bridge 配置。
     /// </summary>
     public sealed class AgentBridgeOptions
     {
@@ -12,39 +12,39 @@ namespace xFrame.Runtime.Networking.AgentBridge
         public const int DefaultPort = 17777;
 
         /// <summary>
-        /// WebSocket 绑定地址（默认仅本机回环）。
+        ///     WebSocket 绑定地址（默认仅本机回环）。
         /// </summary>
         public string Host { get; set; } = DefaultHost;
 
         /// <summary>
-        /// WebSocket 监听端口。
+        ///     WebSocket 监听端口。
         /// </summary>
         public int Port { get; set; } = DefaultPort;
 
         /// <summary>
-        /// 主线程分发超时时间（毫秒）。
+        ///     主线程分发超时时间（毫秒）。
         /// </summary>
         public int MainThreadTimeoutMs { get; set; } = 120000;
 
         /// <summary>
-        /// 认证 Token。
+        ///     认证 Token。
         /// </summary>
         public string AuthToken { get; set; } = "xframe-dev-token";
 
         /// <summary>
-        /// 是否启用反射桥接命令。
+        ///     是否启用反射桥接命令。
         /// </summary>
         public bool EnableReflectionBridge { get; set; }
 
         /// <summary>
-        /// 允许反射调用的程序集白名单。
+        ///     允许反射调用的程序集白名单。
         /// </summary>
-        public string[] AllowedAssemblies { get; set; } = new[] { "Assembly-CSharp" };
+        public string[] AllowedAssemblies { get; set; } = { "Assembly-CSharp" };
 
         /// <summary>
-        /// 允许反射调用的类型前缀白名单。
+        ///     允许反射调用的类型前缀白名单。
         /// </summary>
-        public string[] AllowedTypePrefixes { get; set; } = new[] { "xFrame" };
+        public string[] AllowedTypePrefixes { get; set; } = { "xFrame" };
 
         public static bool ValidateEndpoint(string host, int port, out string error)
         {
@@ -66,10 +66,7 @@ namespace xFrame.Runtime.Networking.AgentBridge
 
         public bool TrySetEndpoint(string host, int port, out string error)
         {
-            if (!ValidateEndpoint(host, port, out error))
-            {
-                return false;
-            }
+            if (!ValidateEndpoint(host, port, out error)) return false;
 
             Host = host.Trim();
             Port = port;

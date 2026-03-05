@@ -1,18 +1,20 @@
+using System;
+using System.Reflection;
 using NUnit.Framework;
+using TMPro;
+using UnityEngine.UI;
 using xFrame.Runtime.UI;
 
 namespace xFrame.Tests.EditMode.UITests
 {
     /// <summary>
-    /// UIBindAttribute特性的单元测试
+    ///     UIBindAttribute特性的单元测试
     /// </summary>
     [TestFixture]
     public class UIBindAttributeTests
     {
-        #region 构造函数测试
-
         /// <summary>
-        /// 测试无参数构造函数
+        ///     测试无参数构造函数
         /// </summary>
         [Test]
         public void UIBindAttribute_DefaultConstructor_PathShouldBeNull()
@@ -22,7 +24,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试带路径参数的构造函数
+        ///     测试带路径参数的构造函数
         /// </summary>
         [Test]
         public void UIBindAttribute_WithPath_ShouldSetPath()
@@ -33,7 +35,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试空字符串路径
+        ///     测试空字符串路径
         /// </summary>
         [Test]
         public void UIBindAttribute_EmptyPath_ShouldSetEmptyString()
@@ -43,21 +45,17 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试null路径参数
+        ///     测试null路径参数
         /// </summary>
         [Test]
         public void UIBindAttribute_NullPath_ShouldSetNull()
         {
-            var attr = new UIBindAttribute(null);
+            var attr = new UIBindAttribute();
             Assert.IsNull(attr.Path, "null路径应被保留");
         }
 
-        #endregion
-
-        #region 路径格式测试
-
         /// <summary>
-        /// 测试简单路径
+        ///     测试简单路径
         /// </summary>
         [Test]
         public void UIBindAttribute_SimplePath_ShouldWork()
@@ -67,7 +65,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试嵌套路径
+        ///     测试嵌套路径
         /// </summary>
         [Test]
         public void UIBindAttribute_NestedPath_ShouldWork()
@@ -77,7 +75,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试深层嵌套路径
+        ///     测试深层嵌套路径
         /// </summary>
         [Test]
         public void UIBindAttribute_DeepNestedPath_ShouldWork()
@@ -88,7 +86,7 @@ namespace xFrame.Tests.EditMode.UITests
         }
 
         /// <summary>
-        /// 测试包含特殊字符的路径
+        ///     测试包含特殊字符的路径
         /// </summary>
         [Test]
         public void UIBindAttribute_PathWithSpecialChars_ShouldWork()
@@ -98,77 +96,64 @@ namespace xFrame.Tests.EditMode.UITests
             Assert.AreEqual(path, attr.Path);
         }
 
-        #endregion
-
-        #region 特性应用测试
-
         /// <summary>
-        /// 测试特性可应用于字段
+        ///     测试特性可应用于字段
         /// </summary>
         [Test]
         public void UIBindAttribute_OnField_ShouldBeRetrievable()
         {
-            var fieldInfo = typeof(TestClass).GetField("_button", 
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            
+            var fieldInfo = typeof(TestClass).GetField("_button",
+                BindingFlags.NonPublic | BindingFlags.Instance);
+
             Assert.IsNotNull(fieldInfo, "字段应存在");
-            
-            var attr = System.Attribute.GetCustomAttribute(fieldInfo, typeof(UIBindAttribute)) as UIBindAttribute;
+
+            var attr = Attribute.GetCustomAttribute(fieldInfo, typeof(UIBindAttribute)) as UIBindAttribute;
             Assert.IsNotNull(attr, "特性应存在");
             Assert.AreEqual("Panel/Button", attr.Path);
         }
 
         /// <summary>
-        /// 测试特性可应用于公共字段
+        ///     测试特性可应用于公共字段
         /// </summary>
         [Test]
         public void UIBindAttribute_OnPublicField_ShouldBeRetrievable()
         {
-            var fieldInfo = typeof(TestClass).GetField("PublicText", 
-                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-            
+            var fieldInfo = typeof(TestClass).GetField("PublicText",
+                BindingFlags.Public | BindingFlags.Instance);
+
             Assert.IsNotNull(fieldInfo, "公共字段应存在");
-            
-            var attr = System.Attribute.GetCustomAttribute(fieldInfo, typeof(UIBindAttribute)) as UIBindAttribute;
+
+            var attr = Attribute.GetCustomAttribute(fieldInfo, typeof(UIBindAttribute)) as UIBindAttribute;
             Assert.IsNotNull(attr, "特性应存在");
             Assert.AreEqual("Panel/Text", attr.Path);
         }
 
         /// <summary>
-        /// 测试特性使用默认路径（字段名）
+        ///     测试特性使用默认路径（字段名）
         /// </summary>
         [Test]
         public void UIBindAttribute_WithoutPath_ShouldUseFieldName()
         {
-            var fieldInfo = typeof(TestClass).GetField("_image", 
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            
+            var fieldInfo = typeof(TestClass).GetField("_image",
+                BindingFlags.NonPublic | BindingFlags.Instance);
+
             Assert.IsNotNull(fieldInfo, "字段应存在");
-            
-            var attr = System.Attribute.GetCustomAttribute(fieldInfo, typeof(UIBindAttribute)) as UIBindAttribute;
+
+            var attr = Attribute.GetCustomAttribute(fieldInfo, typeof(UIBindAttribute)) as UIBindAttribute;
             Assert.IsNotNull(attr, "特性应存在");
             Assert.IsNull(attr.Path, "未指定路径时Path应为null");
         }
 
-        #endregion
-
-        #region 测试辅助类
-
         /// <summary>
-        /// 测试用类，包含带UIBind特性的字段
+        ///     测试用类，包含带UIBind特性的字段
         /// </summary>
         private class TestClass
         {
-            [UIBind("Panel/Button")]
-            private UnityEngine.UI.Button _button;
+            [UIBind("Panel/Button")] private Button _button;
 
-            [UIBind("Panel/Text")]
-            public TMPro.TextMeshProUGUI PublicText;
+            [UIBind] private Image _image;
 
-            [UIBind]
-            private UnityEngine.UI.Image _image;
+            [UIBind("Panel/Text")] public TextMeshProUGUI PublicText;
         }
-
-        #endregion
     }
 }

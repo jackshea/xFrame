@@ -5,14 +5,13 @@ using System.IO;
 namespace xFrame.Runtime.Core
 {
     /// <summary>
-    /// 核心日志管理器实现 - 与Unity解耦
+    ///     核心日志管理器实现 - 与Unity解耦
     /// </summary>
     public class CoreLogManager : ICoreLogManager
     {
-        private readonly Dictionary<string, ICoreLogger> _loggers = new();
-        private LogLevel _globalMinLevel = LogLevel.Debug;
         private readonly List<ICoreLogAppender> _appenders = new();
         private readonly object _lock = new();
+        private readonly Dictionary<string, ICoreLogger> _loggers = new();
 
         public CoreLogManager()
         {
@@ -23,12 +22,8 @@ namespace xFrame.Runtime.Core
         public CoreLogManager(IEnumerable<ICoreLogAppender> appenders)
         {
             if (appenders != null)
-            {
                 foreach (var appender in appenders)
-                {
                     _appenders.Add(appender);
-                }
-            }
         }
 
         public ICoreLogger GetLogger(string category)
@@ -40,6 +35,7 @@ namespace xFrame.Runtime.Core
                     logger = new CoreLogger(category, this);
                     _loggers[category] = logger;
                 }
+
                 return logger;
             }
         }
@@ -51,17 +47,14 @@ namespace xFrame.Runtime.Core
 
         public void SetGlobalLogLevel(LogLevel level)
         {
-            _globalMinLevel = level;
+            GlobalMinLevel = level;
         }
 
-        public LogLevel GlobalMinLevel => _globalMinLevel;
+        public LogLevel GlobalMinLevel { get; private set; } = LogLevel.Debug;
 
         public void AddAppender(ICoreLogAppender appender)
         {
-            if (appender != null)
-            {
-                _appenders.Add(appender);
-            }
+            if (appender != null) _appenders.Add(appender);
         }
 
         public void RemoveAppender(ICoreLogAppender appender)
@@ -71,7 +64,7 @@ namespace xFrame.Runtime.Core
 
         internal void Log(string category, LogLevel level, string message, Exception exception = null)
         {
-            if (level < _globalMinLevel)
+            if (level < GlobalMinLevel)
                 return;
 
             lock (_lock)
@@ -86,7 +79,6 @@ namespace xFrame.Runtime.Core
                 };
 
                 foreach (var appender in _appenders)
-                {
                     try
                     {
                         appender.Append(entry);
@@ -95,13 +87,12 @@ namespace xFrame.Runtime.Core
                     {
                         // 忽略appender异常，避免级联失败
                     }
-                }
             }
         }
     }
 
     /// <summary>
-    /// 日志条目
+    ///     日志条目
     /// </summary>
     public struct CoreLogEntry
     {
@@ -113,7 +104,7 @@ namespace xFrame.Runtime.Core
     }
 
     /// <summary>
-    /// 日志输出器接口
+    ///     日志输出器接口
     /// </summary>
     public interface ICoreLogAppender
     {
@@ -121,27 +112,23 @@ namespace xFrame.Runtime.Core
     }
 
     /// <summary>
-    /// 控制台日志输出器
+    ///     控制台日志输出器
     /// </summary>
     public class ConsoleLogAppender : ICoreLogAppender
     {
         public void Append(CoreLogEntry entry)
         {
             var prefix = $"[{entry.Timestamp:HH:mm:ss.fff}] [{entry.Level}] [{entry.Category}]";
-            
+
             if (entry.Exception != null)
-            {
                 Console.WriteLine($"{prefix} {entry.Message}\n{entry.Exception}");
-            }
             else
-            {
                 Console.WriteLine($"{prefix} {entry.Message}");
-            }
         }
     }
 
     /// <summary>
-    /// 文件日志输出器
+    ///     文件日志输出器
     /// </summary>
     public class FileLogAppender : ICoreLogAppender
     {
@@ -161,12 +148,10 @@ namespace xFrame.Runtime.Core
                 {
                     var directory = Path.GetDirectoryName(_filePath);
                     if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                    {
                         Directory.CreateDirectory(directory);
-                    }
 
                     var prefix = $"[{entry.Timestamp:yyyy-MM-dd HH:mm:ss.fff}] [{entry.Level}] [{entry.Category}]";
-                    var line = entry.Exception != null 
+                    var line = entry.Exception != null
                         ? $"{prefix} {entry.Message}\n{entry.Exception}\n"
                         : $"{prefix} {entry.Message}\n";
 
@@ -181,13 +166,11 @@ namespace xFrame.Runtime.Core
     }
 
     /// <summary>
-    /// 核心日志器实现
+    ///     核心日志器实现
     /// </summary>
     internal class CoreLogger : ICoreLogger
     {
         private readonly CoreLogManager _manager;
-
-        public string Category { get; }
 
         public CoreLogger(string category, CoreLogManager manager)
         {
@@ -195,11 +178,36 @@ namespace xFrame.Runtime.Core
             _manager = manager;
         }
 
-        public void Verbose(string message) => _manager.Log(Category, LogLevel.Verbose, message);
-        public void Debug(string message) => _manager.Log(Category, LogLevel.Debug, message);
-        public void Info(string message) => _manager.Log(Category, LogLevel.Info, message);
-        public void Warning(string message) => _manager.Log(Category, LogLevel.Warning, message);
-        public void Error(string message) => _manager.Log(Category, LogLevel.Error, message);
-        public void Fatal(string message, Exception ex = null) => _manager.Log(Category, LogLevel.Fatal, message, ex);
+        public string Category { get; }
+
+        public void Verbose(string message)
+        {
+            _manager.Log(Category, LogLevel.Verbose, message);
+        }
+
+        public void Debug(string message)
+        {
+            _manager.Log(Category, LogLevel.Debug, message);
+        }
+
+        public void Info(string message)
+        {
+            _manager.Log(Category, LogLevel.Info, message);
+        }
+
+        public void Warning(string message)
+        {
+            _manager.Log(Category, LogLevel.Warning, message);
+        }
+
+        public void Error(string message)
+        {
+            _manager.Log(Category, LogLevel.Error, message);
+        }
+
+        public void Fatal(string message, Exception ex = null)
+        {
+            _manager.Log(Category, LogLevel.Fatal, message, ex);
+        }
     }
 }

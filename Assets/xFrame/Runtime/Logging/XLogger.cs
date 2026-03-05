@@ -4,8 +4,8 @@ using System.Collections.Generic;
 namespace xFrame.Runtime.Logging
 {
     /// <summary>
-    /// 日志记录器实现
-    /// 提供线程安全的日志记录功能，支持多个输出器
+    ///     日志记录器实现
+    ///     提供线程安全的日志记录功能，支持多个输出器
     /// </summary>
     public class XLogger : IXLogger
     {
@@ -13,7 +13,7 @@ namespace xFrame.Runtime.Logging
         private readonly object _lock = new();
 
         /// <summary>
-        /// 构造函数
+        ///     构造函数
         /// </summary>
         /// <param name="moduleName">模块名称</param>
         public XLogger(string moduleName)
@@ -23,22 +23,22 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 模块名称
+        ///     模块名称
         /// </summary>
         public string ModuleName { get; }
 
         /// <summary>
-        /// 是否启用日志记录
+        ///     是否启用日志记录
         /// </summary>
         public bool IsEnabled { get; set; } = true;
 
         /// <summary>
-        /// 最小日志等级
+        ///     最小日志等级
         /// </summary>
         public LogLevel MinLevel { get; set; } = LogLevel.Debug;
 
         /// <summary>
-        /// 记录详细日志
+        ///     记录详细日志
         /// </summary>
         /// <param name="message">日志消息</param>
         public void Verbose(string message)
@@ -47,7 +47,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 记录调试日志
+        ///     记录调试日志
         /// </summary>
         /// <param name="message">日志消息</param>
         public void Debug(string message)
@@ -56,7 +56,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 记录信息日志
+        ///     记录信息日志
         /// </summary>
         /// <param name="message">日志消息</param>
         public void Info(string message)
@@ -65,7 +65,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 记录警告日志
+        ///     记录警告日志
         /// </summary>
         /// <param name="message">日志消息</param>
         public void Warning(string message)
@@ -74,7 +74,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 记录错误日志
+        ///     记录错误日志
         /// </summary>
         /// <param name="message">日志消息</param>
         public void Error(string message)
@@ -83,7 +83,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 记录错误日志（带异常）
+        ///     记录错误日志（带异常）
         /// </summary>
         /// <param name="message">日志消息</param>
         /// <param name="exception">异常信息</param>
@@ -93,7 +93,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 记录致命日志
+        ///     记录致命日志
         /// </summary>
         /// <param name="message">日志消息</param>
         public void Fatal(string message)
@@ -102,7 +102,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 记录致命日志（带异常）
+        ///     记录致命日志（带异常）
         /// </summary>
         /// <param name="message">日志消息</param>
         /// <param name="exception">异常信息</param>
@@ -112,7 +112,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 记录指定等级的日志
+        ///     记录指定等级的日志
         /// </summary>
         /// <param name="level">日志等级</param>
         /// <param name="message">日志消息</param>
@@ -140,7 +140,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 判断指定等级的日志是否会被记录
+        ///     判断指定等级的日志是否会被记录
         /// </summary>
         /// <param name="level">日志等级</param>
         /// <returns>是否会被记录</returns>
@@ -150,7 +150,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 添加日志输出器
+        ///     添加日志输出器
         /// </summary>
         /// <param name="appender">日志输出器</param>
         public void AddAppender(ILogAppender appender)
@@ -165,7 +165,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 移除日志输出器
+        ///     移除日志输出器
         /// </summary>
         /// <param name="appender">日志输出器</param>
         public void RemoveAppender(ILogAppender appender)
@@ -180,7 +180,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 清空所有日志输出器
+        ///     清空所有日志输出器
         /// </summary>
         public void ClearAppenders()
         {
@@ -192,7 +192,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 刷新所有输出器的缓冲区
+        ///     刷新所有输出器的缓冲区
         /// </summary>
         public void Flush()
         {
@@ -211,7 +211,7 @@ namespace xFrame.Runtime.Logging
         }
 
         /// <summary>
-        /// 释放资源
+        ///     释放资源
         /// </summary>
         public void Dispose()
         {

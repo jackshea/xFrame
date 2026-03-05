@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
@@ -13,58 +14,28 @@ namespace MessagePack.Formatters
     {
         public static readonly IMessagePackFormatter<object?> Instance = new PrimitiveObjectFormatter();
 
-        private static readonly Dictionary<Type, int> TypeToJumpCode = new Dictionary<Type, int>()
+        private static readonly Dictionary<Type, int> TypeToJumpCode = new()
         {
             // When adding types whose size exceeds 32-bits, add support in MessagePackSecurity.GetHashCollisionResistantEqualityComparer<T>()
-            { typeof(Boolean), 0 },
-            { typeof(Char), 1 },
-            { typeof(SByte), 2 },
-            { typeof(Byte), 3 },
-            { typeof(Int16), 4 },
-            { typeof(UInt16), 5 },
-            { typeof(Int32), 6 },
-            { typeof(UInt32), 7 },
-            { typeof(Int64), 8 },
-            { typeof(UInt64), 9 },
-            { typeof(Single), 10 },
-            { typeof(Double), 11 },
+            { typeof(bool), 0 },
+            { typeof(char), 1 },
+            { typeof(sbyte), 2 },
+            { typeof(byte), 3 },
+            { typeof(short), 4 },
+            { typeof(ushort), 5 },
+            { typeof(int), 6 },
+            { typeof(uint), 7 },
+            { typeof(long), 8 },
+            { typeof(ulong), 9 },
+            { typeof(float), 10 },
+            { typeof(double), 11 },
             { typeof(DateTime), 12 },
             { typeof(string), 13 },
-            { typeof(byte[]), 14 },
+            { typeof(byte[]), 14 }
         };
 
         protected PrimitiveObjectFormatter()
         {
-        }
-
-        public static bool IsSupportedType(Type type, TypeInfo typeInfo, object value)
-        {
-            if (value == null)
-            {
-                return true;
-            }
-
-            if (TypeToJumpCode.ContainsKey(type))
-            {
-                return true;
-            }
-
-            if (typeInfo.IsEnum)
-            {
-                return true;
-            }
-
-            if (value is System.Collections.IDictionary)
-            {
-                return true;
-            }
-
-            if (value is System.Collections.ICollection)
-            {
-                return true;
-            }
-
-            return false;
         }
 
         public void Serialize(ref MessagePackWriter writer, object? value, MessagePackSerializerOptions options)
@@ -75,11 +46,10 @@ namespace MessagePack.Formatters
                 return;
             }
 
-            Type t = value.GetType();
+            var t = value.GetType();
 
             int code;
             if (TypeToJumpCode.TryGetValue(t, out code))
-            {
                 switch (code)
                 {
                     case 0:
@@ -95,25 +65,25 @@ namespace MessagePack.Formatters
                         writer.WriteUInt8((byte)value);
                         return;
                     case 4:
-                        writer.WriteInt16((Int16)value);
+                        writer.WriteInt16((short)value);
                         return;
                     case 5:
-                        writer.WriteUInt16((UInt16)value);
+                        writer.WriteUInt16((ushort)value);
                         return;
                     case 6:
-                        writer.WriteInt32((Int32)value);
+                        writer.WriteInt32((int)value);
                         return;
                     case 7:
-                        writer.WriteUInt32((UInt32)value);
+                        writer.WriteUInt32((uint)value);
                         return;
                     case 8:
-                        writer.WriteInt64((Int64)value);
+                        writer.WriteInt64((long)value);
                         return;
                     case 9:
-                        writer.WriteUInt64((UInt64)value);
+                        writer.WriteUInt64((ulong)value);
                         return;
                     case 10:
-                        writer.Write((Single)value);
+                        writer.Write((float)value);
                         return;
                     case 11:
                         writer.Write((double)value);
@@ -128,71 +98,63 @@ namespace MessagePack.Formatters
                         writer.Write((byte[])value);
                         return;
                     default:
-                        throw new MessagePackSerializationException("Not supported primitive object resolver. type:" + t.Name);
+                        throw new MessagePackSerializationException("Not supported primitive object resolver. type:" +
+                                                                    t.Name);
                 }
-            }
-            else
-            {
 #if UNITY_2018_3_OR_NEWER && !NETFX_CORE
-                if (t.IsEnum)
+            if (t.IsEnum)
 #else
                 if (t.GetTypeInfo().IsEnum)
 #endif
+            {
+                var underlyingType = Enum.GetUnderlyingType(t);
+                var code2 = TypeToJumpCode[underlyingType];
+                switch (code2)
                 {
-                    Type underlyingType = Enum.GetUnderlyingType(t);
-                    var code2 = TypeToJumpCode[underlyingType];
-                    switch (code2)
-                    {
-                        case 2:
-                            writer.WriteInt8((sbyte)value);
-                            return;
-                        case 3:
-                            writer.WriteUInt8((byte)value);
-                            return;
-                        case 4:
-                            writer.WriteInt16((Int16)value);
-                            return;
-                        case 5:
-                            writer.WriteUInt16((UInt16)value);
-                            return;
-                        case 6:
-                            writer.WriteInt32((Int32)value);
-                            return;
-                        case 7:
-                            writer.WriteUInt32((UInt32)value);
-                            return;
-                        case 8:
-                            writer.WriteInt64((Int64)value);
-                            return;
-                        case 9:
-                            writer.WriteUInt64((UInt64)value);
-                            return;
-                        default:
-                            break;
-                    }
+                    case 2:
+                        writer.WriteInt8((sbyte)value);
+                        return;
+                    case 3:
+                        writer.WriteUInt8((byte)value);
+                        return;
+                    case 4:
+                        writer.WriteInt16((short)value);
+                        return;
+                    case 5:
+                        writer.WriteUInt16((ushort)value);
+                        return;
+                    case 6:
+                        writer.WriteInt32((int)value);
+                        return;
+                    case 7:
+                        writer.WriteUInt32((uint)value);
+                        return;
+                    case 8:
+                        writer.WriteInt64((long)value);
+                        return;
+                    case 9:
+                        writer.WriteUInt64((ulong)value);
+                        return;
                 }
-                else if (value is System.Collections.IDictionary d)
+            }
+            else if (value is IDictionary d)
+            {
+                // check IDictionary first
+                writer.WriteMapHeader(d.Count);
+                foreach (var item in d.GetEntryEnumerator())
                 {
-                    // check IDictionary first
-                    writer.WriteMapHeader(d.Count);
-                    foreach (System.Collections.DictionaryEntry item in d.GetEntryEnumerator())
-                    {
-                        this.Serialize(ref writer, item.Key, options);
-                        this.Serialize(ref writer, item.Value, options);
-                    }
+                    Serialize(ref writer, item.Key, options);
+                    Serialize(ref writer, item.Value, options);
+                }
 
-                    return;
-                }
-                else if (value is System.Collections.ICollection c)
-                {
-                    writer.WriteArrayHeader(c.Count);
-                    foreach (var item in c)
-                    {
-                        this.Serialize(ref writer, item, options);
-                    }
+                return;
+            }
+            else if (value is ICollection c)
+            {
+                writer.WriteArrayHeader(c.Count);
+                foreach (var item in c) Serialize(ref writer, item, options);
 
-                    return;
-                }
+                return;
             }
 
             throw new MessagePackSerializationException("Not supported primitive object resolver. type:" + t.Name);
@@ -205,127 +167,120 @@ namespace MessagePack.Formatters
                 case MessagePackType.Integer:
                     var code = reader.NextCode;
                     if (code >= MessagePackCode.MinNegativeFixInt && code <= MessagePackCode.MaxNegativeFixInt)
-                    {
                         return reader.ReadSByte();
-                    }
-                    else if (code >= MessagePackCode.MinFixInt && code <= MessagePackCode.MaxFixInt)
-                    {
-                        return reader.ReadByte();
-                    }
-                    else if (code == MessagePackCode.Int8)
-                    {
-                        return reader.ReadSByte();
-                    }
-                    else if (code == MessagePackCode.Int16)
-                    {
-                        return reader.ReadInt16();
-                    }
-                    else if (code == MessagePackCode.Int32)
-                    {
-                        return reader.ReadInt32();
-                    }
-                    else if (code == MessagePackCode.Int64)
-                    {
-                        return reader.ReadInt64();
-                    }
-                    else if (code == MessagePackCode.UInt8)
-                    {
-                        return reader.ReadByte();
-                    }
-                    else if (code == MessagePackCode.UInt16)
-                    {
-                        return reader.ReadUInt16();
-                    }
-                    else if (code == MessagePackCode.UInt32)
-                    {
-                        return reader.ReadUInt32();
-                    }
-                    else if (code == MessagePackCode.UInt64)
-                    {
-                        return reader.ReadUInt64();
-                    }
 
-                    throw new MessagePackSerializationException(string.Format(CultureInfo.CurrentCulture, "Unrecognized primitive code 0x{0:x2} for integer type.", code));
+                    if (code >= MessagePackCode.MinFixInt && code <= MessagePackCode.MaxFixInt)
+                        return reader.ReadByte();
+
+                    if (code == MessagePackCode.Int8) return reader.ReadSByte();
+
+                    if (code == MessagePackCode.Int16) return reader.ReadInt16();
+
+                    if (code == MessagePackCode.Int32) return reader.ReadInt32();
+
+                    if (code == MessagePackCode.Int64) return reader.ReadInt64();
+
+                    if (code == MessagePackCode.UInt8) return reader.ReadByte();
+
+                    if (code == MessagePackCode.UInt16) return reader.ReadUInt16();
+
+                    if (code == MessagePackCode.UInt32) return reader.ReadUInt32();
+
+                    if (code == MessagePackCode.UInt64) return reader.ReadUInt64();
+
+                    throw new MessagePackSerializationException(string.Format(CultureInfo.CurrentCulture,
+                        "Unrecognized primitive code 0x{0:x2} for integer type.", code));
                 case MessagePackType.Boolean:
                     return reader.ReadBoolean();
                 case MessagePackType.Float:
-                    if (reader.NextCode == MessagePackCode.Float32)
-                    {
-                        return reader.ReadSingle();
-                    }
-                    else
-                    {
-                        return reader.ReadDouble();
-                    }
+                    if (reader.NextCode == MessagePackCode.Float32) return reader.ReadSingle();
+
+                    return reader.ReadDouble();
 
                 case MessagePackType.String:
-                    IMessagePackFormatter<string?>? stringFormatter = options.Resolver.GetFormatter<string?>();
-                    return stringFormatter is not null ? stringFormatter.Deserialize(ref reader, options) : reader.ReadString();
+                    var stringFormatter = options.Resolver.GetFormatter<string?>();
+                    return stringFormatter is not null
+                        ? stringFormatter.Deserialize(ref reader, options)
+                        : reader.ReadString();
                 case MessagePackType.Binary:
                     // We must copy the sequence returned by ReadBytes since the reader's sequence is only valid during deserialization.
                     return reader.ReadBytes()?.ToArray();
                 case MessagePackType.Extension:
-                    ExtensionHeader ext = reader.ReadExtensionFormatHeader();
+                    var ext = reader.ReadExtensionFormatHeader();
                     switch (ext.TypeCode)
                     {
                         case ReservedMessagePackExtensionTypeCode.DateTime: return reader.ReadDateTime(ext);
-                        default: throw new MessagePackSerializationException(string.Format(CultureInfo.CurrentCulture, "Extension type code 0x{0:x2} is not supported by the {1}.", ext.TypeCode, nameof(PrimitiveObjectFormatter)));
+                        default:
+                            throw new MessagePackSerializationException(string.Format(CultureInfo.CurrentCulture,
+                                "Extension type code 0x{0:x2} is not supported by the {1}.", ext.TypeCode,
+                                nameof(PrimitiveObjectFormatter)));
                     }
 
                 case MessagePackType.Array:
+                {
+                    var length = reader.ReadArrayHeader();
+                    if (length == 0) return Array.Empty<object>();
+
+                    var objectFormatter = options.Resolver.GetFormatterWithVerify<object>();
+                    var array = new object[length];
+                    options.Security.DepthStep(ref reader);
+                    try
                     {
-                        var length = reader.ReadArrayHeader();
-                        if (length == 0)
-                        {
-                            return Array.Empty<object>();
-                        }
-
-                        IMessagePackFormatter<object> objectFormatter = options.Resolver.GetFormatterWithVerify<object>();
-                        var array = new object[length];
-                        options.Security.DepthStep(ref reader);
-                        try
-                        {
-                            for (int i = 0; i < length; i++)
-                            {
-                                array[i] = objectFormatter.Deserialize(ref reader, options);
-                            }
-                        }
-                        finally
-                        {
-                            reader.Depth--;
-                        }
-
-                        return array;
+                        for (var i = 0; i < length; i++) array[i] = objectFormatter.Deserialize(ref reader, options);
                     }
+                    finally
+                    {
+                        reader.Depth--;
+                    }
+
+                    return array;
+                }
 
                 case MessagePackType.Map:
-                    {
-                        var length = reader.ReadMapHeader();
+                {
+                    var length = reader.ReadMapHeader();
 
-                        options.Security.DepthStep(ref reader);
-                        try
-                        {
-                            return this.DeserializeMap(ref reader, length, options);
-                        }
-                        finally
-                        {
-                            reader.Depth--;
-                        }
+                    options.Security.DepthStep(ref reader);
+                    try
+                    {
+                        return DeserializeMap(ref reader, length, options);
                     }
+                    finally
+                    {
+                        reader.Depth--;
+                    }
+                }
 
                 case MessagePackType.Nil:
                     reader.ReadNil();
                     return null;
                 default:
-                    throw new MessagePackSerializationException(string.Format(CultureInfo.CurrentCulture, "Unrecognized code: 0x{0:X2}.", reader.NextCode));
+                    throw new MessagePackSerializationException(string.Format(CultureInfo.CurrentCulture,
+                        "Unrecognized code: 0x{0:X2}.", reader.NextCode));
             }
         }
 
-        protected virtual object DeserializeMap(ref MessagePackReader reader, int length, MessagePackSerializerOptions options)
+        public static bool IsSupportedType(Type type, TypeInfo typeInfo, object value)
         {
-            IMessagePackFormatter<object> objectFormatter = options.Resolver.GetFormatterWithVerify<object>();
+            if (value == null) return true;
+
+            if (TypeToJumpCode.ContainsKey(type)) return true;
+
+            if (typeInfo.IsEnum) return true;
+
+            if (value is IDictionary) return true;
+
+            if (value is ICollection) return true;
+
+            return false;
+        }
+
+        protected virtual object DeserializeMap(ref MessagePackReader reader, int length,
+            MessagePackSerializerOptions options)
+        {
+            var objectFormatter = options.Resolver.GetFormatterWithVerify<object>();
             var dictionary = new Dictionary<object, object>(length, options.Security.GetEqualityComparer<object>());
-            for (int i = 0; i < length; i++)
+            for (var i = 0; i < length; i++)
             {
                 var key = objectFormatter.Deserialize(ref reader, options);
                 var value = objectFormatter.Deserialize(ref reader, options);

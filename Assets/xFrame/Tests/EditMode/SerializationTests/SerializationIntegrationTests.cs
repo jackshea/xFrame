@@ -7,75 +7,12 @@ using xFrame.Runtime.Serialization;
 namespace xFrame.Tests.SerializationTests
 {
     /// <summary>
-    /// 序列化模块集成测试
-    /// 测试多个序列化器协同工作的场景
+    ///     序列化模块集成测试
+    ///     测试多个序列化器协同工作的场景
     /// </summary>
     [TestFixture]
     public class SerializationIntegrationTests
     {
-        /// <summary>
-        /// 游戏存档数据类
-        /// </summary>
-        [Serializable]
-        private class GameSaveData
-        {
-            public string PlayerName;
-            public int Level;
-            public float PlayTime;
-            public PlayerStats Stats;
-            public InventoryData Inventory;
-        }
-
-        /// <summary>
-        /// 玩家属性数据类
-        /// </summary>
-        [Serializable]
-        private class PlayerStats
-        {
-            public int Health;
-            public int MaxHealth;
-            public int Attack;
-            public int Defense;
-            public float CritRate;
-        }
-
-        /// <summary>
-        /// 背包数据类
-        /// </summary>
-        [Serializable]
-        private class InventoryData
-        {
-            public int Gold;
-            public ItemData[] Items;
-        }
-
-        /// <summary>
-        /// 物品数据类
-        /// </summary>
-        [Serializable]
-        private class ItemData
-        {
-            public string ItemId;
-            public string ItemName;
-            public int Count;
-            public int Quality;
-        }
-
-        /// <summary>
-        /// 配置数据类
-        /// </summary>
-        [Serializable]
-        private class ConfigData
-        {
-            public float MusicVolume;
-            public float SoundVolume;
-            public int GraphicsQuality;
-            public bool FullScreen;
-            public string Language;
-        }
-
-        private ISerializerManager _serializerManager;
-
         [SetUp]
         public void SetUp()
         {
@@ -95,10 +32,71 @@ namespace xFrame.Tests.SerializationTests
             xFrameEventBus.ClearListeners<DefaultSerializerChangedEvent>();
         }
 
-        #region 复杂数据结构测试
+        /// <summary>
+        ///     游戏存档数据类
+        /// </summary>
+        [Serializable]
+        private class GameSaveData
+        {
+            public string PlayerName;
+            public int Level;
+            public float PlayTime;
+            public PlayerStats Stats;
+            public InventoryData Inventory;
+        }
 
         /// <summary>
-        /// 测试游戏存档数据的序列化和反序列化
+        ///     玩家属性数据类
+        /// </summary>
+        [Serializable]
+        private class PlayerStats
+        {
+            public int Health;
+            public int MaxHealth;
+            public int Attack;
+            public int Defense;
+            public float CritRate;
+        }
+
+        /// <summary>
+        ///     背包数据类
+        /// </summary>
+        [Serializable]
+        private class InventoryData
+        {
+            public int Gold;
+            public ItemData[] Items;
+        }
+
+        /// <summary>
+        ///     物品数据类
+        /// </summary>
+        [Serializable]
+        private class ItemData
+        {
+            public string ItemId;
+            public string ItemName;
+            public int Count;
+            public int Quality;
+        }
+
+        /// <summary>
+        ///     配置数据类
+        /// </summary>
+        [Serializable]
+        private class ConfigData
+        {
+            public float MusicVolume;
+            public float SoundVolume;
+            public int GraphicsQuality;
+            public bool FullScreen;
+            public string Language;
+        }
+
+        private ISerializerManager _serializerManager;
+
+        /// <summary>
+        ///     测试游戏存档数据的序列化和反序列化
         /// </summary>
         [Test]
         public void GameSaveData_SerializeAndDeserialize_ShouldWork()
@@ -130,7 +128,7 @@ namespace xFrame.Tests.SerializationTests
             Assert.AreEqual(saveData.Inventory.Items.Length, restored.Inventory.Items.Length);
 
             // 验证物品数据
-            for (int i = 0; i < saveData.Inventory.Items.Length; i++)
+            for (var i = 0; i < saveData.Inventory.Items.Length; i++)
             {
                 Assert.AreEqual(saveData.Inventory.Items[i].ItemId, restored.Inventory.Items[i].ItemId);
                 Assert.AreEqual(saveData.Inventory.Items[i].ItemName, restored.Inventory.Items[i].ItemName);
@@ -140,7 +138,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试配置数据的序列化和反序列化
+        ///     测试配置数据的序列化和反序列化
         /// </summary>
         [Test]
         public void ConfigData_SerializeAndDeserialize_ShouldWork()
@@ -169,7 +167,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试字节数组序列化游戏存档
+        ///     测试字节数组序列化游戏存档
         /// </summary>
         [Test]
         public void GameSaveData_SerializeToBytes_ShouldWork()
@@ -189,12 +187,8 @@ namespace xFrame.Tests.SerializationTests
             Assert.AreEqual(saveData.Level, restored.Level);
         }
 
-        #endregion
-
-        #region 多序列化器切换测试
-
         /// <summary>
-        /// 测试注册多个序列化器并切换
+        ///     测试注册多个序列化器并切换
         /// </summary>
         [Test]
         public void MultipleSerializers_SwitchDefault_ShouldWork()
@@ -226,7 +220,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试使用指定序列化器而不改变默认
+        ///     测试使用指定序列化器而不改变默认
         /// </summary>
         [Test]
         public void UseSpecificSerializer_WithoutChangingDefault_ShouldWork()
@@ -249,12 +243,8 @@ namespace xFrame.Tests.SerializationTests
             Assert.IsNotNull(prettyJson);
         }
 
-        #endregion
-
-        #region 事件集成测试
-
         /// <summary>
-        /// 测试序列化器生命周期事件
+        ///     测试序列化器生命周期事件
         /// </summary>
         [Test]
         public void SerializerLifecycle_ShouldRaiseCorrectEvents()
@@ -262,17 +252,17 @@ namespace xFrame.Tests.SerializationTests
             // Arrange
             var events = new List<string>();
 
-            xFrameEventBus.SubscribeTo<SerializerRegisteredEvent>((ref SerializerRegisteredEvent e) =>
+            xFrameEventBus.SubscribeTo((ref SerializerRegisteredEvent e) =>
             {
                 events.Add($"Registered:{e.SerializerName}");
             });
 
-            xFrameEventBus.SubscribeTo<DefaultSerializerChangedEvent>((ref DefaultSerializerChangedEvent e) =>
+            xFrameEventBus.SubscribeTo((ref DefaultSerializerChangedEvent e) =>
             {
                 events.Add($"DefaultChanged:{e.PreviousSerializerName}->{e.NewSerializerName}");
             });
 
-            xFrameEventBus.SubscribeTo<SerializerUnregisteredEvent>((ref SerializerUnregisteredEvent e) =>
+            xFrameEventBus.SubscribeTo((ref SerializerUnregisteredEvent e) =>
             {
                 events.Add($"Unregistered:{e.SerializerName}");
             });
@@ -290,12 +280,8 @@ namespace xFrame.Tests.SerializationTests
             Assert.AreEqual("Unregistered:Custom", events[2]);
         }
 
-        #endregion
-
-        #region 边界条件测试
-
         /// <summary>
-        /// 测试空数组的序列化
+        ///     测试空数组的序列化
         /// </summary>
         [Test]
         public void EmptyArray_SerializeAndDeserialize_ShouldWork()
@@ -319,7 +305,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试null嵌套对象的序列化
+        ///     测试null嵌套对象的序列化
         /// </summary>
         [Test]
         public void NullNestedObject_SerializeAndDeserialize_ShouldWork()
@@ -345,7 +331,7 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试特殊字符的序列化
+        ///     测试特殊字符的序列化
         /// </summary>
         [Test]
         public void SpecialCharacters_SerializeAndDeserialize_ShouldWork()
@@ -367,15 +353,14 @@ namespace xFrame.Tests.SerializationTests
         }
 
         /// <summary>
-        /// 测试大数据量的序列化性能
+        ///     测试大数据量的序列化性能
         /// </summary>
         [Test]
         public void LargeData_SerializeAndDeserialize_ShouldWork()
         {
             // Arrange
             var items = new ItemData[100];
-            for (int i = 0; i < 100; i++)
-            {
+            for (var i = 0; i < 100; i++)
                 items[i] = new ItemData
                 {
                     ItemId = $"item_{i:D4}",
@@ -383,7 +368,6 @@ namespace xFrame.Tests.SerializationTests
                     Count = i * 10,
                     Quality = i % 5
                 };
-            }
 
             var inventory = new InventoryData
             {
@@ -405,12 +389,8 @@ namespace xFrame.Tests.SerializationTests
             Assert.AreEqual("item_0099", restored.Items[99].ItemId);
         }
 
-        #endregion
-
-        #region 辅助方法
-
         /// <summary>
-        /// 创建测试用的游戏存档数据
+        ///     创建测试用的游戏存档数据
         /// </summary>
         private GameSaveData CreateTestGameSaveData()
         {
@@ -439,7 +419,5 @@ namespace xFrame.Tests.SerializationTests
                 }
             };
         }
-
-        #endregion
     }
 }

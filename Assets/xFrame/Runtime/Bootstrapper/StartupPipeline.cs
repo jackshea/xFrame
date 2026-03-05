@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace xFrame.Runtime.Startup
 {
     /// <summary>
-    /// 启动任务失败时的流程策略。
+    ///     启动任务失败时的流程策略。
     /// </summary>
     public enum StartupTaskFailurePolicy
     {
@@ -15,7 +15,7 @@ namespace xFrame.Runtime.Startup
     }
 
     /// <summary>
-    /// 启动环境。
+    ///     启动环境。
     /// </summary>
     public enum BootEnvironment
     {
@@ -25,7 +25,7 @@ namespace xFrame.Runtime.Startup
     }
 
     /// <summary>
-    /// 启动任务键。
+    ///     启动任务键。
     /// </summary>
     public enum StartupTaskKey
     {
@@ -40,28 +40,20 @@ namespace xFrame.Runtime.Startup
     }
 
     /// <summary>
-    /// 任务执行选项。
+    ///     任务执行选项。
     /// </summary>
     public struct StartupTaskExecutionOptions
     {
-        public static StartupTaskExecutionOptions Default => new StartupTaskExecutionOptions(0, Timeout.InfiniteTimeSpan);
+        public static StartupTaskExecutionOptions Default => new(0, Timeout.InfiniteTimeSpan);
 
         public StartupTaskExecutionOptions(int maxRetryCount, TimeSpan timeoutDuration = default)
         {
-            if (maxRetryCount < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(maxRetryCount), "maxRetryCount 不能小于 0");
-            }
+            if (maxRetryCount < 0) throw new ArgumentOutOfRangeException(nameof(maxRetryCount), "maxRetryCount 不能小于 0");
 
-            if (timeoutDuration == default)
-            {
-                timeoutDuration = Timeout.InfiniteTimeSpan;
-            }
+            if (timeoutDuration == default) timeoutDuration = Timeout.InfiniteTimeSpan;
 
             if (timeoutDuration <= TimeSpan.Zero && timeoutDuration != Timeout.InfiniteTimeSpan)
-            {
                 throw new ArgumentOutOfRangeException(nameof(timeoutDuration), "timeoutDuration 必须是正数或 Infinite");
-            }
 
             MaxRetryCount = maxRetryCount;
             TimeoutDuration = timeoutDuration;
@@ -75,7 +67,7 @@ namespace xFrame.Runtime.Startup
     }
 
     /// <summary>
-    /// 启动任务执行结果。
+    ///     启动任务执行结果。
     /// </summary>
     public struct StartupTaskResult
     {
@@ -101,7 +93,8 @@ namespace xFrame.Runtime.Startup
             };
         }
 
-        public static StartupTaskResult Failed(string errorCode, string errorMessage, bool isFatal, Exception exception = null)
+        public static StartupTaskResult Failed(string errorCode, string errorMessage, bool isFatal,
+            Exception exception = null)
         {
             return new StartupTaskResult
             {
@@ -115,7 +108,7 @@ namespace xFrame.Runtime.Startup
     }
 
     /// <summary>
-    /// Unity 表现层接口。
+    ///     Unity 表现层接口。
     /// </summary>
     public interface IStartupView
     {
@@ -127,11 +120,11 @@ namespace xFrame.Runtime.Startup
     }
 
     /// <summary>
-    /// 空启动视图，适用于无 UI 启动。
+    ///     空启动视图，适用于无 UI 启动。
     /// </summary>
     public sealed class NullStartupView : IStartupView
     {
-        public static readonly NullStartupView Instance = new NullStartupView();
+        public static readonly NullStartupView Instance = new();
 
         private NullStartupView()
         {
@@ -152,7 +145,7 @@ namespace xFrame.Runtime.Startup
     }
 
     /// <summary>
-    /// 启动任务接口。
+    ///     启动任务接口。
     /// </summary>
     public interface IStartupTask
     {
@@ -170,7 +163,7 @@ namespace xFrame.Runtime.Startup
     }
 
     /// <summary>
-    /// 基于委托的启动任务，便于快速组装。
+    ///     基于委托的启动任务，便于快速组装。
     /// </summary>
     public sealed class DelegateStartupTask : IStartupTask
     {
@@ -184,15 +177,9 @@ namespace xFrame.Runtime.Startup
             StartupTaskFailurePolicy failurePolicy = StartupTaskFailurePolicy.StopPipeline,
             StartupTaskExecutionOptions? executionOptions = null)
         {
-            if (string.IsNullOrEmpty(taskName))
-            {
-                throw new ArgumentException("taskName 不能为空", nameof(taskName));
-            }
+            if (string.IsNullOrEmpty(taskName)) throw new ArgumentException("taskName 不能为空", nameof(taskName));
 
-            if (weight < 0f)
-            {
-                throw new ArgumentOutOfRangeException(nameof(weight), "weight 不能小于 0");
-            }
+            if (weight < 0f) throw new ArgumentOutOfRangeException(nameof(weight), "weight 不能小于 0");
 
             _execute = execute ?? throw new ArgumentNullException(nameof(execute));
             TaskName = taskName;
@@ -221,7 +208,7 @@ namespace xFrame.Runtime.Startup
     }
 
     /// <summary>
-    /// 启动流程运行结果。
+    ///     启动流程运行结果。
     /// </summary>
     public struct StartupPipelineResult
     {
@@ -244,7 +231,8 @@ namespace xFrame.Runtime.Startup
             };
         }
 
-        public static StartupPipelineResult Failed(string failedTaskName, StartupTaskResult failureResult, bool isCancelled)
+        public static StartupPipelineResult Failed(string failedTaskName, StartupTaskResult failureResult,
+            bool isCancelled)
         {
             return new StartupPipelineResult
             {
@@ -257,24 +245,18 @@ namespace xFrame.Runtime.Startup
     }
 
     /// <summary>
-    /// 启动流程构建器。
+    ///     启动流程构建器。
     /// </summary>
     public sealed class StartupPipelineBuilder
     {
-        private readonly List<IStartupTask> _tasks = new List<IStartupTask>();
+        private readonly List<IStartupTask> _tasks = new();
         private IStartupView _view;
 
         public StartupPipelineBuilder AddTask(IStartupTask task)
         {
-            if (task == null)
-            {
-                throw new ArgumentNullException(nameof(task));
-            }
+            if (task == null) throw new ArgumentNullException(nameof(task));
 
-            if (task.Weight < 0f)
-            {
-                throw new ArgumentOutOfRangeException(nameof(task), "任务权重不能小于 0");
-            }
+            if (task.Weight < 0f) throw new ArgumentOutOfRangeException(nameof(task), "任务权重不能小于 0");
 
             _tasks.Add(task);
             return this;
@@ -293,7 +275,7 @@ namespace xFrame.Runtime.Startup
     }
 
     /// <summary>
-    /// 启动流程执行器。
+    ///     启动流程执行器。
     /// </summary>
     public sealed class StartupPipeline
     {
@@ -302,10 +284,7 @@ namespace xFrame.Runtime.Startup
 
         public StartupPipeline(IReadOnlyList<IStartupTask> tasks, IStartupView view)
         {
-            if (tasks == null)
-            {
-                throw new ArgumentNullException(nameof(tasks));
-            }
+            if (tasks == null) throw new ArgumentNullException(nameof(tasks));
 
             _tasks = new List<IStartupTask>(tasks);
             _view = view;
@@ -320,15 +299,9 @@ namespace xFrame.Runtime.Startup
             }
 
             var totalWeight = 0f;
-            for (var i = 0; i < _tasks.Count; i++)
-            {
-                totalWeight += _tasks[i].Weight;
-            }
+            for (var i = 0; i < _tasks.Count; i++) totalWeight += _tasks[i].Weight;
 
-            if (totalWeight <= 0f)
-            {
-                totalWeight = 1f;
-            }
+            if (totalWeight <= 0f) totalWeight = 1f;
 
             var currentWeight = 0f;
 
@@ -355,7 +328,8 @@ namespace xFrame.Runtime.Startup
 
                 if (_view != null)
                 {
-                    var shouldRetry = await _view.ShowErrorDialogAsync(CreateErrorMessage(task.TaskName, taskResult), cancellationToken);
+                    var shouldRetry = await _view.ShowErrorDialogAsync(CreateErrorMessage(task.TaskName, taskResult),
+                        cancellationToken);
                     if (shouldRetry)
                     {
                         var manualRetryResult = await ExecuteTaskWithRetryAsync(task, cancellationToken);
@@ -365,7 +339,8 @@ namespace xFrame.Runtime.Startup
                             continue;
                         }
 
-                        if (!manualRetryResult.IsFatal && task.FailurePolicy == StartupTaskFailurePolicy.ContinuePipeline)
+                        if (!manualRetryResult.IsFatal &&
+                            task.FailurePolicy == StartupTaskFailurePolicy.ContinuePipeline)
                         {
                             currentWeight += task.Weight;
                             continue;
@@ -387,30 +362,26 @@ namespace xFrame.Runtime.Startup
             return StartupPipelineResult.Succeeded();
         }
 
-        private static async Task<StartupTaskResult> ExecuteTaskWithRetryAsync(IStartupTask task, CancellationToken cancellationToken)
+        private static async Task<StartupTaskResult> ExecuteTaskWithRetryAsync(IStartupTask task,
+            CancellationToken cancellationToken)
         {
             var executionOptions = task.ExecutionOptions;
-            if (executionOptions.MaxRetryCount < 0)
-            {
-                executionOptions = StartupTaskExecutionOptions.Default;
-            }
+            if (executionOptions.MaxRetryCount < 0) executionOptions = StartupTaskExecutionOptions.Default;
 
-            StartupTaskResult lastResult = StartupTaskResult.Failed("Unknown", "任务执行失败", true);
+            var lastResult = StartupTaskResult.Failed("Unknown", "任务执行失败", true);
             var maxAttempts = executionOptions.MaxRetryCount + 1;
             for (var attempt = 0; attempt < maxAttempts; attempt++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 lastResult = await ExecuteSingleAttemptAsync(task, executionOptions, cancellationToken);
-                if (lastResult.IsSuccess)
-                {
-                    return lastResult;
-                }
+                if (lastResult.IsSuccess) return lastResult;
             }
 
             return lastResult;
         }
 
-        private static async Task<StartupTaskResult> ExecuteSingleAttemptAsync(IStartupTask task, StartupTaskExecutionOptions options, CancellationToken cancellationToken)
+        private static async Task<StartupTaskResult> ExecuteSingleAttemptAsync(IStartupTask task,
+            StartupTaskExecutionOptions options, CancellationToken cancellationToken)
         {
             CancellationTokenSource timeoutTokenSource = null;
             CancellationTokenSource linkedTokenSource = null;
@@ -421,14 +392,17 @@ namespace xFrame.Runtime.Startup
                 if (options.HasTimeout)
                 {
                     timeoutTokenSource = new CancellationTokenSource(options.TimeoutDuration);
-                    linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutTokenSource.Token);
+                    linkedTokenSource =
+                        CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutTokenSource.Token);
                     executeToken = linkedTokenSource.Token;
                 }
 
                 var result = await task.ExecuteAsync(executeToken);
                 return NormalizeResult(result);
             }
-            catch (OperationCanceledException ex) when (timeoutTokenSource != null && timeoutTokenSource.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+            catch (OperationCanceledException ex) when (timeoutTokenSource != null &&
+                                                        timeoutTokenSource.IsCancellationRequested &&
+                                                        !cancellationToken.IsCancellationRequested)
             {
                 return StartupTaskResult.Failed("Timeout", $"任务超时: {task.TaskName}", true, ex);
             }
@@ -449,66 +423,49 @@ namespace xFrame.Runtime.Startup
 
         private static StartupTaskResult NormalizeResult(StartupTaskResult result)
         {
-            if (result.IsSuccess)
-            {
-                return result;
-            }
+            if (result.IsSuccess) return result;
 
-            if (string.IsNullOrEmpty(result.ErrorCode) && string.IsNullOrEmpty(result.ErrorMessage) && result.Exception == null)
-            {
-                return StartupTaskResult.Failed("Unknown", "任务返回失败但未提供错误信息", true);
-            }
+            if (string.IsNullOrEmpty(result.ErrorCode) && string.IsNullOrEmpty(result.ErrorMessage) &&
+                result.Exception == null) return StartupTaskResult.Failed("Unknown", "任务返回失败但未提供错误信息", true);
 
             return result;
         }
 
         private static string CreateErrorMessage(string taskName, StartupTaskResult result)
         {
-            if (!string.IsNullOrEmpty(result.ErrorMessage))
-            {
-                return result.ErrorMessage;
-            }
+            if (!string.IsNullOrEmpty(result.ErrorMessage)) return result.ErrorMessage;
 
             return $"任务 {taskName} 执行失败";
         }
     }
 
     /// <summary>
-    /// 启动任务注册中心。
+    ///     启动任务注册中心。
     /// </summary>
     public sealed class StartupTaskRegistry
     {
-        private readonly Dictionary<StartupTaskKey, Func<IStartupTask>> _factories = new Dictionary<StartupTaskKey, Func<IStartupTask>>();
+        private readonly Dictionary<StartupTaskKey, Func<IStartupTask>> _factories = new();
 
         public void Register(StartupTaskKey key, Func<IStartupTask> factory)
         {
-            if (factory == null)
-            {
-                throw new ArgumentNullException(nameof(factory));
-            }
+            if (factory == null) throw new ArgumentNullException(nameof(factory));
 
             _factories[key] = factory;
         }
 
         public IStartupTask Resolve(StartupTaskKey key)
         {
-            if (!_factories.TryGetValue(key, out var factory))
-            {
-                throw new KeyNotFoundException($"未注册启动任务: {key}");
-            }
+            if (!_factories.TryGetValue(key, out var factory)) throw new KeyNotFoundException($"未注册启动任务: {key}");
 
             var task = factory.Invoke();
-            if (task == null)
-            {
-                throw new InvalidOperationException($"任务工厂返回 null: {key}");
-            }
+            if (task == null) throw new InvalidOperationException($"任务工厂返回 null: {key}");
 
             return task;
         }
     }
 
     /// <summary>
-    /// 启动任务安装器（纯 C#）。
+    ///     启动任务安装器（纯 C#）。
     /// </summary>
     public interface IStartupTaskInstaller
     {
@@ -516,14 +473,14 @@ namespace xFrame.Runtime.Startup
     }
 
     /// <summary>
-    /// 启动任务注册安装器（兼容旧接口）。
+    ///     启动任务注册安装器（兼容旧接口）。
     /// </summary>
     public interface IStartupTaskRegistryInstaller : IStartupTaskInstaller
     {
     }
 
     /// <summary>
-    /// 启动配置提供器。
+    ///     启动配置提供器。
     /// </summary>
     public interface IStartupProfileProvider
     {
@@ -531,7 +488,7 @@ namespace xFrame.Runtime.Startup
     }
 
     /// <summary>
-    /// 启动配置。
+    ///     启动配置。
     /// </summary>
     public sealed class StartupProfile
     {
@@ -552,11 +509,11 @@ namespace xFrame.Runtime.Startup
     }
 
     /// <summary>
-    /// 代码化启动配置提供器。
+    ///     代码化启动配置提供器。
     /// </summary>
     public sealed class CodeStartupProfileProvider : IStartupProfileProvider
     {
-        public static readonly CodeStartupProfileProvider Default = new CodeStartupProfileProvider();
+        public static readonly CodeStartupProfileProvider Default = new();
 
         public StartupProfile GetProfile(BootEnvironment environment)
         {
@@ -592,19 +549,16 @@ namespace xFrame.Runtime.Startup
     }
 
     /// <summary>
-    /// 启动配置构建器（纯 C# 代码配置）。
+    ///     启动配置构建器（纯 C# 代码配置）。
     /// </summary>
     public sealed class StartupProfileBuilder
     {
         private readonly string _name;
-        private readonly List<StartupTaskKey> _taskKeys = new List<StartupTaskKey>();
+        private readonly List<StartupTaskKey> _taskKeys = new();
 
         public StartupProfileBuilder(string name)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentException("profile 名称不能为空", nameof(name));
-            }
+            if (string.IsNullOrEmpty(name)) throw new ArgumentException("profile 名称不能为空", nameof(name));
 
             _name = name;
         }
@@ -617,25 +571,16 @@ namespace xFrame.Runtime.Startup
 
         public StartupProfileBuilder AddIf(bool condition, StartupTaskKey taskKey)
         {
-            if (condition)
-            {
-                _taskKeys.Add(taskKey);
-            }
+            if (condition) _taskKeys.Add(taskKey);
 
             return this;
         }
 
         public StartupProfileBuilder AddRange(IEnumerable<StartupTaskKey> taskKeys)
         {
-            if (taskKeys == null)
-            {
-                throw new ArgumentNullException(nameof(taskKeys));
-            }
+            if (taskKeys == null) throw new ArgumentNullException(nameof(taskKeys));
 
-            foreach (var taskKey in taskKeys)
-            {
-                _taskKeys.Add(taskKey);
-            }
+            foreach (var taskKey in taskKeys) _taskKeys.Add(taskKey);
 
             return this;
         }
@@ -647,16 +592,13 @@ namespace xFrame.Runtime.Startup
     }
 
     /// <summary>
-    /// 默认启动任务安装器（纯 C#）。
+    ///     默认启动任务安装器（纯 C#）。
     /// </summary>
     public sealed class DefaultStartupTaskInstaller : IStartupTaskInstaller
     {
         public void Install(StartupTaskRegistry registry)
         {
-            if (registry == null)
-            {
-                throw new ArgumentNullException(nameof(registry));
-            }
+            if (registry == null) throw new ArgumentNullException(nameof(registry));
 
             registry.Register(StartupTaskKey.InitLogger, () => CreateTask(StartupTaskKey.InitLogger, 1f));
             registry.Register(StartupTaskKey.LoadLocalConfig, () => CreateTask(StartupTaskKey.LoadLocalConfig, 1f));
@@ -664,7 +606,8 @@ namespace xFrame.Runtime.Startup
             registry.Register(StartupTaskKey.SdkInit, () => CreateTask(StartupTaskKey.SdkInit, 1f));
             registry.Register(StartupTaskKey.NetworkConnect, () => CreateTask(StartupTaskKey.NetworkConnect, 1f));
             registry.Register(StartupTaskKey.MockLogin, () => CreateTask(StartupTaskKey.MockLogin, 0.5f));
-            registry.Register(StartupTaskKey.LoadTestBattleScene, () => CreateTask(StartupTaskKey.LoadTestBattleScene, 0.5f));
+            registry.Register(StartupTaskKey.LoadTestBattleScene,
+                () => CreateTask(StartupTaskKey.LoadTestBattleScene, 0.5f));
             registry.Register(StartupTaskKey.EnterLobby, () => CreateTask(StartupTaskKey.EnterLobby, 1f));
         }
 
@@ -678,11 +621,11 @@ namespace xFrame.Runtime.Startup
     }
 
     /// <summary>
-    /// 启动任务执行约束。
+    ///     启动任务执行约束。
     /// </summary>
     public static class StartupTaskConstraints
     {
-        private static readonly HashSet<StartupTaskKey> HeadlessBlockedTaskKeys = new HashSet<StartupTaskKey>
+        private static readonly HashSet<StartupTaskKey> HeadlessBlockedTaskKeys = new()
         {
             StartupTaskKey.LoadTestBattleScene,
             StartupTaskKey.EnterLobby
@@ -695,19 +638,13 @@ namespace xFrame.Runtime.Startup
 
         public static IReadOnlyList<StartupTaskKey> GetHeadlessBlockedTasks(StartupProfile profile)
         {
-            if (profile == null)
-            {
-                throw new ArgumentNullException(nameof(profile));
-            }
+            if (profile == null) throw new ArgumentNullException(nameof(profile));
 
             var blocked = new List<StartupTaskKey>();
             for (var i = 0; i < profile.TaskKeys.Count; i++)
             {
                 var taskKey = profile.TaskKeys[i];
-                if (HeadlessBlockedTaskKeys.Contains(taskKey))
-                {
-                    blocked.Add(taskKey);
-                }
+                if (HeadlessBlockedTaskKeys.Contains(taskKey)) blocked.Add(taskKey);
             }
 
             return blocked;
@@ -715,7 +652,7 @@ namespace xFrame.Runtime.Startup
     }
 
     /// <summary>
-    /// 启动编排状态。
+    ///     启动编排状态。
     /// </summary>
     public enum StartupOrchestratorState
     {
@@ -726,7 +663,7 @@ namespace xFrame.Runtime.Startup
     }
 
     /// <summary>
-    /// 启动编排器接口。
+    ///     启动编排器接口。
     /// </summary>
     public interface IStartupOrchestrator
     {
@@ -740,19 +677,19 @@ namespace xFrame.Runtime.Startup
     }
 
     /// <summary>
-    /// 默认启动编排器。
+    ///     默认启动编排器。
     /// </summary>
     public sealed class StartupOrchestrator : IStartupOrchestrator, IDisposable
     {
-        private readonly StartupTaskRegistry _registry;
         private readonly IStartupTaskInstaller _installer;
         private readonly IStartupProfileProvider _profileProvider;
+        private readonly StartupTaskRegistry _registry;
+        private readonly SemaphoreSlim _stateLock = new(1, 1);
         private readonly IStartupView _view;
-        private readonly SemaphoreSlim _stateLock = new SemaphoreSlim(1, 1);
+        private bool _installed;
+        private Task<StartupPipelineResult> _runningTask;
 
         private CancellationTokenSource _runningTokenSource;
-        private Task<StartupPipelineResult> _runningTask;
-        private bool _installed;
 
         public StartupOrchestrator(
             StartupTaskRegistry registry,
@@ -767,6 +704,12 @@ namespace xFrame.Runtime.Startup
             State = StartupOrchestratorState.Idle;
         }
 
+        public void Dispose()
+        {
+            _runningTokenSource?.Dispose();
+            _stateLock.Dispose();
+        }
+
         public StartupOrchestratorState State { get; private set; }
 
         public Task<StartupPipelineResult> RunAsync(BootEnvironment environment, CancellationToken cancellationToken)
@@ -777,19 +720,14 @@ namespace xFrame.Runtime.Startup
 
         public async Task<StartupPipelineResult> RunAsync(StartupProfile profile, CancellationToken cancellationToken)
         {
-            if (profile == null)
-            {
-                throw new ArgumentNullException(nameof(profile));
-            }
+            if (profile == null) throw new ArgumentNullException(nameof(profile));
 
             Task<StartupPipelineResult> runningTask;
             await _stateLock.WaitAsync(cancellationToken);
             try
             {
                 if (State == StartupOrchestratorState.Running || State == StartupOrchestratorState.Stopping)
-                {
                     throw new InvalidOperationException("启动流程正在执行中，不能重复启动。");
-                }
 
                 EnsureInstalled();
                 var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -865,18 +803,9 @@ namespace xFrame.Runtime.Startup
             }
         }
 
-        public void Dispose()
-        {
-            _runningTokenSource?.Dispose();
-            _stateLock.Dispose();
-        }
-
         private void EnsureInstalled()
         {
-            if (_installed)
-            {
-                return;
-            }
+            if (_installed) return;
 
             _installer?.Install(_registry);
             _installed = true;
@@ -887,10 +816,7 @@ namespace xFrame.Runtime.Startup
             await _stateLock.WaitAsync();
             try
             {
-                if (!ReferenceEquals(_runningTask, completedTask))
-                {
-                    return;
-                }
+                if (!ReferenceEquals(_runningTask, completedTask)) return;
 
                 _runningTask = null;
                 _runningTokenSource?.Dispose();
@@ -903,7 +829,8 @@ namespace xFrame.Runtime.Startup
             }
         }
 
-        private static async Task<StartupPipelineResult> ExecutePipelineAsync(StartupPipeline pipeline, CancellationToken cancellationToken)
+        private static async Task<StartupPipelineResult> ExecutePipelineAsync(StartupPipeline pipeline,
+            CancellationToken cancellationToken)
         {
             try
             {
@@ -920,13 +847,13 @@ namespace xFrame.Runtime.Startup
     }
 
     /// <summary>
-    /// 启动编排共享入口。
+    ///     启动编排共享入口。
     /// </summary>
     public static class StartupOrchestratorHost
     {
-        private static readonly object SyncRoot = new object();
+        private static readonly object SyncRoot = new();
 
-        private static StartupTaskRegistry _registry = new StartupTaskRegistry();
+        private static StartupTaskRegistry _registry = new();
         private static IStartupTaskInstaller _installer = new DefaultStartupTaskInstaller();
         private static IStartupProfileProvider _profileProvider = CodeStartupProfileProvider.Default;
         private static IStartupView _view = NullStartupView.Instance;
@@ -945,10 +872,7 @@ namespace xFrame.Runtime.Startup
                 _profileProvider = profileProvider ?? CodeStartupProfileProvider.Default;
                 _view = view ?? NullStartupView.Instance;
 
-                if (_orchestrator is IDisposable disposable)
-                {
-                    disposable.Dispose();
-                }
+                if (_orchestrator is IDisposable disposable) disposable.Dispose();
 
                 _orchestrator = null;
             }
@@ -959,9 +883,7 @@ namespace xFrame.Runtime.Startup
             lock (SyncRoot)
             {
                 if (_orchestrator == null)
-                {
                     _orchestrator = new StartupOrchestrator(_registry, _installer, _profileProvider, _view);
-                }
 
                 return _orchestrator;
             }
@@ -969,21 +891,16 @@ namespace xFrame.Runtime.Startup
     }
 
     /// <summary>
-    /// 启动流程工厂。
+    ///     启动流程工厂。
     /// </summary>
     public static class StartupPipelineFactory
     {
-        public static StartupPipeline Create(StartupProfile profile, StartupTaskRegistry registry, IStartupView view = null)
+        public static StartupPipeline Create(StartupProfile profile, StartupTaskRegistry registry,
+            IStartupView view = null)
         {
-            if (profile == null)
-            {
-                throw new ArgumentNullException(nameof(profile));
-            }
+            if (profile == null) throw new ArgumentNullException(nameof(profile));
 
-            if (registry == null)
-            {
-                throw new ArgumentNullException(nameof(registry));
-            }
+            if (registry == null) throw new ArgumentNullException(nameof(registry));
 
             var builder = new StartupPipelineBuilder().WithView(view);
 
@@ -1002,10 +919,7 @@ namespace xFrame.Runtime.Startup
             IStartupView view = null,
             IStartupProfileProvider profileProvider = null)
         {
-            if (registry == null)
-            {
-                throw new ArgumentNullException(nameof(registry));
-            }
+            if (registry == null) throw new ArgumentNullException(nameof(registry));
 
             var provider = profileProvider ?? CodeStartupProfileProvider.Default;
             var profile = provider.GetProfile(environment);
@@ -1014,7 +928,7 @@ namespace xFrame.Runtime.Startup
     }
 
     /// <summary>
-    /// 启动流程启动器。
+    ///     启动流程启动器。
     /// </summary>
     public sealed class StartupPipelineLauncher
     {
@@ -1025,9 +939,10 @@ namespace xFrame.Runtime.Startup
             _registry = registry ?? throw new ArgumentNullException(nameof(registry));
         }
 
-        public StartupPipeline Create(BootEnvironment environment, IStartupTaskRegistryInstaller installer, IStartupView view)
+        public StartupPipeline Create(BootEnvironment environment, IStartupTaskRegistryInstaller installer,
+            IStartupView view)
         {
-            return Create(environment, installer as IStartupTaskInstaller, view, null);
+            return Create(environment, installer as IStartupTaskInstaller, view);
         }
 
         public StartupPipeline Create(
@@ -1040,17 +955,15 @@ namespace xFrame.Runtime.Startup
             return StartupPipelineFactory.Create(environment, _registry, view, profileProvider);
         }
 
-        public StartupPipeline Create(StartupProfile profile, IStartupTaskRegistryInstaller installer, IStartupView view)
+        public StartupPipeline Create(StartupProfile profile, IStartupTaskRegistryInstaller installer,
+            IStartupView view)
         {
             return Create(profile, installer as IStartupTaskInstaller, view);
         }
 
         public StartupPipeline Create(StartupProfile profile, IStartupTaskInstaller installer, IStartupView view)
         {
-            if (profile == null)
-            {
-                throw new ArgumentNullException(nameof(profile));
-            }
+            if (profile == null) throw new ArgumentNullException(nameof(profile));
 
             installer?.Install(_registry);
             return StartupPipelineFactory.Create(profile, _registry, view);

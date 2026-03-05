@@ -3,8 +3,8 @@ using xFrame.Runtime.MVVM.Core;
 namespace xFrame.Runtime.MVVM.Examples
 {
     /// <summary>
-    /// 玩家视图模型。
-    /// 负责将模型数据转换为 UI 可直接消费的状态。
+    ///     玩家视图模型。
+    ///     负责将模型数据转换为 UI 可直接消费的状态。
     /// </summary>
     public sealed class PlayerViewModel : ViewModelBase
     {

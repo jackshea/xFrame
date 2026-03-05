@@ -8,28 +8,17 @@ using xFrame.Runtime.Serialization;
 namespace xFrame.Runtime.Persistence.Storage
 {
     /// <summary>
-    /// 文件持久化提供者
-    /// 将数据存储到本地文件系统
+    ///     文件持久化提供者
+    ///     将数据存储到本地文件系统
     /// </summary>
     public class FilePersistenceProvider : PersistenceProviderBase
     {
-        private readonly string _basePath;
         private readonly string _fileExtension;
         private readonly IXLogger _logger;
         private readonly SemaphoreSlim _semaphore = new(1, 1);
 
         /// <summary>
-        /// 提供者名称
-        /// </summary>
-        public override string Name => "File";
-
-        /// <summary>
-        /// 基础存储路径
-        /// </summary>
-        public string BasePath => _basePath;
-
-        /// <summary>
-        /// 创建文件持久化提供者
+        ///     创建文件持久化提供者
         /// </summary>
         /// <param name="serializer">序列化器</param>
         /// <param name="basePath">基础存储路径</param>
@@ -37,12 +26,9 @@ namespace xFrame.Runtime.Persistence.Storage
         public FilePersistenceProvider(ISerializer serializer, string basePath, string fileExtension = ".dat")
             : base(serializer)
         {
-            if (string.IsNullOrEmpty(basePath))
-            {
-                throw new ArgumentNullException(nameof(basePath));
-            }
+            if (string.IsNullOrEmpty(basePath)) throw new ArgumentNullException(nameof(basePath));
 
-            _basePath = basePath;
+            BasePath = basePath;
             _fileExtension = fileExtension.StartsWith(".") ? fileExtension : "." + fileExtension;
             _logger = XLog.GetLogger<FilePersistenceProvider>();
 
@@ -51,7 +37,17 @@ namespace xFrame.Runtime.Persistence.Storage
         }
 
         /// <summary>
-        /// 获取文件完整路径
+        ///     提供者名称
+        /// </summary>
+        public override string Name => "File";
+
+        /// <summary>
+        ///     基础存储路径
+        /// </summary>
+        public string BasePath { get; }
+
+        /// <summary>
+        ///     获取文件完整路径
         /// </summary>
         /// <param name="key">存储键</param>
         /// <returns>文件路径</returns>
@@ -59,11 +55,11 @@ namespace xFrame.Runtime.Persistence.Storage
         {
             // 对key进行安全处理，移除非法字符
             var safeKey = GetSafeFileName(key);
-            return Path.Combine(_basePath, safeKey + _fileExtension);
+            return Path.Combine(BasePath, safeKey + _fileExtension);
         }
 
         /// <summary>
-        /// 获取安全的文件名
+        ///     获取安全的文件名
         /// </summary>
         /// <param name="key">原始键</param>
         /// <returns>安全的文件名</returns>
@@ -71,28 +67,25 @@ namespace xFrame.Runtime.Persistence.Storage
         {
             var invalidChars = Path.GetInvalidFileNameChars();
             var safeKey = key;
-            foreach (var c in invalidChars)
-            {
-                safeKey = safeKey.Replace(c, '_');
-            }
+            foreach (var c in invalidChars) safeKey = safeKey.Replace(c, '_');
 
             return safeKey;
         }
 
         /// <summary>
-        /// 确保目录存在
+        ///     确保目录存在
         /// </summary>
         protected void EnsureDirectoryExists()
         {
-            if (!Directory.Exists(_basePath))
+            if (!Directory.Exists(BasePath))
             {
-                Directory.CreateDirectory(_basePath);
-                _logger.Debug($"创建存储目录: {_basePath}");
+                Directory.CreateDirectory(BasePath);
+                _logger.Debug($"创建存储目录: {BasePath}");
             }
         }
 
         /// <summary>
-        /// 检查数据是否存在
+        ///     检查数据是否存在
         /// </summary>
         public override bool Exists(string key)
         {
@@ -101,15 +94,12 @@ namespace xFrame.Runtime.Persistence.Storage
         }
 
         /// <summary>
-        /// 删除数据
+        ///     删除数据
         /// </summary>
         public override bool Delete(string key)
         {
             var filePath = GetFilePath(key);
-            if (!File.Exists(filePath))
-            {
-                return false;
-            }
+            if (!File.Exists(filePath)) return false;
 
             try
             {
@@ -125,7 +115,7 @@ namespace xFrame.Runtime.Persistence.Storage
         }
 
         /// <summary>
-        /// 保存原始字节数据
+        ///     保存原始字节数据
         /// </summary>
         public override void SaveRaw(string key, byte[] data)
         {
@@ -153,7 +143,7 @@ namespace xFrame.Runtime.Persistence.Storage
         }
 
         /// <summary>
-        /// 异步保存原始字节数据
+        ///     异步保存原始字节数据
         /// </summary>
         public override async UniTask SaveRawAsync(string key, byte[] data)
         {
@@ -181,7 +171,7 @@ namespace xFrame.Runtime.Persistence.Storage
         }
 
         /// <summary>
-        /// 加载原始字节数据
+        ///     加载原始字节数据
         /// </summary>
         public override byte[] LoadRaw(string key)
         {
@@ -206,7 +196,7 @@ namespace xFrame.Runtime.Persistence.Storage
         }
 
         /// <summary>
-        /// 异步加载原始字节数据
+        ///     异步加载原始字节数据
         /// </summary>
         public override async UniTask<byte[]> LoadRawAsync(string key)
         {
@@ -231,39 +221,29 @@ namespace xFrame.Runtime.Persistence.Storage
         }
 
         /// <summary>
-        /// 获取所有存储的键
+        ///     获取所有存储的键
         /// </summary>
         /// <returns>键列表</returns>
         public string[] GetAllKeys()
         {
-            if (!Directory.Exists(_basePath))
-            {
-                return Array.Empty<string>();
-            }
+            if (!Directory.Exists(BasePath)) return Array.Empty<string>();
 
-            var files = Directory.GetFiles(_basePath, "*" + _fileExtension);
+            var files = Directory.GetFiles(BasePath, "*" + _fileExtension);
             var keys = new string[files.Length];
-            for (var i = 0; i < files.Length; i++)
-            {
-                keys[i] = Path.GetFileNameWithoutExtension(files[i]);
-            }
+            for (var i = 0; i < files.Length; i++) keys[i] = Path.GetFileNameWithoutExtension(files[i]);
 
             return keys;
         }
 
         /// <summary>
-        /// 清除所有数据
+        ///     清除所有数据
         /// </summary>
         public void Clear()
         {
-            if (!Directory.Exists(_basePath))
-            {
-                return;
-            }
+            if (!Directory.Exists(BasePath)) return;
 
-            var files = Directory.GetFiles(_basePath, "*" + _fileExtension);
+            var files = Directory.GetFiles(BasePath, "*" + _fileExtension);
             foreach (var file in files)
-            {
                 try
                 {
                     File.Delete(file);
@@ -272,9 +252,8 @@ namespace xFrame.Runtime.Persistence.Storage
                 {
                     _logger.Error($"删除文件失败: {file}", ex);
                 }
-            }
 
-            _logger.Debug($"清除所有文件: {_basePath}");
+            _logger.Debug($"清除所有文件: {BasePath}");
         }
     }
 }

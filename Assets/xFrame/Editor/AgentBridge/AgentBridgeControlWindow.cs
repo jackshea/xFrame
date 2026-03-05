@@ -7,15 +7,9 @@ namespace xFrame.Editor.AgentBridge
     public sealed class AgentBridgeControlWindow : EditorWindow
     {
         private string _host;
-        private int _port;
         private string _message;
         private MessageType _messageType;
-
-        [MenuItem("xFrame/AgentBridge/Control Panel")]
-        public static void ShowWindow()
-        {
-            GetWindow<AgentBridgeControlWindow>("AgentBridge");
-        }
+        private int _port;
 
         private void OnEnable()
         {
@@ -30,13 +24,9 @@ namespace xFrame.Editor.AgentBridge
             var isRunning = AgentBridgeEditorBootstrap.IsRunning;
             var endpoint = AgentBridgeEditorBootstrap.Endpoint;
             if (isRunning)
-            {
                 EditorGUILayout.HelpBox($"状态: 运行中\nEndpoint: {endpoint}", MessageType.Info);
-            }
             else
-            {
                 EditorGUILayout.HelpBox("状态: 已停止", MessageType.None);
-            }
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Endpoint 设置", EditorStyles.boldLabel);
@@ -44,10 +34,7 @@ namespace xFrame.Editor.AgentBridge
             _port = EditorGUILayout.IntField("Port", _port);
 
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("保存 Endpoint"))
-            {
-                SaveEndpoint();
-            }
+            if (GUILayout.Button("保存 Endpoint")) SaveEndpoint();
 
             if (GUILayout.Button("重置默认值"))
             {
@@ -93,6 +80,12 @@ namespace xFrame.Editor.AgentBridge
                 LoadConfiguredEndpoint();
                 Repaint();
             }
+        }
+
+        [MenuItem("xFrame/AgentBridge/Control Panel")]
+        public static void ShowWindow()
+        {
+            GetWindow<AgentBridgeControlWindow>("AgentBridge");
         }
 
         private void SaveEndpoint()

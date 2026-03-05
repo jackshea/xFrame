@@ -12,10 +12,7 @@ namespace xFrame.Runtime.Networking.AgentBridge.Commands
         public AgentRpcExecutionResult Execute(JsonRpcRequest request, AgentRpcContext context)
         {
             var commands = new HashSet<string>(context.Registry.GetMethods(), StringComparer.Ordinal);
-            if (context.Options.EnableReflectionBridge)
-            {
-                commands.Add("unity.reflect.invoke");
-            }
+            if (context.Options.EnableReflectionBridge) commands.Add("unity.reflect.invoke");
 
             return AgentRpcExecutionResult.Success(new { commands });
         }

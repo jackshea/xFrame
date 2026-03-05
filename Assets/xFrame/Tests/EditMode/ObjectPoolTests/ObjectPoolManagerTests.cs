@@ -5,14 +5,14 @@ using xFrame.Runtime.ObjectPool;
 namespace xFrame.Tests
 {
     /// <summary>
-    /// 对象池管理器单元测试
-    /// 测试对象池管理器的功能
+    ///     对象池管理器单元测试
+    ///     测试对象池管理器的功能
     /// </summary>
     [TestFixture]
     public class ObjectPoolManagerTests
     {
         /// <summary>
-        /// 测试前的初始化
+        ///     测试前的初始化
         /// </summary>
         [SetUp]
         public void SetUp()
@@ -21,7 +21,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试后的清理
+        ///     测试后的清理
         /// </summary>
         [TearDown]
         public void TearDown()
@@ -30,7 +30,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试用的简单类
+        ///     测试用的简单类
         /// </summary>
         private class TestObjectA
         {
@@ -38,7 +38,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试用的另一个类
+        ///     测试用的另一个类
         /// </summary>
         private class TestObjectB
         {
@@ -48,7 +48,7 @@ namespace xFrame.Tests
         private ObjectPoolManager _manager;
 
         /// <summary>
-        /// 测试注册和获取对象池
+        ///     测试注册和获取对象池
         /// </summary>
         [Test]
         public void TestRegisterAndGetPool()
@@ -67,7 +67,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试获取或创建对象池
+        ///     测试获取或创建对象池
         /// </summary>
         [Test]
         public void TestGetOrCreatePool()
@@ -82,7 +82,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试获取或创建默认对象池
+        ///     测试获取或创建默认对象池
         /// </summary>
         [Test]
         public void TestGetOrCreateDefaultPool()
@@ -97,7 +97,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试通过管理器获取和释放对象
+        ///     测试通过管理器获取和释放对象
         /// </summary>
         [Test]
         public void TestGetAndReleaseObjects()
@@ -123,7 +123,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试预热功能
+        ///     测试预热功能
         /// </summary>
         [Test]
         public void TestWarmUp()
@@ -142,7 +142,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试清空功能
+        ///     测试清空功能
         /// </summary>
         [Test]
         public void TestClear()
@@ -165,7 +165,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试清空所有对象池
+        ///     测试清空所有对象池
         /// </summary>
         [Test]
         public void TestClearAll()
@@ -194,7 +194,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试多类型对象池管理
+        ///     测试多类型对象池管理
         /// </summary>
         [Test]
         public void TestMultipleObjectTypes()
@@ -224,7 +224,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试注册空对象池
+        ///     测试注册空对象池
         /// </summary>
         [Test]
         public void TestRegisterNullPool()
@@ -233,7 +233,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试释放空对象
+        ///     测试释放空对象
         /// </summary>
         [Test]
         public void TestReleaseNullObject()
@@ -243,7 +243,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试管理器销毁
+        ///     测试管理器销毁
         /// </summary>
         [Test]
         public void TestManagerDispose()
@@ -269,7 +269,7 @@ namespace xFrame.Tests
         }
 
         /// <summary>
-        /// 测试线程安全的管理器
+        ///     测试线程安全的管理器
         /// </summary>
         [Test]
         public void TestThreadSafeManager()
