@@ -76,6 +76,7 @@
 - 适用场景：已打开 Unity Editor 且 `xFrame/AgentBridge` 正在运行。
 - 客户端：`scripts/agent/UnityRpcClient/UnityRpcClient.csproj`。
 - 说明：客户端会先发 `agent.ping`，未认证时自动 `agent.authenticate` 后重试。
+- 超时建议：单元测试可能耗时较长，建议同时设置 RPC 超时（`--timeout`）与命令执行超时（调用方侧）。
 
 环境变量约定（推荐）：
 - `UNITY_RPC_HOST`：Unity 运行主机 IP（例如 `10.22.61.131`）。
@@ -113,6 +114,7 @@ export UNITY_RPC_TOKEN="xframe-dev-token"
 
 ```bash
 dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call \
+  --timeout 3600 \
   --method unity.tests.run \
   --params '{"mode":"EditMode"}'
 ```
@@ -129,6 +131,7 @@ dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call 
 
 ```bash
 dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call \
+  --timeout 3600 \
   --method unity.tests.run \
   --params '{"mode":"EditMode","filter":"SchedulerServiceTests"}'
 ```

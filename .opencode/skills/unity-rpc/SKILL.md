@@ -52,6 +52,11 @@ dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call 
   --params '{"name":"Player"}'
 ```
 
+## 超时建议（测试场景）
+
+- 单元测试可能耗时较长，建议显式传 `--timeout`（单位：秒），例如 `3600`。
+- 若在 Agent/CLI 中执行，还应同步拉长命令执行超时，避免进程被外层提前取消。
+
 ## 常用方法
 
 - `agent.commands`
@@ -65,6 +70,7 @@ dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call 
 
 ```bash
 dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call \
+  --timeout 3600 \
   --method unity.tests.run \
   --params '{"mode":"EditMode"}'
 ```
@@ -77,7 +83,14 @@ dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call 
   --params '{}'
 ```
 
-3. 若需按名称过滤测试，可在 `unity.tests.run` 里传 `filter`（例如 `{"mode":"EditMode","filter":"SchedulerServiceTests"}`）。
+3. 若需按名称过滤测试，可在 `unity.tests.run` 里传 `filter`（例如 `{"mode":"EditMode","filter":"SchedulerServiceTests"}`）：
+
+```bash
+dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call \
+  --timeout 3600 \
+  --method unity.tests.run \
+  --params '{"mode":"EditMode","filter":"SchedulerServiceTests"}'
+```
 
 ## 故障排查
 
