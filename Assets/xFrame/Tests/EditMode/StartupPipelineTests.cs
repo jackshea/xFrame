@@ -11,7 +11,7 @@ namespace xFrame.Tests.EditMode
     public class StartupPipelineTests
     {
         [Test]
-        public async Task RunAsync_AllTasksSuccess_ShouldReportWeightedProgress()
+        public void RunAsync_AllTasksSuccess_ShouldReportWeightedProgress()
         {
             var view = new RecordingStartupView();
             var executionOrder = new List<string>();
@@ -30,7 +30,7 @@ namespace xFrame.Tests.EditMode
                 }))
                 .Build();
 
-            var result = await pipeline.RunAsync(CancellationToken.None);
+            var result = pipeline.RunAsync(CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.IsTrue(result.IsSuccess);
             CollectionAssert.AreEqual(new[] { "Task-A", "Task-B" }, executionOrder);
@@ -41,7 +41,7 @@ namespace xFrame.Tests.EditMode
         }
 
         [Test]
-        public async Task RunAsync_TaskRetrySucceeded_ShouldContinuePipeline()
+        public void RunAsync_TaskRetrySucceeded_ShouldContinuePipeline()
         {
             var attempts = 0;
 
@@ -64,14 +64,14 @@ namespace xFrame.Tests.EditMode
                 .AddTask(retryTask)
                 .Build();
 
-            var result = await pipeline.RunAsync(CancellationToken.None);
+            var result = pipeline.RunAsync(CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.IsTrue(result.IsSuccess);
             Assert.AreEqual(2, attempts);
         }
 
         [Test]
-        public async Task RunAsync_FatalTaskFailedAndUserCancelled_ShouldStopPipeline()
+        public void RunAsync_FatalTaskFailedAndUserCancelled_ShouldStopPipeline()
         {
             var view = new RecordingStartupView
             {
@@ -91,7 +91,7 @@ namespace xFrame.Tests.EditMode
                 }))
                 .Build();
 
-            var result = await pipeline.RunAsync(CancellationToken.None);
+            var result = pipeline.RunAsync(CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.IsFalse(result.IsSuccess);
             Assert.IsTrue(result.IsCancelled);
@@ -101,7 +101,7 @@ namespace xFrame.Tests.EditMode
         }
 
         [Test]
-        public async Task RunAsync_NonFatalFailedWithContinuePolicy_ShouldIgnoreAndContinue()
+        public void RunAsync_NonFatalFailedWithContinuePolicy_ShouldIgnoreAndContinue()
         {
             var view = new RecordingStartupView();
             var task3Executed = false;
@@ -121,7 +121,7 @@ namespace xFrame.Tests.EditMode
                 }))
                 .Build();
 
-            var result = await pipeline.RunAsync(CancellationToken.None);
+            var result = pipeline.RunAsync(CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.IsTrue(result.IsSuccess);
             Assert.IsTrue(task3Executed);
@@ -129,7 +129,7 @@ namespace xFrame.Tests.EditMode
         }
 
         [Test]
-        public async Task PipelineFactory_DevSkipToBattle_ShouldAssembleExpectedTasks()
+        public void PipelineFactory_DevSkipToBattle_ShouldAssembleExpectedTasks()
         {
             var executionOrder = new List<StartupTaskKey>();
 
@@ -144,7 +144,7 @@ namespace xFrame.Tests.EditMode
             registry.Register(StartupTaskKey.EnterLobby, CreateTask(StartupTaskKey.EnterLobby, executionOrder));
 
             var pipeline = StartupPipelineFactory.Create(BootEnvironment.DevSkipToBattle, registry);
-            var result = await pipeline.RunAsync(CancellationToken.None);
+            var result = pipeline.RunAsync(CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.IsTrue(result.IsSuccess);
             CollectionAssert.AreEqual(
@@ -159,7 +159,7 @@ namespace xFrame.Tests.EditMode
         }
 
         [Test]
-        public async Task PipelineFactory_CustomProfile_ShouldUseCodeConfiguredTaskOrder()
+        public void PipelineFactory_CustomProfile_ShouldUseCodeConfiguredTaskOrder()
         {
             var executionOrder = new List<StartupTaskKey>();
 
@@ -176,7 +176,7 @@ namespace xFrame.Tests.EditMode
                 .Build();
 
             var pipeline = StartupPipelineFactory.Create(profile, registry);
-            var result = await pipeline.RunAsync(CancellationToken.None);
+            var result = pipeline.RunAsync(CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.IsTrue(result.IsSuccess);
             CollectionAssert.AreEqual(
@@ -190,7 +190,7 @@ namespace xFrame.Tests.EditMode
         }
 
         [Test]
-        public async Task PipelineLauncher_WithInstaller_ShouldInstallAndRun()
+        public void PipelineLauncher_WithInstaller_ShouldInstallAndRun()
         {
             var executionOrder = new List<StartupTaskKey>();
             var registry = new StartupTaskRegistry();
@@ -198,7 +198,7 @@ namespace xFrame.Tests.EditMode
 
             var launcher = new StartupPipelineLauncher(registry);
             var pipeline = launcher.Create(BootEnvironment.DevSkipToBattle, installer, null);
-            var result = await pipeline.RunAsync(CancellationToken.None);
+            var result = pipeline.RunAsync(CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.IsTrue(result.IsSuccess);
             CollectionAssert.AreEqual(
@@ -213,7 +213,7 @@ namespace xFrame.Tests.EditMode
         }
 
         [Test]
-        public async Task DelegateStartupTask_ShouldUseConfiguredCallback()
+        public void DelegateStartupTask_ShouldUseConfiguredCallback()
         {
             var injected = false;
             var executed = false;
@@ -233,7 +233,7 @@ namespace xFrame.Tests.EditMode
                 .AddTask(task)
                 .Build();
 
-            var result = await pipeline.RunAsync(CancellationToken.None);
+            var result = pipeline.RunAsync(CancellationToken.None).GetAwaiter().GetResult();
 
             Assert.IsTrue(result.IsSuccess);
             Assert.IsTrue(injected);

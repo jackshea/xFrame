@@ -24,7 +24,7 @@ namespace xFrame.Runtime.Networking.AgentBridge
         /// <summary>
         /// 主线程分发超时时间（毫秒）。
         /// </summary>
-        public int MainThreadTimeoutMs { get; set; } = 5000;
+        public int MainThreadTimeoutMs { get; set; } = 120000;
 
         /// <summary>
         /// 认证 Token。

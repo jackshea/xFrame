@@ -498,8 +498,8 @@ namespace xFrame.Tests
         public void ActiveTaskCount_ShouldBeCorrect()
         {
             // Arrange & Act
-            _scheduler.Delay(0.1f, () => { });
-            _scheduler.Interval(0.05f, () => { }, 3);
+            _scheduler.Delay(100f, () => { });
+            _scheduler.Interval(100f, () => { }, 3);
             _scheduler.NextFrame(() => { });
 
             // Assert

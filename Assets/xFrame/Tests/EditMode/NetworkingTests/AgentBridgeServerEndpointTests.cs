@@ -45,6 +45,14 @@ namespace xFrame.Tests
             Assert.That(logger.Messages, Has.Some.Contains("endpoint updated"));
         }
 
+        [Test]
+        public void AgentBridgeOptions_DefaultMainThreadTimeout_ShouldAllowLongRunningEditorCommands()
+        {
+            var options = new AgentBridgeOptions();
+
+            Assert.That(options.MainThreadTimeoutMs, Is.GreaterThanOrEqualTo(120000));
+        }
+
         private sealed class StubPersistence : IAgentBridgeEndpointPersistence
         {
             public AgentBridgeEndpointLoadResult LoadResult { get; set; }

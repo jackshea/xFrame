@@ -31,14 +31,13 @@ namespace xFrame.Tests
 
             int result = RetryUtility.ExecuteAsync(async () =>
             {
-                await Cysharp.Threading.Tasks.UniTask.Yield();
                 attempts++;
                 if (attempts < 3)
                 {
                     throw new InvalidOperationException("failed");
                 }
 
-                return 7;
+                return await Cysharp.Threading.Tasks.UniTask.FromResult(7);
             }, 3, TimeSpan.Zero).GetAwaiter().GetResult();
 
             Assert.AreEqual(7, result);
