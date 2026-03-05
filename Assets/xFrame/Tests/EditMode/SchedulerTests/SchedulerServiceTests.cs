@@ -506,7 +506,16 @@ namespace xFrame.Tests
             Assert.AreEqual(3, _scheduler.ActiveTaskCount, "活动任务数量应该正确");
 
             // 让NextFrameTask执行
-            ((VContainer.Unity.ITickable)_scheduler).Tick();
+            var originalTimeScale = UnityEngine.Time.timeScale;
+            UnityEngine.Time.timeScale = 0f;
+            try
+            {
+                ((VContainer.Unity.ITickable)_scheduler).Tick();
+            }
+            finally
+            {
+                UnityEngine.Time.timeScale = originalTimeScale;
+            }
 
             // Assert
             Assert.AreEqual(2, _scheduler.ActiveTaskCount, "完成任务后数量应该减少");

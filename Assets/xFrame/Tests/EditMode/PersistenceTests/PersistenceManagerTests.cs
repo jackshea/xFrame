@@ -93,7 +93,21 @@ namespace xFrame.Tests.PersistenceTests
             }
 
             _serializer = new JsonSerializer();
-            _testBasePath = Path.Combine(Path.GetTempPath(), "xFrame_PersistenceManagerTests_" + Guid.NewGuid().ToString("N"));
+            var workDirectory = TestContext.CurrentContext.WorkDirectory;
+            if (string.IsNullOrEmpty(workDirectory))
+            {
+                workDirectory = Environment.CurrentDirectory;
+            }
+
+            if (string.IsNullOrEmpty(workDirectory))
+            {
+                workDirectory = Path.GetTempPath();
+            }
+
+            _testBasePath = Path.Combine(
+                workDirectory,
+                "Temp",
+                "xFrame_PersistenceManagerTests_" + Guid.NewGuid().ToString("N"));
             _config = PersistenceConfig.CreateDefault(_testBasePath);
             _config.EnableValidation = false; // 简化测试
 
@@ -107,10 +121,52 @@ namespace xFrame.Tests.PersistenceTests
         [TearDown]
         public void TearDown()
         {
-            if (Directory.Exists(_testBasePath))
+            TryDeleteDirectory(_testBasePath);
+        }
+
+        private static void TryDeleteDirectory(string path, int maxRetries = 5)
+        {
+            if (string.IsNullOrEmpty(path) || !Directory.Exists(path))
             {
-                Directory.Delete(_testBasePath, true);
+                return;
             }
+
+            for (var attempt = 1; attempt <= maxRetries; attempt++)
+            {
+                try
+                {
+                    var files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
+                    foreach (var file in files)
+                    {
+                        File.SetAttributes(file, FileAttributes.Normal);
+                    }
+
+                    Directory.Delete(path, true);
+                    return;
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    if (attempt == maxRetries)
+                    {
+                        TestContext.Progress.WriteLine($"[PersistenceManagerTests] 清理目录失败(权限不足，已跳过): {path}");
+                        return;
+                    }
+
+                    System.Threading.Thread.Sleep(100 * attempt);
+                }
+                catch (IOException)
+                {
+                    if (attempt == maxRetries)
+                    {
+                        TestContext.Progress.WriteLine($"[PersistenceManagerTests] 清理目录失败(文件占用，已跳过): {path}");
+                        return;
+                    }
+
+                    System.Threading.Thread.Sleep(100 * attempt);
+                }
+            }
+
+            TestContext.Progress.WriteLine($"[PersistenceManagerTests] 清理目录失败(已跳过): {path}");
         }
 
         #region 基础保存和加载测试
