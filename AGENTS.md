@@ -74,7 +74,7 @@
 
 ### 5.1 通过 Unity Agent Bridge 执行单元测试（RPC）
 - 适用场景：已打开 Unity Editor 且 `xFrame/AgentBridge` 正在运行。
-- 客户端：`scripts/agent/UnityRpcClient/UnityRpcClient.csproj`。
+- 客户端：`scripts/agent/unity-rpc.js`（Node.js）。
 - 说明：客户端会先发 `agent.ping`，未认证时自动 `agent.authenticate` 后重试。
 - 超时建议：单元测试可能耗时较长，建议同时设置 RPC 超时（`--timeout`）与命令执行超时（调用方侧）。
 
@@ -113,7 +113,7 @@ export UNITY_RPC_TOKEN="xframe-dev-token"
 执行 EditMode 单元测试：
 
 ```bash
-dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call \
+node scripts/agent/unity-rpc.js call \
   --timeout 3600 \
   --method unity.tests.run \
   --params '{"mode":"EditMode"}'
@@ -122,7 +122,7 @@ dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call 
 查询最近一次测试结果：
 
 ```bash
-dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call \
+node scripts/agent/unity-rpc.js call \
   --method unity.tests.lastResult \
   --params '{}'
 ```
@@ -130,7 +130,7 @@ dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call 
 按名称过滤（示例）：
 
 ```bash
-dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call \
+node scripts/agent/unity-rpc.js call \
   --timeout 3600 \
   --method unity.tests.run \
   --params '{"mode":"EditMode","filter":"SchedulerServiceTests"}'

@@ -61,7 +61,7 @@
   - 先 `agent.ping`
   - 若未认证则调用 `agent.authenticate`
   - 再执行业务方法
-- Skill 通过 `scripts/agent/UnityRpcClient`（C#）发起 WebSocket JSON-RPC 调用。
+- Skill 通过 `scripts/agent/unity-rpc.js`（Node.js）发起 WebSocket JSON-RPC 调用。
 
 ## 8. 测试与验证
 
@@ -70,7 +70,7 @@
   - 白名单路由
   - 反射开关控制
   - `unity.component.invoke` 参数校验
-- C# CLI 侧：
+- Node.js CLI 侧：
   - CLI 参数解析
   - JSON-RPC 报文构造
   - 响应错误码处理
