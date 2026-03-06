@@ -7,10 +7,10 @@ if errorlevel 1 (
     exit /b 1
 )
 
-git config --local core.autocrlf true
+git config --local core.autocrlf false
 if errorlevel 1 goto :config_error
 
-git config --local core.eol crlf
+git config --local core.eol lf
 if errorlevel 1 goto :config_error
 
 git config --local core.safecrlf true
@@ -25,7 +25,7 @@ echo   core.safecrlf =
 git config --local --get core.safecrlf
 
 echo.
-echo Optional: run "git add --renormalize ." to normalize tracked files.
+echo Optional: run "git add --renormalize ." to normalize tracked files to LF.
 exit /b 0
 
 :config_error

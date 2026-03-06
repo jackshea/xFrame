@@ -6,12 +6,12 @@ if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     exit 1
 fi
 
-if ! git config --local core.autocrlf true; then
+if ! git config --local core.autocrlf false; then
     echo "[ERROR] Failed to write local Git configuration." >&2
     exit 1
 fi
 
-if ! git config --local core.eol crlf; then
+if ! git config --local core.eol lf; then
     echo "[ERROR] Failed to write local Git configuration." >&2
     exit 1
 fi
@@ -30,4 +30,4 @@ echo "  core.safecrlf ="
 git config --local --get core.safecrlf
 
 echo
-echo 'Optional: run "git add --renormalize ." to normalize tracked files.'
+echo 'Optional: run "git add --renormalize ." to normalize tracked files to LF.'
