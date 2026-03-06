@@ -1,162 +1,37 @@
 # AGENTS 指南（xFrame）
-本文件面向在本仓库执行任务的 agent（编码、测试、重构、文档）。
-目标：降低试错成本，统一风格，保证变更可验证、可回归。
+目标：统一协作规则，保证改动可验证、可回归。
 
-## 约定
-- 默认使用中文作为首先语言
-- 使用Windows风格的换行符CRLF
-
-## 1. 项目基础信息
+## 基本约定
+- 默认中文沟通，换行符使用 LF。
 - Unity 版本：`2021.3.51f1`（`ProjectSettings/ProjectVersion.txt`）。
-- 核心目录：`Assets/xFrame/`；业务目录：`Assets/Game/`。
-- 测试框架：`com.unity.test-framework`（`Packages/manifest.json`）。
-- 主要依赖：VContainer、UniTask、Addressables。
-- 原则：优先沿用仓库既有模式，不引入冲突规范。
+- 优先复用仓库现有模式，避免引入新规范冲突。
 
-## 2. 目录与职责边界
-- `Assets/xFrame/Runtime/`：框架运行时代码（EventBus/DI/Logging/Scheduler/UI 等）。
-- `Assets/xFrame/Editor/`：编辑器扩展代码。
-- `Assets/xFrame/Tests/EditMode/`：EditMode 测试。
-- `Assets/xFrame/Tests/PlayMode/`：PlayMode 测试。
-- `Assets/xFrame.Examples/`：示例代码。
-- `Assets/Game/`：游戏业务层。
-- `Packages/`、`ProjectSettings/`：包与项目配置。
-- 约束：保持框架层与业务层分离，避免跨层耦合。
+## 目录边界
+- 框架层：`Assets/xFrame/Runtime/`、`Assets/xFrame/Editor/`、`Assets/xFrame/Tests/`、`Assets/xFrame.Examples/`。
+- 业务层：`Assets/Game/`。
+- 配置层：`Packages/`、`ProjectSettings/`。
+- 要求：框架层与业务层解耦，避免跨层依赖。
 
-## 4. 代码风格（基于现有实现）
+## 代码规范
+- C#，4 空格缩进，Allman 大括号，最小改动。
+- 命名：类型/方法/属性 `PascalCase`，接口 `I*`，私有字段 `_camelCase`。
+- `using` 顺序：System -> Unity/第三方 -> 项目命名空间；移除未使用项。
+- 注释：类和方法使用中文 XML 注释，写清职责、设计意图与关键生命周期。
+- 异常与日志：禁止空 `catch`；记录上下文；优先 `IXLogger` / `IXLogManager`。
+- DI 与模块化：新服务优先 VContainer 注册；Runtime 能力优先接口暴露；Editor 代码放 `Editor` 目录。
 
-### 4.1 基础格式
-- 语言：C#。
-- 缩进：4 空格。
-- 大括号：Allman（另起一行）。
-- 变更原则：最小改动，不做无关格式化。
-
-### 4.2 命名约定
-- 类型/方法/属性：`PascalCase`。
-- 接口：`I` 前缀（如 `ISchedulerService`、`IXLogManager`）。
-- 私有字段：`_camelCase`。
-- 命名空间：按目录分层（`xFrame.Runtime.<Module>`、`xFrame.Editor.<Module>`、`xFrame.Tests`）。
-- 历史命名（如 `xFrameApplication`）保持兼容，不强行重命名。
-
-### 4.3 using 与文件组织
-- `using` 顺序：System -> Unity/第三方 -> 项目命名空间。
-- 移除未使用 `using`。
-- 新增文件时，路径/命名空间/类名保持一致。
-
-### 4.4 注释与文档
-- 注释优先中文，解释意图，不重复代码字面含义。
-- 公共 API 与非显然逻辑建议补充 XML 注释。
-- 避免噪声注释。
-
-### 4.5 错误处理与日志
-- 禁止空 `catch`。
-- 捕获异常时保留异常对象并记录上下文。
-- 优先使用 `IXLogger` / `IXLogManager`，避免随意 `Debug.Log`。
-- 可恢复流程：记录并降级；不可恢复流程：抛出或显式失败。
-
-### 4.6 依赖注入与模块化
-- 新服务优先通过 VContainer 注册。
-- Runtime 模块优先通过接口暴露能力。
-- 编辑器代码放 `Editor` 目录，必要时加 `#if UNITY_EDITOR`。
-
-## 5. 测试规范
+## 测试与验证
 - 测试框架：NUnit + Unity Test Framework。
-- EditMode：纯逻辑、无需场景。
-- PlayMode：依赖帧循环或运行时行为。
-- 测试文件：`*Tests.cs`。
-- 测试方法：行为命名，推荐 `Action_ShouldExpected`。
-- 修复缺陷时必须补充或更新回归测试。
+- EditMode 测纯逻辑，PlayMode 测运行时行为；测试文件命名 `*Tests.cs`。
+- 修复缺陷必须补回归测试，测试方法推荐 `Action_ShouldExpected`。
+- 建议顺序：受影响单测（`-testFilter`）-> 对应测试集 -> 全量测试（时间允许）。
+- 单元测试通过 `unity-rpc` skill 执行。
 
-建议执行顺序：
-1) 先跑受影响单测（`-testFilter`）。
-2) 再跑对应测试集（EditMode/PlayMode）。
-3) 最后跑全量（时间允许时）。
+## 提交要求
+- 提交前缀：`feat:`、`fix:`、`test:`、`opt:`、`format:`（可带 scope）。
+- 单次提交聚焦单一逻辑变更。
+- PR 至少包含：变更摘要、影响模块、测试命令与结果、迁移说明（如有）。
 
-### 5.1 通过 Unity Agent Bridge 执行单元测试（RPC）
-- 适用场景：已打开 Unity Editor 且 `xFrame/AgentBridge` 正在运行。
-- 客户端：`scripts/agent/unity-rpc.js`（Node.js）。
-- 说明：客户端会先发 `agent.ping`，未认证时自动 `agent.authenticate` 后重试。
-- 超时建议：单元测试可能耗时较长，建议同时设置 RPC 超时（`--timeout`）与命令执行超时（调用方侧）。
-
-环境变量约定（推荐）：
-- `UNITY_RPC_HOST`：Unity 运行主机 IP（例如 `10.22.61.131`）。
-- `UNITY_RPC_PORT`：Agent Bridge 端口（默认 `17777`，可选）。
-- `UNITY_RPC_TOKEN`：认证令牌（例如 `xframe-dev-token`）。
-- `UNITY_RPC_ENDPOINT`：完整地址（例如 `ws://10.22.61.131:17777`，设置后优先于 `UNITY_RPC_HOST`/`UNITY_RPC_PORT`）。
-
-设置环境变量示例：
-
-PowerShell（当前会话）：
-
-```powershell
-$env:UNITY_RPC_HOST = "10.22.61.131"
-$env:UNITY_RPC_PORT = "17777"
-$env:UNITY_RPC_TOKEN = "xframe-dev-token"
-```
-
-PowerShell（持久化到当前用户）：
-
-```powershell
-[System.Environment]::SetEnvironmentVariable("UNITY_RPC_HOST", "10.22.61.131", "User")
-[System.Environment]::SetEnvironmentVariable("UNITY_RPC_PORT", "17777", "User")
-[System.Environment]::SetEnvironmentVariable("UNITY_RPC_TOKEN", "xframe-dev-token", "User")
-```
-
-bash/zsh（当前会话）：
-
-```bash
-export UNITY_RPC_HOST="10.22.61.131"
-export UNITY_RPC_PORT="17777"
-export UNITY_RPC_TOKEN="xframe-dev-token"
-```
-
-执行 EditMode 单元测试：
-
-```bash
-node scripts/agent/unity-rpc.js call \
-  --timeout 3600 \
-  --method unity.tests.run \
-  --params '{"mode":"EditMode"}'
-```
-
-查询最近一次测试结果：
-
-```bash
-node scripts/agent/unity-rpc.js call \
-  --method unity.tests.lastResult \
-  --params '{}'
-```
-
-按名称过滤（示例）：
-
-```bash
-node scripts/agent/unity-rpc.js call \
-  --timeout 3600 \
-  --method unity.tests.run \
-  --params '{"mode":"EditMode","filter":"SchedulerServiceTests"}'
-```
-
-## 6. Agent 执行建议
-- 先查同模块实现，再改代码。
-- 采用小步修改与小步验证。
-- 每次修改至少做一轮编译/测试验证。
-- 尽量避免跨模块大改；必须跨模块时先列影响清单。
-- 不提交临时目录：`Library/`、`Temp/`、`Logs/`、`obj/`。
-
-## 7. 提交与 PR 规范
-- 提交前缀：`feat:`、`fix:`、`test:`、`opt:`、`format:`。
-- 推荐 scope：`feat(Scheduler): ...`、`test(DI): ...`。
-- 单次提交聚焦一个逻辑变更。
-- PR 至少包含：变更摘要、影响模块、测试依据（命令+结果）、迁移说明（如有）。
-
-## 9. 快速执行清单
-开始任务前：
-1) 确认改动层（Runtime / Editor / Tests / Game）。
-2) 选 1-2 个同目录实现作为风格锚点。
-3) 明确最小验证命令（优先单测）。
-
-提交结果前：
-1) 关键路径无编译错误。
-2) 相关测试通过（至少单测 + 对应测试集）。
-3) 无无关文件改动与临时文件。
-4) 文档/注释与代码行为一致。
+## 执行清单
+- 改动前：确认改动层，参考同目录实现，确定最小验证命令。
+- 提交前：无编译错误，相关测试通过，无无关改动，文档/注释与行为一致。
