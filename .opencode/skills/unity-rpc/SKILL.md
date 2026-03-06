@@ -5,13 +5,13 @@ description: Use when you need to call Unity Agent Bridge(JSON-RPC 2.0 over WebS
 
 # Unity RPC
 
-通过仓库内的 `scripts/agent/UnityRpcClient`（C#）调用 Unity Editor 内的 Agent Bridge。
+通过仓库内的 `scripts/agent/unity-rpc.js`（Node.js）调用 Unity Editor 内的 Agent Bridge。
 
 ## 前置条件
 
 1. Unity Editor 已打开当前工程。
 2. `xFrame/AgentBridge` 已在 Editor 中启动（默认自动启动，可在菜单手动 Start/Stop）。
-3. 本机可用 `.NET SDK 8+`（`dotnet --version`）。
+3. 本机可用 `Node.js 22+`（`node --version`）。
 
 ## 标准调用流程
 
@@ -47,7 +47,7 @@ export UNITY_RPC_TOKEN="xframe-dev-token"
 ## 命令模板
 
 ```bash
-dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call \
+node scripts/agent/unity-rpc.js call \
   --method unity.gameobject.find \
   --params '{"name":"Player"}'
 ```
@@ -69,7 +69,7 @@ dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call 
 1. 触发测试（推荐先跑 `EditMode`）：
 
 ```bash
-dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call \
+node scripts/agent/unity-rpc.js call \
   --timeout 3600 \
   --method unity.tests.run \
   --params '{"mode":"EditMode"}'
@@ -78,7 +78,7 @@ dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call 
 2. 查询最近一次测试结果：
 
 ```bash
-dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call \
+node scripts/agent/unity-rpc.js call \
   --method unity.tests.lastResult \
   --params '{}'
 ```
@@ -86,7 +86,7 @@ dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call 
 3. 若需按名称过滤测试，可在 `unity.tests.run` 里传 `filter`（例如 `{"mode":"EditMode","filter":"SchedulerServiceTests"}`）：
 
 ```bash
-dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call \
+node scripts/agent/unity-rpc.js call \
   --timeout 3600 \
   --method unity.tests.run \
   --params '{"mode":"EditMode","filter":"SchedulerServiceTests"}'
