@@ -149,11 +149,14 @@ namespace xFrame.Tests
         /// </summary>
         private class TestClass
         {
-            [UIBind("Panel/Button")] private Button _button;
+            [UIBind("Panel/Button")]
+            private Button _button;
 
-            [UIBind] private Image _image;
+            [UIBind]
+            private Image _image;
 
-            [UIBind("Panel/Text")] public TextMeshProUGUI PublicText;
+            [UIBind("Panel/Text")]
+            public TextMeshProUGUI PublicText;
         }
     }
 }
