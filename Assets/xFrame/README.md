@@ -196,7 +196,7 @@ OpenCode 侧可使用：
 export UNITY_RPC_HOST="127.0.0.1"
 export UNITY_RPC_PORT="17777"
 export UNITY_RPC_TOKEN="xframe-dev-token"
-dotnet run --project scripts/agent/UnityRpcClient/UnityRpcClient.csproj -- call --method agent.commands --params '{}'
+node scripts/agent/unity-rpc.js call --method agent.commands --params '{}'
 ```
 
 ### Platform（平台特定工具）
