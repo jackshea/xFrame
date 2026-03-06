@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using xFrame.Runtime.UI;
 
-namespace xFrame.Tests.EditMode.UITests
+namespace xFrame.Tests
 {
     /// <summary>
     ///     UIComponentManager组件管理器的单元测试

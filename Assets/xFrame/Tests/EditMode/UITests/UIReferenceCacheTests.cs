@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using xFrame.Runtime.UI;
 
-namespace xFrame.Tests.EditMode.UITests
+namespace xFrame.Tests
 {
     /// <summary>
     ///     UIReferenceCache引用缓存的单元测试

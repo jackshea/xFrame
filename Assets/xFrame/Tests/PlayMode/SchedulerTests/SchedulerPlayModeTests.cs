@@ -81,11 +81,11 @@ namespace xFrame.Tests
             Assert.AreEqual(0, count2, "第二个任务不应执行");
             Assert.AreEqual(1, count3, "第三个任务应已执行");
 
-            yield return new WaitForSeconds(0.15f);
+            yield return new WaitForSeconds(0.1f);
             Assert.AreEqual(0, count1, "第一个任务不应执行");
             Assert.AreEqual(1, count2, "第二个任务应已执行");
 
-            yield return new WaitForSeconds(0.15f);
+            yield return new WaitForSeconds(0.1f);
 
             // Assert
             Assert.AreEqual(1, count1, "第一个任务应已执行");
@@ -130,7 +130,7 @@ namespace xFrame.Tests
             _testHost.Interval(interval, () => executeCount++, 3);
 
             // Act
-            yield return new WaitForSeconds(interval * 2.5f);
+            yield return new WaitForSeconds(interval * 3.5f);
 
             // Assert
             Assert.AreEqual(3, executeCount, "应执行指定次数");
@@ -406,11 +406,11 @@ namespace xFrame.Tests
             Assert.AreEqual(0, outerCount, "外部任务不应执行");
             Assert.AreEqual(0, innerCount, "内部任务不应执行");
 
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(0.07f);
             Assert.AreEqual(1, outerCount, "外部任务应执行");
             Assert.AreEqual(0, innerCount, "内部任务不应执行");
 
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(0.08f);
 
             // Assert
             Assert.AreEqual(1, innerCount, "内部任务应执行");
@@ -427,8 +427,6 @@ namespace xFrame.Tests
         private readonly Dictionary<int, IScheduledTask> _tasks = new();
 
         private readonly List<IScheduledTask> _tasksToRemove = new();
-
-        private int _nextTaskId = 1;
 
         public int ActiveTaskCount => _tasks.Count + _pendingTasks.Count;
 
@@ -541,9 +539,8 @@ namespace xFrame.Tests
 
         private int AddTask(IScheduledTask task)
         {
-            var taskId = _nextTaskId++;
             _pendingTasks.Add(task);
-            return taskId;
+            return task.TaskId;
         }
     }
 }

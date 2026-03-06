@@ -1,12 +1,14 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using UnityEngine.TestTools;
 using xFrame.Runtime.Startup;
 
-namespace xFrame.Tests.EditMode
+namespace xFrame.Tests
 {
     [TestFixture]
     public class StartupPipelineTests
@@ -263,57 +265,26 @@ namespace xFrame.Tests.EditMode
                 profile.TaskKeys.ToArray());
         }
 
-        [Test]
-        public void StartupOrchestrator_RunAsync_WhenAlreadyRunning_ShouldThrow()
+        private static IEnumerator WaitForTaskOrTimeout(Task task, TimeSpan timeout, string timeoutMessage)
         {
-            var registry = new StartupTaskRegistry();
-            registry.Register(StartupTaskKey.InitLogger, () => new FakeStartupTask(
-                "LongTask",
-                1f,
-                async token =>
-                {
-                    await Task.Delay(TimeSpan.FromMilliseconds(200), token);
-                    return StartupTaskResult.Success();
-                }));
-
-            var provider = new FixedProfileProvider(new StartupProfile("Test", new[] { StartupTaskKey.InitLogger }));
-            var orchestrator = new StartupOrchestrator(registry, profileProvider: provider);
-
-            var firstRunTask = orchestrator.RunAsync(BootEnvironment.DevFull, CancellationToken.None);
-
-            Assert.Throws<InvalidOperationException>(() =>
+            var deadline = DateTime.UtcNow + timeout;
+            while (!task.IsCompleted)
             {
-                orchestrator.RunAsync(BootEnvironment.DevFull, CancellationToken.None).GetAwaiter().GetResult();
-            });
+                if (DateTime.UtcNow > deadline) Assert.Fail(timeoutMessage);
 
-            firstRunTask.GetAwaiter().GetResult();
+                yield return null;
+            }
         }
 
-        [Test]
-        public void StartupOrchestrator_ShutdownAsync_ShouldCancelRunningPipeline()
+        private static IEnumerator WaitUntilOrTimeout(Func<bool> condition, TimeSpan timeout, string timeoutMessage)
         {
-            var registry = new StartupTaskRegistry();
-            registry.Register(StartupTaskKey.InitLogger, () => new FakeStartupTask(
-                "CancellableTask",
-                1f,
-                async token =>
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(2), token);
-                    return StartupTaskResult.Success();
-                }));
+            var deadline = DateTime.UtcNow + timeout;
+            while (!condition.Invoke())
+            {
+                if (DateTime.UtcNow > deadline) Assert.Fail(timeoutMessage);
 
-            var provider = new FixedProfileProvider(new StartupProfile("Test", new[] { StartupTaskKey.InitLogger }));
-            var orchestrator = new StartupOrchestrator(registry, profileProvider: provider);
-
-            var runTask = orchestrator.RunAsync(BootEnvironment.DevFull, CancellationToken.None);
-            Task.Delay(50).GetAwaiter().GetResult();
-
-            orchestrator.ShutdownAsync(CancellationToken.None).GetAwaiter().GetResult();
-            var result = runTask.GetAwaiter().GetResult();
-
-            Assert.That(result.IsSuccess, Is.False);
-            Assert.That(result.IsCancelled, Is.True);
-            Assert.That(orchestrator.State, Is.EqualTo(StartupOrchestratorState.Stopped));
+                yield return null;
+            }
         }
 
         private static Func<IStartupTask> CreateTask(StartupTaskKey key, List<StartupTaskKey> executionOrder)

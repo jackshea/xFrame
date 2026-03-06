@@ -3,7 +3,7 @@ using NUnit.Framework;
 using xFrame.Runtime.UI;
 using xFrame.Runtime.UI.Events;
 
-namespace xFrame.Tests.EditMode.UITests
+namespace xFrame.Tests
 {
     /// <summary>
     ///     UI事件结构体的单元测试

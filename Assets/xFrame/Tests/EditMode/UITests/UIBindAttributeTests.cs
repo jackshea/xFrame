@@ -5,7 +5,7 @@ using TMPro;
 using UnityEngine.UI;
 using xFrame.Runtime.UI;
 
-namespace xFrame.Tests.EditMode.UITests
+namespace xFrame.Tests
 {
     /// <summary>
     ///     UIBindAttribute特性的单元测试

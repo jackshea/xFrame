@@ -2,7 +2,7 @@ using System;
 using NUnit.Framework;
 using xFrame.Runtime.UI;
 
-namespace xFrame.Tests.EditMode.UITests
+namespace xFrame.Tests
 {
     /// <summary>
     ///     UILayer枚举和扩展方法的单元测试
