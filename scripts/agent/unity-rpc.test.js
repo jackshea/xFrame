@@ -20,17 +20,15 @@ test('buildRequest 应包含 JSON-RPC 基本字段', () =>
     assert.deepEqual(request.params, {});
 });
 
-test('call 未认证时应自动认证并重试', async () =>
+test('call 应先执行 ping 再调用目标方法', async () =>
 {
     const fakeTransport = new FakeTransport([
         '{"jsonrpc":"2.0","id":"1","result":{"pong":true}}',
-        '{"jsonrpc":"2.0","id":"2","error":{"code":-32001,"message":"Unauthorized"}}',
-        '{"jsonrpc":"2.0","id":"3","result":{"authenticated":true}}',
-        '{"jsonrpc":"2.0","id":"4","result":{"found":true}}'
+        '{"jsonrpc":"2.0","id":"2","result":{"found":true}}'
     ]);
 
     const client = new UnityJsonRpcClient(
-        { endpoint: 'ws://127.0.0.1:17777', token: 'abc', timeoutSeconds: 5 },
+        { endpoint: 'ws://127.0.0.1:17777', timeoutSeconds: 5 },
         () => fakeTransport);
 
     const result = await client.call('unity.gameobject.find', { name: 'Player' });
@@ -38,8 +36,6 @@ test('call 未认证时应自动认证并重试', async () =>
     assert.equal(result.found, true);
     assert.equal(fakeTransport.sent[0].method, 'agent.ping');
     assert.equal(fakeTransport.sent[1].method, 'unity.gameobject.find');
-    assert.equal(fakeTransport.sent[2].method, 'agent.authenticate');
-    assert.equal(fakeTransport.sent[3].method, 'unity.gameobject.find');
     assert.equal(fakeTransport.closed, true);
 });
 
@@ -51,7 +47,6 @@ test('runAsync 在 params 不是对象时应返回 2', async () =>
         [
             'call',
             '--endpoint', 'ws://127.0.0.1:17777',
-            '--token', 'abc',
             '--method', 'agent.ping',
             '--params', '[]'
         ],
@@ -69,7 +64,6 @@ test('runAsync 在 RPC 错误时应返回 1 并输出错误 JSON', async () =>
         [
             'call',
             '--endpoint', 'ws://127.0.0.1:17777',
-            '--token', 'abc',
             '--method', 'agent.unknown',
             '--params', '{}'
         ],
@@ -102,14 +96,12 @@ test('runAsync 应支持从环境变量解析 endpoint', async () =>
             stdout,
             env: {
                 UNITY_RPC_HOST: '127.0.0.1',
-                UNITY_RPC_PORT: '17777',
-                UNITY_RPC_TOKEN: 'abc'
+                UNITY_RPC_PORT: '17777'
             },
             clientFactory: config => ({
                 call: async () =>
                 {
                     assert.equal(config.endpoint, 'ws://127.0.0.1:17777');
-                    assert.equal(config.token, 'abc');
                     return { pong: true };
                 }
             })
@@ -117,6 +109,74 @@ test('runAsync 应支持从环境变量解析 endpoint', async () =>
 
     assert.equal(exitCode, 0);
     assert.match(stdout.value(), /"pong":true/);
+});
+
+test('resolveEndpoint 应支持从本地多实例配置中选择最近运行实例', () =>
+{
+    const endpoint = require('./unity-rpc').resolveEndpoint(
+        new Map(),
+        {},
+        {
+            cwd: '/repo',
+            fs: createJsonFs({
+                '/repo/UserSettings/AgentBridgeSettings.json': {
+                    Instances: [
+                        {
+                            InstanceId: 'unity-a',
+                            ProcessId: 1001,
+                            Host: '127.0.0.1',
+                            Port: 17777,
+                            IsRunning: true,
+                            LastSeenUtc: '2026-03-11T01:00:00.0000000Z'
+                        },
+                        {
+                            InstanceId: 'unity-b',
+                            ProcessId: 1002,
+                            Host: '127.0.0.1',
+                            Port: 17778,
+                            IsRunning: true,
+                            LastSeenUtc: '2026-03-11T02:00:00.0000000Z'
+                        }
+                    ]
+                }
+            })
+        });
+
+    assert.equal(endpoint, 'ws://127.0.0.1:17778');
+});
+
+test('resolveEndpoint 应支持按 instance 参数选择指定实例', () =>
+{
+    const endpoint = require('./unity-rpc').resolveEndpoint(
+        new Map([['--instance', '1001']]),
+        {},
+        {
+            cwd: '/repo',
+            fs: createJsonFs({
+                '/repo/UserSettings/AgentBridgeSettings.json': {
+                    Instances: [
+                        {
+                            InstanceId: 'unity-a',
+                            ProcessId: 1001,
+                            Host: '127.0.0.1',
+                            Port: 17777,
+                            IsRunning: true,
+                            LastSeenUtc: '2026-03-11T01:00:00.0000000Z'
+                        },
+                        {
+                            InstanceId: 'unity-b',
+                            ProcessId: 1002,
+                            Host: '127.0.0.1',
+                            Port: 17778,
+                            IsRunning: true,
+                            LastSeenUtc: '2026-03-11T02:00:00.0000000Z'
+                        }
+                    ]
+                }
+            })
+        });
+
+    assert.equal(endpoint, 'ws://127.0.0.1:17777');
 });
 
 class FakeTransport
@@ -161,6 +221,20 @@ function createBufferWriter()
         value()
         {
             return content;
+        }
+    };
+}
+
+function createJsonFs(files)
+{
+    return {
+        existsSync(filePath)
+        {
+            return Object.prototype.hasOwnProperty.call(files, filePath);
+        },
+        readFileSync(filePath)
+        {
+            return JSON.stringify(files[filePath]);
         }
     };
 }

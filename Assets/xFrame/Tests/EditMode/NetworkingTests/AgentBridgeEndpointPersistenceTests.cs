@@ -52,8 +52,7 @@ namespace xFrame.Tests
             AgentBridgeLocalSettingsStorage.Save(new AgentBridgeLocalSettings
             {
                 Host = " ",
-                Port = 70000,
-                AuthToken = "persisted-token"
+                Port = 70000
             });
 
             var persistence = new AgentBridgeEndpointPersistence();
@@ -66,25 +65,97 @@ namespace xFrame.Tests
         }
 
         [Test]
-        public void TrySave_ShouldPreserveExistingAuthToken()
+        public void Load_CurrentInstanceEndpoint_ShouldPreferInstanceRegistration()
         {
             AgentBridgeLocalSettingsStorage.Save(new AgentBridgeLocalSettings
             {
-                Host = AgentBridgeOptions.DefaultHost,
-                Port = AgentBridgeOptions.DefaultPort,
-                AuthToken = "persisted-token"
+                Host = "10.0.0.10",
+                Port = 18888,
+                Instances =
+                {
+                    new AgentBridgeInstanceRegistration
+                    {
+                        InstanceId = AgentBridgeLocalSettingsStorage.CurrentInstanceId,
+                        ProcessId = AgentBridgeLocalSettingsStorage.CurrentProcessId,
+                        ProjectPath = System.IO.Directory.GetParent(UnityEngine.Application.dataPath)?.FullName,
+                        Host = "10.0.0.20",
+                        Port = 19999,
+                        IsRunning = true,
+                        LastSeenUtc = "2026-03-11T00:00:00.0000000Z"
+                    }
+                }
             });
 
             var persistence = new AgentBridgeEndpointPersistence();
-            var saveResult = persistence.TrySave("10.0.0.15", 18888, out var error);
-            var settings = AgentBridgeLocalSettingsStorage.Load(out var loadError);
+            var loadResult = persistence.Load(out var host, out var port, out var error);
 
-            Assert.That(saveResult, Is.True, error);
-            Assert.That(loadError, Is.Null.Or.Empty);
+            Assert.That(loadResult, Is.EqualTo(AgentBridgeEndpointLoadResult.Loaded), error);
+            Assert.That(host, Is.EqualTo("10.0.0.20"));
+            Assert.That(port, Is.EqualTo(19999));
+        }
+
+        [Test]
+        public void Load_CurrentInstanceEndpointInvalid_ShouldFallbackToProjectDefault()
+        {
+            AgentBridgeLocalSettingsStorage.Save(new AgentBridgeLocalSettings
+            {
+                Host = "10.0.0.10",
+                Port = 18888,
+                Instances =
+                {
+                    new AgentBridgeInstanceRegistration
+                    {
+                        InstanceId = AgentBridgeLocalSettingsStorage.CurrentInstanceId,
+                        ProcessId = AgentBridgeLocalSettingsStorage.CurrentProcessId,
+                        ProjectPath = System.IO.Directory.GetParent(UnityEngine.Application.dataPath)?.FullName,
+                        Host = "127.0.0.1",
+                        Port = 70000,
+                        IsRunning = true,
+                        LastSeenUtc = "2026-03-11T00:00:00.0000000Z"
+                    }
+                }
+            });
+
+            var persistence = new AgentBridgeEndpointPersistence();
+            var loadResult = persistence.Load(out var host, out var port, out var error);
+
+            Assert.That(loadResult, Is.EqualTo(AgentBridgeEndpointLoadResult.Loaded), error);
+            Assert.That(host, Is.EqualTo("10.0.0.10"));
+            Assert.That(port, Is.EqualTo(18888));
+        }
+
+        [Test]
+        public void UpsertCurrentInstance_ShouldKeepMultipleUnityInstanceRegistrations()
+        {
+            AgentBridgeLocalSettingsStorage.Save(new AgentBridgeLocalSettings
+            {
+                Instances =
+                {
+                    new AgentBridgeInstanceRegistration
+                    {
+                        InstanceId = "other-project::1234",
+                        ProcessId = 1234,
+                        ProjectPath = System.IO.Directory.GetParent(UnityEngine.Application.dataPath)?.FullName,
+                        Host = "127.0.0.1",
+                        Port = 17777,
+                        IsRunning = true,
+                        LastSeenUtc = "2026-03-11T00:00:00.0000000Z"
+                    }
+                }
+            });
+
+            AgentBridgeLocalSettingsStorage.UpsertCurrentInstance("127.0.0.1", 17778, true);
+            var settings = AgentBridgeLocalSettingsStorage.Load(out var error);
+
+            Assert.That(error, Is.Null.Or.Empty);
             Assert.That(settings, Is.Not.Null);
-            Assert.That(settings.Host, Is.EqualTo("10.0.0.15"));
-            Assert.That(settings.Port, Is.EqualTo(18888));
-            Assert.That(settings.AuthToken, Is.EqualTo("persisted-token"));
+            Assert.That(settings.Instances, Has.Count.EqualTo(2));
+            Assert.That(settings.Instances, Has.Some.Matches<AgentBridgeInstanceRegistration>(instance =>
+                instance.InstanceId == "other-project::1234" && instance.Port == 17777));
+            Assert.That(settings.Instances, Has.Some.Matches<AgentBridgeInstanceRegistration>(instance =>
+                instance.InstanceId == AgentBridgeLocalSettingsStorage.CurrentInstanceId &&
+                instance.Port == 17778 &&
+                instance.IsRunning));
         }
     }
 }

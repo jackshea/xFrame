@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
+using System.Net.Sockets;
 using Fleck;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -21,7 +23,6 @@ namespace xFrame.Editor.AgentBridge
         private readonly IXLogger _logger;
         private readonly AgentBridgeOptions _options;
         private readonly AgentRpcRouter _router;
-        private readonly AgentBridgeTokenPersistence _tokenPersistence;
         private EditorMainThreadDispatcher _dispatcher;
 
         private WebSocketServer _server;
@@ -32,12 +33,10 @@ namespace xFrame.Editor.AgentBridge
             _options = options ?? new AgentBridgeOptions();
             _logger = logger ?? new XLogManager().GetLogger("AgentBridge");
             _endpointPersistence = endpointPersistence ?? new AgentBridgeEndpointPersistence();
-            _tokenPersistence = new AgentBridgeTokenPersistence();
             _dispatcher = new EditorMainThreadDispatcher();
             _dispatchTimeout = TimeSpan.FromMilliseconds(Math.Max(100, _options.MainThreadTimeoutMs));
 
             LoadPersistedEndpoint();
-            EnsureAuthToken();
 
             var registry = new AgentCommandRegistry();
             registry.Register(new PingCommandHandler());
@@ -58,7 +57,7 @@ namespace xFrame.Editor.AgentBridge
 
         public string Endpoint => $"ws://{_options.Host}:{_options.Port}";
 
-        public string AuthToken => _options.AuthToken;
+        public string InstanceId => AgentBridgeLocalSettingsStorage.CurrentInstanceId;
 
         public void Dispose()
         {
@@ -107,6 +106,8 @@ namespace xFrame.Editor.AgentBridge
 
             if (_dispatcher == null) _dispatcher = new EditorMainThreadDispatcher();
 
+            ResolveAvailableEndpoint();
+
             var endpoint = Endpoint;
 
             try
@@ -152,6 +153,7 @@ namespace xFrame.Editor.AgentBridge
                     };
                 });
 
+                AgentBridgeLocalSettingsStorage.UpsertCurrentInstance(_options.Host, _options.Port, true);
                 _logger.Info($"AgentBridge started at {endpoint}");
             }
             catch (Exception ex)
@@ -184,6 +186,7 @@ namespace xFrame.Editor.AgentBridge
 
                 _server.Dispose();
                 _router.ClearContexts();
+                AgentBridgeLocalSettingsStorage.MarkCurrentInstanceStopped();
                 _logger.Info("AgentBridge stopped.");
             }
             finally
@@ -229,19 +232,72 @@ namespace xFrame.Editor.AgentBridge
             }
         }
 
+        private void ResolveAvailableEndpoint()
+        {
+            var resolvedPort = TryResolveAvailablePort(_options.Host, _options.Port, 32, out var resolutionError);
+            if (!string.IsNullOrWhiteSpace(resolutionError))
+                _logger.Warning($"AgentBridge endpoint probe failed. endpoint={Endpoint}, error={resolutionError}");
+
+            if (resolvedPort == _options.Port) return;
+
+            _logger.Warning(
+                $"AgentBridge endpoint occupied, auto switch to available port. from=ws://{_options.Host}:{_options.Port}, to=ws://{_options.Host}:{resolvedPort}");
+            _options.Port = resolvedPort;
+            AgentBridgeLocalSettingsStorage.UpsertCurrentInstance(_options.Host, _options.Port, false);
+        }
+
         private void DisposeDispatcher()
         {
             _dispatcher?.Dispose();
             _dispatcher = null;
         }
 
-        private void EnsureAuthToken()
+        private static int TryResolveAvailablePort(string host, int requestedPort, int maxAttempts, out string error)
         {
-            if (!string.IsNullOrWhiteSpace(_options.AuthToken)) return;
+            error = null;
+            for (var offset = 0; offset < Math.Max(1, maxAttempts); offset++)
+            {
+                var candidatePort = requestedPort + offset;
+                if (candidatePort > 65535) break;
 
-            _options.AuthToken = _tokenPersistence.LoadOrCreateToken(out var createdNewToken);
-            if (createdNewToken)
-                _logger.Warning("AgentBridge generated a new local auth token. Check UserSettings/AgentBridgeSettings.json.");
+                if (CanBind(host, candidatePort, out error))
+                {
+                    error = null;
+                    return candidatePort;
+                }
+            }
+
+            return requestedPort;
+        }
+
+        private static bool CanBind(string host, int port, out string error)
+        {
+            error = null;
+            TcpListener listener = null;
+            try
+            {
+                listener = new TcpListener(ParseHost(host), port);
+                listener.Start();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+                return false;
+            }
+            finally
+            {
+                listener?.Stop();
+            }
+        }
+
+        private static IPAddress ParseHost(string host)
+        {
+            if (string.IsNullOrWhiteSpace(host) ||
+                string.Equals(host, "0.0.0.0", StringComparison.OrdinalIgnoreCase))
+                return IPAddress.Any;
+
+            return IPAddress.TryParse(host, out var address) ? address : IPAddress.Any;
         }
 
         private string BuildInternalErrorResponse(string message, Exception ex)

@@ -182,9 +182,9 @@ LRU（最近最少使用）缓存实现。
 - Editor 基于 Fleck 提供 WebSocket Host：`Assets/xFrame/Editor/AgentBridge/`
 - 默认端点：`ws://127.0.0.1:17777`
 - Fleck 收到请求后会切回 Unity 主线程执行业务命令（默认超时 5000ms）
+- 默认不再要求 auth token；多个 Unity 实例同时启动时会自动为冲突实例分配可用端口，并写入 `UserSettings/AgentBridgeSettings.json`
 - 默认命令：
   - `agent.ping`
-  - `agent.authenticate`
   - `agent.commands`
   - `unity.gameobject.find`
   - `unity.component.invoke`
@@ -193,10 +193,13 @@ LRU（最近最少使用）缓存实现。
 OpenCode 侧可使用：
 
 ```bash
-export UNITY_RPC_HOST="127.0.0.1"
-export UNITY_RPC_PORT="17777"
-export UNITY_RPC_TOKEN="$(jq -r '.AuthToken' UserSettings/AgentBridgeSettings.json)"
 node scripts/agent/unity-rpc.js call --method agent.commands --params '{}'
+```
+
+如需连接指定实例，可显式传 endpoint，或从本地配置里按实例选择：
+
+```bash
+node scripts/agent/unity-rpc.js call --instance 17778 --method agent.commands --params '{}'
 ```
 
 ### Platform（平台特定工具）

@@ -10,6 +10,7 @@ namespace xFrame.Runtime.Networking.AgentBridge
             ConnectionId = connectionId;
             Options = options;
             Registry = registry;
+            IsAuthenticated = options == null || !options.AuthenticationEnabled;
         }
 
         public string ConnectionId { get; }

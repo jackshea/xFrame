@@ -18,7 +18,6 @@ namespace xFrame.Tests
         {
             _options = new AgentBridgeOptions
             {
-                AuthToken = "test-token",
                 EnableReflectionBridge = false,
                 AllowedAssemblies = new[] { "Assembly-CSharp" },
                 AllowedTypePrefixes = new[] { "xFrame" }
@@ -53,40 +52,35 @@ namespace xFrame.Tests
         private TestStartupOrchestrator _startupOrchestrator;
 
         [Test]
-        public void Handle_FindGameObjectWithoutAuth_ShouldReturnUnauthenticated()
+        public void Handle_FindGameObjectWithoutAuth_ShouldSucceed()
         {
+            var go = new GameObject("Player");
             var response =
                 _router.Handle(
                     "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"unity.gameobject.find\",\"params\":{\"name\":\"Player\"}}",
                     "c1");
-            StringAssert.Contains("\"code\":-32001", response);
-        }
-
-        [Test]
-        public void Handle_AuthenticateThenFind_ShouldSucceed()
-        {
-            var go = new GameObject("AgentBridgeTestObject");
-            _router.Handle(
-                "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}",
-                "c2");
-
-            var response =
-                _router.Handle(
-                    "{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"unity.gameobject.find\",\"params\":{\"name\":\"AgentBridgeTestObject\"}}",
-                    "c2");
 
             Assert.That(go, Is.Not.Null);
             StringAssert.Contains("\"found\":true", response);
         }
 
         [Test]
+        public void Handle_Authenticate_WhenAuthenticationDisabled_ShouldReturnSuccess()
+        {
+            var response =
+                _router.Handle(
+                    "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{}}",
+                    "c2");
+
+            StringAssert.Contains("\"authenticated\":true", response);
+            StringAssert.Contains("\"authenticationEnabled\":false", response);
+        }
+
+        [Test]
         public void Handle_Commands_ShouldReturnRegisteredMethods()
         {
-            _router.Handle(
-                "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}",
-                "c3");
             var response =
-                _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"agent.commands\",\"params\":{}}", "c3");
+                _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.commands\",\"params\":{}}", "c3");
 
             StringAssert.Contains("agent.ping", response);
             StringAssert.Contains("unity.component.invoke", response);
@@ -99,13 +93,9 @@ namespace xFrame.Tests
         [Test]
         public void Handle_StartupRun_ShouldSucceed()
         {
-            _router.Handle(
-                "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}",
-                "s1");
-
             var response =
                 _router.Handle(
-                    "{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"startup.run\",\"params\":{\"environment\":\"DevFull\"}}",
+                    "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"startup.run\",\"params\":{\"environment\":\"DevFull\"}}",
                     "s1");
 
             StringAssert.Contains("\"success\":true", response);
@@ -116,12 +106,8 @@ namespace xFrame.Tests
         [Test]
         public void Handle_StartupStop_ShouldSucceed()
         {
-            _router.Handle(
-                "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}",
-                "s2");
-
             var response =
-                _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"startup.stop\",\"params\":{}}", "s2");
+                _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"startup.stop\",\"params\":{}}", "s2");
 
             StringAssert.Contains("\"stopped\":true", response);
             Assert.That(_startupOrchestrator.StopCalledCount, Is.EqualTo(1));
@@ -139,13 +125,10 @@ namespace xFrame.Tests
                 () => false));
 
             var router = new AgentRpcRouter(_options, registry);
-            router.Handle(
-                "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}",
-                "s3");
 
             var response =
                 router.Handle(
-                    "{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"startup.run\",\"params\":{\"environment\":\"DevFull\"}}",
+                    "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"startup.run\",\"params\":{\"environment\":\"DevFull\"}}",
                     "s3");
 
             StringAssert.Contains("\"code\":-32602", response);
@@ -156,12 +139,9 @@ namespace xFrame.Tests
         [Test]
         public void Handle_ExecuteMenuWithInvalidParams_ShouldReturnInvalidParams()
         {
-            _router.Handle(
-                "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}",
-                "cm1");
             var response =
                 _router.Handle(
-                    "{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"unity.editor.executeMenu\",\"params\":{}}", "cm1");
+                    "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"unity.editor.executeMenu\",\"params\":{}}", "cm1");
 
             StringAssert.Contains("\"code\":-32602", response);
         }
@@ -169,12 +149,9 @@ namespace xFrame.Tests
         [Test]
         public void Handle_RunTestsWithInvalidMode_ShouldReturnInvalidParams()
         {
-            _router.Handle(
-                "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}",
-                "ct1");
             var response =
                 _router.Handle(
-                    "{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"unity.tests.run\",\"params\":{\"mode\":\"UnknownMode\"}}",
+                    "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"unity.tests.run\",\"params\":{\"mode\":\"UnknownMode\"}}",
                     "ct1");
 
             StringAssert.Contains("\"code\":-32602", response);
@@ -190,12 +167,9 @@ namespace xFrame.Tests
         [Test]
         public void Handle_ReflectionDisabled_ShouldReturnDenied()
         {
-            _router.Handle(
-                "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}",
-                "c4");
             var response =
                 _router.Handle(
-                    "{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"unity.reflect.invoke\",\"params\":{\"assembly\":\"Assembly-CSharp\",\"type\":\"xFrame.Tests.AgentBridgeRouterTests\",\"method\":\"TestStatic\"}}",
+                    "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"unity.reflect.invoke\",\"params\":{\"assembly\":\"Assembly-CSharp\",\"type\":\"xFrame.Tests.AgentBridgeRouterTests\",\"method\":\"TestStatic\"}}",
                     "c4");
 
             StringAssert.Contains("\"code\":-32012", response);
@@ -208,12 +182,9 @@ namespace xFrame.Tests
             _options.AllowedTypePrefixes = new[] { "Allowed.Only" };
             _router = new AgentRpcRouter(_options, _registry);
 
-            _router.Handle(
-                "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}",
-                "c6");
             var response =
                 _router.Handle(
-                    "{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"unity.reflect.invoke\",\"params\":{\"assembly\":\"Assembly-CSharp\",\"type\":\"xFrame.Tests.AgentBridgeRouterTests\",\"method\":\"TestStatic\"}}",
+                    "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"unity.reflect.invoke\",\"params\":{\"assembly\":\"Assembly-CSharp\",\"type\":\"xFrame.Tests.AgentBridgeRouterTests\",\"method\":\"TestStatic\"}}",
                     "c6");
 
             StringAssert.Contains("\"code\":-32012", response);
@@ -225,11 +196,8 @@ namespace xFrame.Tests
             _options.EnableReflectionBridge = true;
             _router = new AgentRpcRouter(_options, _registry);
 
-            _router.Handle(
-                "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}",
-                "c7");
             var response =
-                _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"agent.commands\",\"params\":{}}", "c7");
+                _router.Handle("{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.commands\",\"params\":{}}", "c7");
 
             StringAssert.Contains("unity.reflect.invoke", response);
         }
@@ -237,27 +205,24 @@ namespace xFrame.Tests
         [Test]
         public void RemoveContext_AfterAuthenticate_ShouldRequireAuthenticateAgain()
         {
-            _router.Handle(
-                "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}",
-                "c8");
             _router.RemoveContext("c8");
 
+            var go = new GameObject("Player");
             var response =
                 _router.Handle(
-                    "{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"unity.gameobject.find\",\"params\":{\"name\":\"Player\"}}",
+                    "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"unity.gameobject.find\",\"params\":{\"name\":\"Player\"}}",
                     "c8");
-            StringAssert.Contains("\"code\":-32001", response);
+
+            Assert.That(go, Is.Not.Null);
+            StringAssert.Contains("\"found\":true", response);
         }
 
         [Test]
         public void Handle_InvokeComponentWithInvalidParams_ShouldReturnInvalidParams()
         {
-            _router.Handle(
-                "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"agent.authenticate\",\"params\":{\"token\":\"test-token\"}}",
-                "c5");
             var response =
                 _router.Handle(
-                    "{\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"unity.component.invoke\",\"params\":{\"gameObjectName\":\"AgentBridgeTestObject\"}}",
+                    "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"unity.component.invoke\",\"params\":{\"gameObjectName\":\"AgentBridgeTestObject\"}}",
                     "c5");
 
             StringAssert.Contains("\"code\":-32602", response);

@@ -22,7 +22,7 @@ namespace xFrame.Editor.AgentBridge
 
         public static string Endpoint => _server?.Endpoint;
 
-        public static string AuthToken => _server?.AuthToken ?? new AgentBridgeTokenPersistence().LoadOrCreateToken(out _);
+        public static string InstanceId => _server?.InstanceId ?? AgentBridgeLocalSettingsStorage.CurrentInstanceId;
 
         public static void EnsureStarted()
         {

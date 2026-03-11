@@ -10,6 +10,12 @@ namespace xFrame.Runtime.Networking.AgentBridge.Commands
 
         public AgentRpcExecutionResult Execute(JsonRpcRequest request, AgentRpcContext context)
         {
+            if (!context.Options.AuthenticationEnabled)
+            {
+                context.IsAuthenticated = true;
+                return AgentRpcExecutionResult.Success(new { authenticated = true, authenticationEnabled = false });
+            }
+
             if (request.Params is not JObject paramObj)
                 return AgentRpcExecutionResult.Failure(AgentRpcErrorCodes.InvalidParams, "params must be object.");
 

@@ -27,7 +27,12 @@ namespace xFrame.Runtime.Networking.AgentBridge
         public int MainThreadTimeoutMs { get; set; } = 120000;
 
         /// <summary>
-        ///     认证 Token。
+        ///     是否启用显式认证。
+        /// </summary>
+        public bool AuthenticationEnabled { get; set; }
+
+        /// <summary>
+        ///     兼容旧版认证流程保留的 Token 字段。
         /// </summary>
         public string AuthToken { get; set; }
 

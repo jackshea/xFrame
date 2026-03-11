@@ -63,7 +63,7 @@ namespace xFrame.Runtime.Networking.AgentBridge
             {
                 if (_registry.TryGet(request.Method, out var handler))
                 {
-                    if (handler.RequiresAuthentication && !context.IsAuthenticated)
+                    if (_options.AuthenticationEnabled && handler.RequiresAuthentication && !context.IsAuthenticated)
                         return SerializeErrorAndLog(request.Id, AgentRpcErrorCodes.Unauthorized, "Unauthorized.",
                             normalizedConnectionId, isNotification);
 
@@ -77,7 +77,7 @@ namespace xFrame.Runtime.Networking.AgentBridge
 
                 if (string.Equals(request.Method, "unity.reflect.invoke", StringComparison.Ordinal))
                 {
-                    if (!context.IsAuthenticated)
+                    if (_options.AuthenticationEnabled && !context.IsAuthenticated)
                         return SerializeErrorAndLog(request.Id, AgentRpcErrorCodes.Unauthorized, "Unauthorized.",
                             normalizedConnectionId, isNotification);
 

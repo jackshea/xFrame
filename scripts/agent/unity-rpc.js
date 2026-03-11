@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 'use strict';
 
+const fs = require('node:fs');
+const path = require('node:path');
+
 const DEFAULT_TIMEOUT_SECONDS = 5;
 const DEFAULT_PORT = 17777;
 
@@ -149,21 +152,7 @@ class UnityJsonRpcClient
         try
         {
             await this._sendAndReceive(transport, 'agent.ping', {});
-
-            try
-            {
-                return await this._sendAndReceive(transport, method, params ?? {});
-            }
-            catch (error)
-            {
-                if (!(error instanceof RpcError) || error.code !== -32001)
-                {
-                    throw error;
-                }
-
-                await this._sendAndReceive(transport, 'agent.authenticate', { token: this._config.token });
-                return await this._sendAndReceive(transport, method, params ?? {});
-            }
+            return await this._sendAndReceive(transport, method, params ?? {});
         }
         finally
         {
@@ -248,7 +237,7 @@ function resolveOptionOrEnv(options, optionKey, envKey, env)
     return typeof envValue === 'string' && envValue.trim() !== '' ? envValue.trim() : null;
 }
 
-function resolveEndpoint(options, env)
+function resolveEndpoint(options, env, dependencies = {})
 {
     const endpoint = resolveOptionOrEnv(options, '--endpoint', 'UNITY_RPC_ENDPOINT', env);
     if (endpoint)
@@ -257,22 +246,48 @@ function resolveEndpoint(options, env)
     }
 
     const host = typeof env.UNITY_RPC_HOST === 'string' ? env.UNITY_RPC_HOST.trim() : '';
-    if (!host)
+    const portValue = typeof env.UNITY_RPC_PORT === 'string' ? env.UNITY_RPC_PORT.trim() : '';
+    const port = Number.isInteger(Number(portValue)) && portValue !== '' ? Number(portValue) : DEFAULT_PORT;
+    if (host)
+    {
+        return `ws://${host}:${port}`;
+    }
+
+    const instanceKey = resolveOptionOrEnv(options, '--instance', 'UNITY_RPC_INSTANCE', env);
+    const settings = loadAgentBridgeSettings(dependencies);
+    if (!settings)
     {
         return null;
     }
 
-    const portValue = typeof env.UNITY_RPC_PORT === 'string' ? env.UNITY_RPC_PORT.trim() : '';
-    const port = Number.isInteger(Number(portValue)) && portValue !== '' ? Number(portValue) : DEFAULT_PORT;
-    return `ws://${host}:${port}`;
+    const runningInstances = Array.isArray(settings.Instances)
+        ? settings.Instances.filter(instance =>
+            instance &&
+            instance.IsRunning === true &&
+            typeof instance.Host === 'string' &&
+            Number.isInteger(instance.Port))
+        : [];
+
+    if (runningInstances.length === 0)
+    {
+        if (typeof settings.Host === 'string' && settings.Host.trim() !== '' && Number.isInteger(settings.Port))
+        {
+            return `ws://${settings.Host.trim()}:${settings.Port}`;
+        }
+
+        return null;
+    }
+
+    const selected = selectInstance(runningInstances, instanceKey) ?? sortInstancesByLastSeen(runningInstances)[0];
+    return selected ? `ws://${selected.Host.trim()}:${selected.Port}` : null;
 }
 
 function printUsage(stderr)
 {
     stderr.write(
         'Usage: node scripts/agent/unity-rpc.js call ' +
-        '--endpoint <ws://host:port> --token <token> --method <rpc.method> [--params <json>] [--timeout <seconds>]\n' +
-        'Env fallback: UNITY_RPC_ENDPOINT or UNITY_RPC_HOST(+UNITY_RPC_PORT), UNITY_RPC_TOKEN\n');
+        '[--endpoint <ws://host:port> | --instance <instanceId|processId>] --method <rpc.method> [--params <json>] [--timeout <seconds>]\n' +
+        'Env fallback: UNITY_RPC_ENDPOINT, UNITY_RPC_HOST(+UNITY_RPC_PORT), or UserSettings/AgentBridgeSettings.json\n');
 }
 
 async function runAsync(args, dependencies = {})
@@ -299,20 +314,14 @@ async function runAsync(args, dependencies = {})
         return 2;
     }
 
-    const endpoint = resolveEndpoint(options, env);
-    const token = resolveOptionOrEnv(options, '--token', 'UNITY_RPC_TOKEN', env);
+    const endpoint = resolveEndpoint(options, env, dependencies);
     const method = options.get('--method');
 
-    if (!method || !endpoint || !token)
+    if (!method || !endpoint)
     {
         if (!endpoint)
         {
-            stderr.write('missing endpoint: pass --endpoint or set UNITY_RPC_ENDPOINT (or UNITY_RPC_HOST)\n');
-        }
-
-        if (!token)
-        {
-            stderr.write('missing token: pass --token or set UNITY_RPC_TOKEN\n');
+            stderr.write('missing endpoint: pass --endpoint, set UNITY_RPC_ENDPOINT/UNITY_RPC_HOST, or start AgentBridge so UserSettings/AgentBridgeSettings.json contains a running instance\n');
         }
 
         printUsage(stderr);
@@ -343,7 +352,6 @@ async function runAsync(args, dependencies = {})
     const clientFactory = dependencies.clientFactory ?? (config => new UnityJsonRpcClient(config));
     const client = clientFactory({
         endpoint,
-        token,
         timeoutSeconds: safeTimeout
     });
 
@@ -376,6 +384,49 @@ async function runAsync(args, dependencies = {})
     }
 }
 
+function loadAgentBridgeSettings(dependencies = {})
+{
+    const fileSystem = dependencies.fs ?? fs;
+    const workingDirectory = dependencies.cwd ?? process.cwd();
+    const settingsPath = path.join(workingDirectory, 'UserSettings', 'AgentBridgeSettings.json');
+    if (!fileSystem.existsSync(settingsPath))
+    {
+        return null;
+    }
+
+    try
+    {
+        return JSON.parse(fileSystem.readFileSync(settingsPath, 'utf8'));
+    }
+    catch
+    {
+        return null;
+    }
+}
+
+function sortInstancesByLastSeen(instances)
+{
+    return [...instances].sort((left, right) =>
+    {
+        const leftTicks = Date.parse(left.LastSeenUtc ?? '') || 0;
+        const rightTicks = Date.parse(right.LastSeenUtc ?? '') || 0;
+        return rightTicks - leftTicks;
+    });
+}
+
+function selectInstance(instances, instanceKey)
+{
+    if (!instanceKey)
+    {
+        return null;
+    }
+
+    return instances.find(instance =>
+        String(instance.InstanceId ?? '') === instanceKey ||
+        String(instance.ProcessId ?? '') === instanceKey ||
+        String(instance.Port ?? '') === instanceKey) ?? null;
+}
+
 async function main(argv)
 {
     return await runAsync(argv);
@@ -402,9 +453,12 @@ module.exports = {
     UnityJsonRpcClient,
     WebSocketTransport,
     buildRequest,
+    loadAgentBridgeSettings,
     main,
     parseOptions,
     resolveEndpoint,
     resolveOptionOrEnv,
+    selectInstance,
+    sortInstancesByLastSeen,
     runAsync
 };

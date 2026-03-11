@@ -55,7 +55,7 @@ namespace xFrame.Tests
         }
 
         [Test]
-        public void Ctor_WithoutExplicitAuthToken_ShouldLoadLocalTokenInsteadOfFixedDefault()
+        public void Ctor_ShouldExposeCurrentInstanceId()
         {
             var logger = new CapturingLogger();
             var persistence = new StubPersistence
@@ -65,8 +65,8 @@ namespace xFrame.Tests
 
             using var server = new FleckAgentBridgeServer(new AgentBridgeOptions(), logger, persistence);
 
-            Assert.That(server.AuthToken, Is.Not.Null.And.Not.Empty);
-            Assert.That(server.AuthToken, Is.Not.EqualTo("xframe-dev-token"));
+            Assert.That(server.InstanceId, Is.Not.Null.And.Not.Empty);
+            Assert.That(server.InstanceId, Does.Contain("::"));
         }
 
         private sealed class StubPersistence : IAgentBridgeEndpointPersistence

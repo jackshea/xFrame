@@ -6,11 +6,11 @@ namespace xFrame.Editor.AgentBridge
 {
     public sealed class AgentBridgeControlWindow : EditorWindow
     {
+        private string _instanceId;
         private string _host;
         private string _message;
         private MessageType _messageType;
         private int _port;
-        private string _token;
 
         private void OnEnable()
         {
@@ -25,16 +25,16 @@ namespace xFrame.Editor.AgentBridge
             var isRunning = AgentBridgeEditorBootstrap.IsRunning;
             var endpoint = AgentBridgeEditorBootstrap.Endpoint;
             if (isRunning)
-                EditorGUILayout.HelpBox($"状态: 运行中\nEndpoint: {endpoint}\nToken: {_token}", MessageType.Info);
+                EditorGUILayout.HelpBox($"状态: 运行中\nEndpoint: {endpoint}\n实例: {_instanceId}", MessageType.Info);
             else
-                EditorGUILayout.HelpBox($"状态: 已停止\nToken: {_token}", MessageType.None);
+                EditorGUILayout.HelpBox($"状态: 已停止\n实例: {_instanceId}", MessageType.None);
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Endpoint 设置", EditorStyles.boldLabel);
             _host = EditorGUILayout.TextField("Host / IP", _host ?? string.Empty);
             _port = EditorGUILayout.IntField("Port", _port);
             EditorGUI.BeginDisabledGroup(true);
-            EditorGUILayout.TextField("Auth Token", _token ?? string.Empty);
+            EditorGUILayout.TextField("Instance Id", _instanceId ?? string.Empty);
             EditorGUI.EndDisabledGroup();
 
             EditorGUILayout.BeginHorizontal();
@@ -112,7 +112,7 @@ namespace xFrame.Editor.AgentBridge
             var result = persistence.Load(out var host, out var port, out var error);
             _host = host;
             _port = port;
-            _token = AgentBridgeEditorBootstrap.AuthToken;
+            _instanceId = AgentBridgeEditorBootstrap.InstanceId;
 
             if (result == AgentBridgeEndpointLoadResult.Invalid)
             {
