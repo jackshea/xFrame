@@ -506,6 +506,21 @@ namespace xFrame.Tests
         }
 
         /// <summary>
+        ///     测试异步任务抛异常时应标记为失败并从调度器移除
+        /// </summary>
+        [Test]
+        public void ScheduleAsync_WhenThrow_ShouldMarkTaskFailedAndRemove()
+        {
+            var taskId = _scheduler.ScheduleAsync(ct =>
+                UniTask.FromException(new InvalidOperationException("mock async failure")));
+
+            Thread.Sleep(10);
+            ((ITickable)_scheduler).Tick();
+
+            Assert.That(_scheduler.GetTaskStatus(taskId), Is.Null, "失败任务应在清理后从调度器移除");
+        }
+
+        /// <summary>
         ///     测试Dispose应该取消所有任务
         /// </summary>
         [Test]

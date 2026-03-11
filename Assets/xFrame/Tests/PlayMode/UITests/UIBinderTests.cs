@@ -259,6 +259,30 @@ namespace xFrame.Tests.PlayMode.UITests
         }
 
         /// <summary>
+        ///     测试重复绑定同一回调不会叠加触发次数
+        /// </summary>
+        [UnityTest]
+        public IEnumerator BindButton_RebindSameCallback_ShouldInvokeOnce()
+        {
+            var clickCount = 0;
+
+            void HandleClick()
+            {
+                clickCount++;
+            }
+
+            var button = _testRoot.transform.BindButton("Panel/Button", HandleClick);
+            _testRoot.transform.BindButton("Panel/Button", HandleClick);
+
+            Assert.IsNotNull(button, "应返回Button组件");
+
+            button.onClick.Invoke();
+            yield return null;
+
+            Assert.AreEqual(1, clickCount, "重复绑定相同回调时只应触发一次");
+        }
+
+        /// <summary>
         ///     测试绑定Button到不存在的路径
         /// </summary>
         [Test]

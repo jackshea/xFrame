@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using UnityEditor;
 using UnityEditor.TestTools.TestRunner.Api;
 using UnityEngine;
 using xFrame.Runtime.Networking.AgentBridge;
@@ -12,7 +14,8 @@ namespace xFrame.Editor.AgentBridge
     /// </summary>
     public sealed class EditorRunTestsCommandHandler : IAgentRpcCommandHandler
     {
-        private static TestRunSnapshot _lastSnapshot = TestRunSnapshot.Empty;
+        private const string LastSnapshotSessionKey = "xFrame.AgentBridge.LastTestSnapshot";
+        private static TestRunSnapshot _lastSnapshot = LoadSnapshot();
 
         public string Method => "unity.tests.run";
 
@@ -119,6 +122,23 @@ namespace xFrame.Editor.AgentBridge
         private static void UpdateSnapshot(TestRunSnapshot snapshot)
         {
             _lastSnapshot = snapshot;
+            SessionState.SetString(LastSnapshotSessionKey, JsonConvert.SerializeObject(snapshot));
+        }
+
+        private static TestRunSnapshot LoadSnapshot()
+        {
+            var json = SessionState.GetString(LastSnapshotSessionKey, string.Empty);
+            if (string.IsNullOrWhiteSpace(json)) return TestRunSnapshot.Empty;
+
+            try
+            {
+                return JsonConvert.DeserializeObject<TestRunSnapshot>(json);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[AgentBridge] 加载上次测试快照失败，将回退为空结果。原因: {ex.Message}");
+                return TestRunSnapshot.Empty;
+            }
         }
 
         public sealed class LastResultHandler : IAgentRpcCommandHandler

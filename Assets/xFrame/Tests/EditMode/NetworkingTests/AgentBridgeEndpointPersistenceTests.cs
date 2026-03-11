@@ -1,5 +1,5 @@
 using NUnit.Framework;
-using UnityEngine;
+using System.IO;
 using xFrame.Runtime.Networking.AgentBridge;
 
 namespace xFrame.Tests
@@ -10,17 +10,15 @@ namespace xFrame.Tests
         [SetUp]
         public void SetUp()
         {
-            PlayerPrefs.DeleteKey(AgentBridgeEndpointPersistence.HostKey);
-            PlayerPrefs.DeleteKey(AgentBridgeEndpointPersistence.PortKey);
-            PlayerPrefs.Save();
+            if (File.Exists(AgentBridgeLocalSettingsStorage.SettingsFilePath))
+                File.Delete(AgentBridgeLocalSettingsStorage.SettingsFilePath);
         }
 
         [TearDown]
         public void TearDown()
         {
-            PlayerPrefs.DeleteKey(AgentBridgeEndpointPersistence.HostKey);
-            PlayerPrefs.DeleteKey(AgentBridgeEndpointPersistence.PortKey);
-            PlayerPrefs.Save();
+            if (File.Exists(AgentBridgeLocalSettingsStorage.SettingsFilePath))
+                File.Delete(AgentBridgeLocalSettingsStorage.SettingsFilePath);
         }
 
         [Test]
@@ -51,9 +49,12 @@ namespace xFrame.Tests
         [Test]
         public void Load_InvalidPersistedEndpoint_ShouldFallbackToDefault()
         {
-            PlayerPrefs.SetString(AgentBridgeEndpointPersistence.HostKey, " ");
-            PlayerPrefs.SetInt(AgentBridgeEndpointPersistence.PortKey, 70000);
-            PlayerPrefs.Save();
+            AgentBridgeLocalSettingsStorage.Save(new AgentBridgeLocalSettings
+            {
+                Host = " ",
+                Port = 70000,
+                AuthToken = "persisted-token"
+            });
 
             var persistence = new AgentBridgeEndpointPersistence();
             var result = persistence.Load(out var host, out var port, out var error);
@@ -62,6 +63,28 @@ namespace xFrame.Tests
             Assert.That(error, Is.Not.Null.And.Not.Empty);
             Assert.That(host, Is.EqualTo(AgentBridgeOptions.DefaultHost));
             Assert.That(port, Is.EqualTo(AgentBridgeOptions.DefaultPort));
+        }
+
+        [Test]
+        public void TrySave_ShouldPreserveExistingAuthToken()
+        {
+            AgentBridgeLocalSettingsStorage.Save(new AgentBridgeLocalSettings
+            {
+                Host = AgentBridgeOptions.DefaultHost,
+                Port = AgentBridgeOptions.DefaultPort,
+                AuthToken = "persisted-token"
+            });
+
+            var persistence = new AgentBridgeEndpointPersistence();
+            var saveResult = persistence.TrySave("10.0.0.15", 18888, out var error);
+            var settings = AgentBridgeLocalSettingsStorage.Load(out var loadError);
+
+            Assert.That(saveResult, Is.True, error);
+            Assert.That(loadError, Is.Null.Or.Empty);
+            Assert.That(settings, Is.Not.Null);
+            Assert.That(settings.Host, Is.EqualTo("10.0.0.15"));
+            Assert.That(settings.Port, Is.EqualTo(18888));
+            Assert.That(settings.AuthToken, Is.EqualTo("persisted-token"));
         }
     }
 }

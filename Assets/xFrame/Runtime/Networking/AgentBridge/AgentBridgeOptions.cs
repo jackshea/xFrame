@@ -29,7 +29,7 @@ namespace xFrame.Runtime.Networking.AgentBridge
         /// <summary>
         ///     认证 Token。
         /// </summary>
-        public string AuthToken { get; set; } = "xframe-dev-token";
+        public string AuthToken { get; set; }
 
         /// <summary>
         ///     是否启用反射桥接命令。

@@ -11,6 +11,8 @@ namespace xFrame.Runtime.Logging
     /// </summary>
     public class XLogManager : IXLogManager
     {
+        private static readonly object UnityLogSubscriptionLock = new();
+        private static int _unityLogSubscriptionCount;
         private readonly List<ILogAppender> _globalAppenders;
         private readonly object _lock = new();
         private readonly ConcurrentDictionary<string, IXLogger> _loggers;
@@ -156,6 +158,7 @@ namespace xFrame.Runtime.Logging
                     concreteLogger.Dispose();
 
             _loggers.Clear();
+            UnregisterUnityExceptionHandler();
         }
 
         /// <summary>
@@ -163,7 +166,26 @@ namespace xFrame.Runtime.Logging
         /// </summary>
         private void RegisterUnityExceptionHandler()
         {
-            // Application.logMessageReceived += OnUnityLogMessageReceived;
+            lock (UnityLogSubscriptionLock)
+            {
+                if (_unityLogSubscriptionCount == 0) Application.logMessageReceived += OnUnityLogMessageReceived;
+
+                _unityLogSubscriptionCount++;
+            }
+        }
+
+        /// <summary>
+        ///     注销 Unity 日志消息桥接，避免重复订阅与资源泄漏。
+        /// </summary>
+        private void UnregisterUnityExceptionHandler()
+        {
+            lock (UnityLogSubscriptionLock)
+            {
+                if (_unityLogSubscriptionCount <= 0) return;
+
+                _unityLogSubscriptionCount--;
+                if (_unityLogSubscriptionCount == 0) Application.logMessageReceived -= OnUnityLogMessageReceived;
+            }
         }
 
         /// <summary>

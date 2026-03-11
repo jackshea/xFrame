@@ -63,7 +63,7 @@ namespace xFrame.Runtime.Logging.Appenders
                     var formattedMessage = _formatter.Format(entry);
                     _writer.WriteLine(formattedMessage);
 
-                    if (!_autoFlush) _writer.Flush();
+                    if (_autoFlush) _writer.Flush();
                 }
                 catch (Exception ex)
                 {

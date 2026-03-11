@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using xFrame.Runtime.Logging;
 
 namespace xFrame.Runtime.Scheduler
 {
@@ -14,6 +15,7 @@ namespace xFrame.Runtime.Scheduler
 
         private readonly Func<CancellationToken, UniTask> _asyncAction;
         private readonly CancellationTokenSource _cancellationTokenSource;
+        private readonly IXLogger _logger;
         private UniTask _task;
 
         /// <summary>
@@ -22,10 +24,12 @@ namespace xFrame.Runtime.Scheduler
         /// <param name="asyncAction">异步操作</param>
         /// <param name="cancellationToken">取消令牌</param>
         public CoroutineTask(Func<CancellationToken, UniTask> asyncAction,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default,
+            IXLogger logger = null)
         {
             TaskId = _nextTaskId++;
             _asyncAction = asyncAction ?? throw new ArgumentNullException(nameof(asyncAction));
+            _logger = logger;
             Status = TaskStatus.Pending;
 
             // 链接外部取消令牌
@@ -59,6 +63,11 @@ namespace xFrame.Runtime.Scheduler
         public bool UseTimeScale => false;
 
         /// <summary>
+        ///     任务最后一次失败时记录的异常；未失败时为 null。
+        /// </summary>
+        public Exception LastError { get; private set; }
+
+        /// <summary>
         ///     任务优先级（数值越小优先级越高）
         /// </summary>
         public int Priority { get; set; } = 0;
@@ -78,7 +87,7 @@ namespace xFrame.Runtime.Scheduler
         /// </summary>
         public void Cancel()
         {
-            if (Status == TaskStatus.Completed || Status == TaskStatus.Cancelled)
+            if (Status == TaskStatus.Completed || Status == TaskStatus.Cancelled || Status == TaskStatus.Failed)
                 return;
 
             Status = TaskStatus.Cancelled;
@@ -91,8 +100,9 @@ namespace xFrame.Runtime.Scheduler
         /// </summary>
         public void Pause()
         {
-            // UniTask不支持真正的暂停，这里只是标记状态
-            if (Status == TaskStatus.Running) Status = TaskStatus.Paused;
+            // UniTask 无法可靠暂停；保留现状并记录说明，避免外部误判任务真的被冻结。
+            if (Status == TaskStatus.Running)
+                _logger?.Warning($"异步任务不支持暂停，将忽略 Pause 请求: TaskId={TaskId}");
         }
 
         /// <summary>
@@ -100,7 +110,8 @@ namespace xFrame.Runtime.Scheduler
         /// </summary>
         public void Resume()
         {
-            if (Status == TaskStatus.Paused) Status = TaskStatus.Running;
+            if (Status == TaskStatus.Running)
+                _logger?.Warning($"异步任务不支持恢复，将忽略 Resume 请求: TaskId={TaskId}");
         }
 
         /// <summary>
@@ -112,6 +123,7 @@ namespace xFrame.Runtime.Scheduler
                 return;
 
             Status = TaskStatus.Running;
+            LastError = null;
 
             try
             {
@@ -123,9 +135,11 @@ namespace xFrame.Runtime.Scheduler
             {
                 Status = TaskStatus.Cancelled;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                Status = TaskStatus.Completed;
+                LastError = ex;
+                Status = TaskStatus.Failed;
+                _logger?.Error($"异步任务执行失败: TaskId={TaskId}", ex);
             }
         }
     }

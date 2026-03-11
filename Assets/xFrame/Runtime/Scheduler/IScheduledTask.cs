@@ -1,3 +1,5 @@
+using System;
+
 namespace xFrame.Runtime.Scheduler
 {
     /// <summary>
@@ -28,7 +30,12 @@ namespace xFrame.Runtime.Scheduler
         /// <summary>
         ///     已取消 - 任务被取消
         /// </summary>
-        Cancelled
+        Cancelled,
+
+        /// <summary>
+        ///     已失败 - 任务执行过程中出现未处理异常
+        /// </summary>
+        Failed
     }
 
     /// <summary>
@@ -51,6 +58,11 @@ namespace xFrame.Runtime.Scheduler
         ///     是否受 Time.timeScale 影响
         /// </summary>
         bool UseTimeScale { get; }
+
+        /// <summary>
+        ///     任务最后一次失败时记录的异常；未失败时为 null。
+        /// </summary>
+        Exception LastError { get; }
 
         /// <summary>
         ///     任务优先级（数值越小优先级越高）

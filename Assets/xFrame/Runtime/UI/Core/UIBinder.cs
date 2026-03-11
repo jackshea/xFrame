@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Reflection;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
+using xFrame.Runtime.Logging;
 
 namespace xFrame.Runtime.UI
 {
@@ -13,6 +15,8 @@ namespace xFrame.Runtime.UI
     /// </summary>
     public static class UIBinder
     {
+        private static readonly IXLogger Logger = new XLogManager().GetLogger("UIBinder");
+
         #region 查找组件
 
         /// <summary>
@@ -96,7 +100,13 @@ namespace xFrame.Runtime.UI
         public static Button BindButton(this Transform root, string path, Action onClick)
         {
             var button = root.FindComponent<Button>(path);
-            if (button != null && onClick != null) button.onClick.AddListener(() => onClick());
+            if (button != null && onClick != null)
+            {
+                UnityAction listener = onClick.Invoke;
+                button.onClick.RemoveListener(listener);
+                button.onClick.AddListener(listener);
+            }
+
             return button;
         }
 
@@ -111,7 +121,11 @@ namespace xFrame.Runtime.UI
         {
             var toggle = root.FindComponent<Toggle>(path);
             if (toggle != null && onValueChanged != null)
-                toggle.onValueChanged.AddListener(value => onValueChanged(value));
+            {
+                UnityAction<bool> listener = onValueChanged.Invoke;
+                toggle.onValueChanged.RemoveListener(listener);
+                toggle.onValueChanged.AddListener(listener);
+            }
             return toggle;
         }
 
@@ -126,7 +140,11 @@ namespace xFrame.Runtime.UI
         {
             var slider = root.FindComponent<Slider>(path);
             if (slider != null && onValueChanged != null)
-                slider.onValueChanged.AddListener(value => onValueChanged(value));
+            {
+                UnityAction<float> listener = onValueChanged.Invoke;
+                slider.onValueChanged.RemoveListener(listener);
+                slider.onValueChanged.AddListener(listener);
+            }
             return slider;
         }
 
@@ -145,9 +163,17 @@ namespace xFrame.Runtime.UI
             if (inputField != null)
             {
                 if (onValueChanged != null)
-                    inputField.onValueChanged.AddListener(value => onValueChanged(value));
+                {
+                    UnityAction<string> valueChangedListener = onValueChanged.Invoke;
+                    inputField.onValueChanged.RemoveListener(valueChangedListener);
+                    inputField.onValueChanged.AddListener(valueChangedListener);
+                }
                 if (onEndEdit != null)
-                    inputField.onEndEdit.AddListener(value => onEndEdit(value));
+                {
+                    UnityAction<string> endEditListener = onEndEdit.Invoke;
+                    inputField.onEndEdit.RemoveListener(endEditListener);
+                    inputField.onEndEdit.AddListener(endEditListener);
+                }
             }
 
             return inputField;
@@ -164,7 +190,11 @@ namespace xFrame.Runtime.UI
         {
             var dropdown = root.FindComponent<TMP_Dropdown>(path);
             if (dropdown != null && onValueChanged != null)
-                dropdown.onValueChanged.AddListener(value => onValueChanged(value));
+            {
+                UnityAction<int> listener = onValueChanged.Invoke;
+                dropdown.onValueChanged.RemoveListener(listener);
+                dropdown.onValueChanged.AddListener(listener);
+            }
             return dropdown;
         }
 
@@ -312,11 +342,11 @@ namespace xFrame.Runtime.UI
                 if (component != null)
                 {
                     field.SetValue(target, component);
-                    Debug.Log($"[UIBinder] 自动绑定: {field.Name} -> {path}");
+                    Logger.Debug($"自动绑定成功: {field.Name} -> {path}");
                 }
                 else
                 {
-                    Debug.LogWarning($"[UIBinder] 绑定失败: {field.Name} -> {path}");
+                    Logger.Warning($"自动绑定失败: {field.Name} -> {path}");
                 }
             }
         }

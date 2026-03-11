@@ -21,6 +21,7 @@ namespace xFrame.Editor.AgentBridge
         private readonly IXLogger _logger;
         private readonly AgentBridgeOptions _options;
         private readonly AgentRpcRouter _router;
+        private readonly AgentBridgeTokenPersistence _tokenPersistence;
         private EditorMainThreadDispatcher _dispatcher;
 
         private WebSocketServer _server;
@@ -31,10 +32,12 @@ namespace xFrame.Editor.AgentBridge
             _options = options ?? new AgentBridgeOptions();
             _logger = logger ?? new XLogManager().GetLogger("AgentBridge");
             _endpointPersistence = endpointPersistence ?? new AgentBridgeEndpointPersistence();
+            _tokenPersistence = new AgentBridgeTokenPersistence();
             _dispatcher = new EditorMainThreadDispatcher();
             _dispatchTimeout = TimeSpan.FromMilliseconds(Math.Max(100, _options.MainThreadTimeoutMs));
 
             LoadPersistedEndpoint();
+            EnsureAuthToken();
 
             var registry = new AgentCommandRegistry();
             registry.Register(new PingCommandHandler());
@@ -54,6 +57,8 @@ namespace xFrame.Editor.AgentBridge
         public bool IsRunning => _server != null;
 
         public string Endpoint => $"ws://{_options.Host}:{_options.Port}";
+
+        public string AuthToken => _options.AuthToken;
 
         public void Dispose()
         {
@@ -230,9 +235,18 @@ namespace xFrame.Editor.AgentBridge
             _dispatcher = null;
         }
 
-        private static string BuildInternalErrorResponse(string message, Exception ex)
+        private void EnsureAuthToken()
         {
-            if (!TryReadRequestId(message, out var requestId)) return null;
+            if (!string.IsNullOrWhiteSpace(_options.AuthToken)) return;
+
+            _options.AuthToken = _tokenPersistence.LoadOrCreateToken(out var createdNewToken);
+            if (createdNewToken)
+                _logger.Warning("AgentBridge generated a new local auth token. Check UserSettings/AgentBridgeSettings.json.");
+        }
+
+        private string BuildInternalErrorResponse(string message, Exception ex)
+        {
+            if (!TryReadRequestId(message, out var requestId, ex)) return null;
 
             var response = new JsonRpcResponse
             {
@@ -248,7 +262,7 @@ namespace xFrame.Editor.AgentBridge
             return JsonConvert.SerializeObject(response);
         }
 
-        private static bool TryReadRequestId(string message, out JToken requestId)
+        private bool TryReadRequestId(string message, out JToken requestId, Exception originalException)
         {
             requestId = null;
 
@@ -261,8 +275,10 @@ namespace xFrame.Editor.AgentBridge
                 requestId = idToken;
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.Warning(
+                    $"AgentBridge failed to read request id from malformed payload. payloadLength={message?.Length ?? 0}, error={ex.Message}, originalError={originalException?.Message}");
                 return false;
             }
         }

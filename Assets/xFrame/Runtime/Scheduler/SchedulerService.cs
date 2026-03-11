@@ -14,6 +14,7 @@ namespace xFrame.Runtime.Scheduler
     /// </summary>
     public class SchedulerService : ISchedulerService, ITickable, IDisposable
     {
+        private const float EditModeFallbackDeltaTime = 1f / 60f;
         private readonly IXLogger _logger;
         private readonly List<IScheduledTask> _pendingTasks;
         private readonly Dictionary<int, IScheduledTask> _tasks;
@@ -99,7 +100,7 @@ namespace xFrame.Runtime.Scheduler
         public int ScheduleAsync(Func<CancellationToken, UniTask> asyncAction,
             CancellationToken cancellationToken = default)
         {
-            var task = new CoroutineTask(asyncAction, cancellationToken);
+            var task = new CoroutineTask(asyncAction, cancellationToken, _logger);
             _pendingTasks.Add(task);
             _logger.Debug($"创建异步任务: TaskId={task.TaskId}");
             return task.TaskId;
@@ -220,6 +221,7 @@ namespace xFrame.Runtime.Scheduler
 
             // 获取时间增量，应用timeScale
             var unscaledDeltaTime = Time.unscaledDeltaTime;
+            if (unscaledDeltaTime <= 0f) unscaledDeltaTime = EditModeFallbackDeltaTime;
             var deltaTime = unscaledDeltaTime * Time.timeScale;
 
             foreach (var task in _tasks.Values)
@@ -235,8 +237,14 @@ namespace xFrame.Runtime.Scheduler
 
             // 清理已完成或已取消的任务
             foreach (var task in _tasks.Values)
-                if (task.Status == TaskStatus.Completed || task.Status == TaskStatus.Cancelled)
+                if (task.Status == TaskStatus.Completed || task.Status == TaskStatus.Cancelled ||
+                    task.Status == TaskStatus.Failed)
+                {
+                    if (task.Status == TaskStatus.Failed && task.LastError != null)
+                        _logger.Error($"任务执行失败: TaskId={task.TaskId}, Status={task.Status}", task.LastError);
+
                     _tasksToRemove.Add(task);
+                }
 
             if (_tasksToRemove.Count > 0)
             {

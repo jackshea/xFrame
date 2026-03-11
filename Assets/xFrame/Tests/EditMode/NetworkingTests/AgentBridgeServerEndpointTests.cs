@@ -54,6 +54,21 @@ namespace xFrame.Tests
             Assert.That(options.MainThreadTimeoutMs, Is.GreaterThanOrEqualTo(120000));
         }
 
+        [Test]
+        public void Ctor_WithoutExplicitAuthToken_ShouldLoadLocalTokenInsteadOfFixedDefault()
+        {
+            var logger = new CapturingLogger();
+            var persistence = new StubPersistence
+            {
+                LoadResult = AgentBridgeEndpointLoadResult.NotFound
+            };
+
+            using var server = new FleckAgentBridgeServer(new AgentBridgeOptions(), logger, persistence);
+
+            Assert.That(server.AuthToken, Is.Not.Null.And.Not.Empty);
+            Assert.That(server.AuthToken, Is.Not.EqualTo("xframe-dev-token"));
+        }
+
         private sealed class StubPersistence : IAgentBridgeEndpointPersistence
         {
             public AgentBridgeEndpointLoadResult LoadResult { get; set; }

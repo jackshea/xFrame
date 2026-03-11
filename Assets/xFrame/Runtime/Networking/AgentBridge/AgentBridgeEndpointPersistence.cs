@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace xFrame.Runtime.Networking.AgentBridge
 {
     public enum AgentBridgeEndpointLoadResult
@@ -21,17 +19,14 @@ namespace xFrame.Runtime.Networking.AgentBridge
     /// </summary>
     public sealed class AgentBridgeEndpointPersistence : IAgentBridgeEndpointPersistence
     {
-        public const string HostKey = "xFrame.AgentBridge.Host";
-
-        public const string PortKey = "xFrame.AgentBridge.Port";
-
         public bool TrySave(string host, int port, out string error)
         {
             if (!AgentBridgeOptions.ValidateEndpoint(host, port, out error)) return false;
 
-            PlayerPrefs.SetString(HostKey, host.Trim());
-            PlayerPrefs.SetInt(PortKey, port);
-            PlayerPrefs.Save();
+            var settings = AgentBridgeLocalSettingsStorage.Load(out _) ?? new AgentBridgeLocalSettings();
+            settings.Host = host.Trim();
+            settings.Port = port;
+            AgentBridgeLocalSettingsStorage.Save(settings);
             return true;
         }
 
@@ -41,12 +36,14 @@ namespace xFrame.Runtime.Networking.AgentBridge
             port = AgentBridgeOptions.DefaultPort;
             error = null;
 
-            var hasHost = PlayerPrefs.HasKey(HostKey);
-            var hasPort = PlayerPrefs.HasKey(PortKey);
-            if (!hasHost && !hasPort) return AgentBridgeEndpointLoadResult.NotFound;
+            var settings = AgentBridgeLocalSettingsStorage.Load(out error);
+            if (settings == null)
+                return string.IsNullOrWhiteSpace(error)
+                    ? AgentBridgeEndpointLoadResult.NotFound
+                    : AgentBridgeEndpointLoadResult.Invalid;
 
-            var storedHost = PlayerPrefs.GetString(HostKey, AgentBridgeOptions.DefaultHost);
-            var storedPort = PlayerPrefs.GetInt(PortKey, AgentBridgeOptions.DefaultPort);
+            var storedHost = string.IsNullOrWhiteSpace(settings.Host) ? AgentBridgeOptions.DefaultHost : settings.Host;
+            var storedPort = settings.Port ?? AgentBridgeOptions.DefaultPort;
             if (!AgentBridgeOptions.ValidateEndpoint(storedHost, storedPort, out error))
                 return AgentBridgeEndpointLoadResult.Invalid;
 

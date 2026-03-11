@@ -195,7 +195,7 @@ OpenCode 侧可使用：
 ```bash
 export UNITY_RPC_HOST="127.0.0.1"
 export UNITY_RPC_PORT="17777"
-export UNITY_RPC_TOKEN="xframe-dev-token"
+export UNITY_RPC_TOKEN="$(jq -r '.AuthToken' UserSettings/AgentBridgeSettings.json)"
 node scripts/agent/unity-rpc.js call --method agent.commands --params '{}'
 ```
 

@@ -44,6 +44,11 @@ namespace xFrame.Runtime.Scheduler
         public bool UseTimeScale { get; protected set; }
 
         /// <summary>
+        ///     任务最后一次失败时记录的异常；未失败时为 null。
+        /// </summary>
+        public Exception LastError { get; protected set; }
+
+        /// <summary>
         ///     任务优先级（数值越小优先级越高）
         /// </summary>
         public int Priority { get; set; } = 0;
@@ -60,7 +65,7 @@ namespace xFrame.Runtime.Scheduler
         /// </summary>
         public virtual void Cancel()
         {
-            if (Status == TaskStatus.Completed)
+            if (Status == TaskStatus.Completed || Status == TaskStatus.Failed)
                 return;
 
             Status = TaskStatus.Cancelled;
@@ -96,6 +101,7 @@ namespace xFrame.Runtime.Scheduler
         /// </summary>
         protected virtual void Execute()
         {
+            LastError = null;
             Callback?.Invoke();
             Status = TaskStatus.Completed;
             OnComplete();
