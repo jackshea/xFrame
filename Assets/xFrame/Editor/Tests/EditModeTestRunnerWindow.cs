@@ -60,12 +60,7 @@ namespace xFrame.Editor.Tests
             _testFilter = testFilter ?? string.Empty;
             EditorPrefs.SetString(FilterPrefsKey, _testFilter);
 
-            var filter = new Filter
-            {
-                testMode = TestMode.EditMode
-            };
-
-            if (!string.IsNullOrWhiteSpace(_testFilter)) filter.testNames = new[] { _testFilter };
+            var filter = UnityTestFilterFactory.Create(TestMode.EditMode, _testFilter);
 
             var resultsPath = GetResultsPath();
             Directory.CreateDirectory(Path.GetDirectoryName(resultsPath) ?? "Logs");
