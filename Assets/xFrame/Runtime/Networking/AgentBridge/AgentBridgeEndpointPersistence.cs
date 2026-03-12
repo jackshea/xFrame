@@ -27,8 +27,20 @@ namespace xFrame.Runtime.Networking.AgentBridge
             if (!AgentBridgeOptions.ValidateEndpoint(host, port, out error)) return false;
 
             var settings = AgentBridgeLocalSettingsStorage.Load(out _) ?? new AgentBridgeLocalSettings();
-            settings.Host = host.Trim();
+            var normalizedHost = host.Trim();
+            settings.Host = normalizedHost;
             settings.Port = port;
+
+            settings.Instances ??= new System.Collections.Generic.List<AgentBridgeInstanceRegistration>();
+            var currentInstance = settings.Instances.Find(instance =>
+                string.Equals(instance?.InstanceId, AgentBridgeLocalSettingsStorage.CurrentInstanceId,
+                    System.StringComparison.Ordinal));
+            if (currentInstance != null && !currentInstance.IsRunning)
+            {
+                currentInstance.Host = normalizedHost;
+                currentInstance.Port = port;
+            }
+
             AgentBridgeLocalSettingsStorage.Save(settings);
             return true;
         }
@@ -49,7 +61,8 @@ namespace xFrame.Runtime.Networking.AgentBridge
                     : AgentBridgeEndpointLoadResult.Invalid;
 
             var currentInstance = AgentBridgeLocalSettingsStorage.LoadCurrentInstance();
-            if (TryResolveEndpoint(currentInstance?.Host, currentInstance?.Port, out host, out port, out error))
+            if (currentInstance?.IsRunning == true &&
+                TryResolveEndpoint(currentInstance.Host, currentInstance.Port, out host, out port, out error))
                 return AgentBridgeEndpointLoadResult.Loaded;
 
             if (TryResolveEndpoint(settings.Host, settings.Port, out host, out port, out error))

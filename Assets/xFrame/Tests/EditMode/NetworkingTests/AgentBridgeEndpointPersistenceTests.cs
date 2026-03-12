@@ -125,6 +125,73 @@ namespace xFrame.Tests
         }
 
         [Test]
+        public void Load_CurrentInstanceStopped_ShouldFallbackToProjectDefault()
+        {
+            AgentBridgeLocalSettingsStorage.Save(new AgentBridgeLocalSettings
+            {
+                Host = "0.0.0.0",
+                Port = 17777,
+                Instances =
+                {
+                    new AgentBridgeInstanceRegistration
+                    {
+                        InstanceId = AgentBridgeLocalSettingsStorage.CurrentInstanceId,
+                        ProcessId = AgentBridgeLocalSettingsStorage.CurrentProcessId,
+                        ProjectPath = System.IO.Directory.GetParent(UnityEngine.Application.dataPath)?.FullName,
+                        Host = "127.0.0.1",
+                        Port = 17777,
+                        IsRunning = false,
+                        LastSeenUtc = "2026-03-12T00:00:00.0000000Z"
+                    }
+                }
+            });
+
+            var persistence = new AgentBridgeEndpointPersistence();
+            var loadResult = persistence.Load(out var host, out var port, out var error);
+
+            Assert.That(loadResult, Is.EqualTo(AgentBridgeEndpointLoadResult.Loaded), error);
+            Assert.That(host, Is.EqualTo("0.0.0.0"));
+            Assert.That(port, Is.EqualTo(17777));
+        }
+
+        [Test]
+        public void TrySave_CurrentInstanceStopped_ShouldSyncInstanceEndpoint()
+        {
+            AgentBridgeLocalSettingsStorage.Save(new AgentBridgeLocalSettings
+            {
+                Host = "127.0.0.1",
+                Port = 17777,
+                Instances =
+                {
+                    new AgentBridgeInstanceRegistration
+                    {
+                        InstanceId = AgentBridgeLocalSettingsStorage.CurrentInstanceId,
+                        ProcessId = AgentBridgeLocalSettingsStorage.CurrentProcessId,
+                        ProjectPath = System.IO.Directory.GetParent(UnityEngine.Application.dataPath)?.FullName,
+                        Host = "127.0.0.1",
+                        Port = 17777,
+                        IsRunning = false,
+                        LastSeenUtc = "2026-03-12T00:00:00.0000000Z"
+                    }
+                }
+            });
+
+            var persistence = new AgentBridgeEndpointPersistence();
+            var saveResult = persistence.TrySave("0.0.0.0", 18888, out var saveError);
+            var settings = AgentBridgeLocalSettingsStorage.Load(out var loadError);
+
+            Assert.That(saveResult, Is.True, saveError);
+            Assert.That(loadError, Is.Null.Or.Empty);
+            Assert.That(settings.Host, Is.EqualTo("0.0.0.0"));
+            Assert.That(settings.Port, Is.EqualTo(18888));
+            Assert.That(settings.Instances, Has.Some.Matches<AgentBridgeInstanceRegistration>(instance =>
+                instance.InstanceId == AgentBridgeLocalSettingsStorage.CurrentInstanceId &&
+                instance.Host == "0.0.0.0" &&
+                instance.Port == 18888 &&
+                instance.IsRunning == false));
+        }
+
+        [Test]
         public void UpsertCurrentInstance_ShouldKeepMultipleUnityInstanceRegistrations()
         {
             AgentBridgeLocalSettingsStorage.Save(new AgentBridgeLocalSettings

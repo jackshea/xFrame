@@ -15,6 +15,7 @@ namespace xFrame.Runtime.UI
     /// </summary>
     public static class UIBinder
     {
+        private static readonly Dictionary<Button, Dictionary<Action, UnityAction>> ButtonBindings = new();
         private static readonly IXLogger Logger = new XLogManager().GetLogger("UIBinder");
 
         #region 查找组件
@@ -102,8 +103,17 @@ namespace xFrame.Runtime.UI
             var button = root.FindComponent<Button>(path);
             if (button != null && onClick != null)
             {
+                if (!ButtonBindings.TryGetValue(button, out var listeners))
+                {
+                    listeners = new Dictionary<Action, UnityAction>();
+                    ButtonBindings[button] = listeners;
+                }
+
+                if (listeners.TryGetValue(onClick, out var existingListener))
+                    button.onClick.RemoveListener(existingListener);
+
                 UnityAction listener = onClick.Invoke;
-                button.onClick.RemoveListener(listener);
+                listeners[onClick] = listener;
                 button.onClick.AddListener(listener);
             }
 

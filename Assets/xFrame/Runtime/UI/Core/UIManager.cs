@@ -4,6 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 using VContainer;
 using VContainer.Unity;
 using xFrame.Runtime.EventBus;
@@ -898,7 +901,25 @@ namespace xFrame.Runtime.UI
 
             uiInstance.InternalOnDestroy();
             ReleaseUIPrefab(uiInstance);
-            Destroy(uiInstance.gameObject);
+            DestroyUIObject(uiInstance.gameObject);
+        }
+
+        /// <summary>
+        ///     根据当前运行上下文选择合适的销毁方式。
+        /// </summary>
+        private static void DestroyUIObject(GameObject target)
+        {
+            if (target == null) return;
+
+#if UNITY_EDITOR
+            if (!EditorApplication.isPlaying)
+            {
+                DestroyImmediate(target);
+                return;
+            }
+#endif
+
+            Destroy(target);
         }
 
         #endregion
