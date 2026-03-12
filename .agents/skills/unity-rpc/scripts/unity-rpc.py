@@ -464,7 +464,7 @@ def select_instance(instances: list[dict[str, Any]], instance_key: str | None) -
 
 def print_usage(stderr: Any) -> None:
     stderr.write(
-        "Usage: python3 scripts/agent/unity-rpc.py call "
+        "Usage: python3 .agents/skills/unity-rpc/scripts/unity-rpc.py call "
         "[--endpoint <ws://host:port> | --instance <instanceId|processId|port>] "
         "--method <rpc.method> [--params <json>] [--timeout <seconds>]\n"
         "Env fallback: UNITY_RPC_ENDPOINT, UNITY_RPC_HOST(+UNITY_RPC_PORT), "
