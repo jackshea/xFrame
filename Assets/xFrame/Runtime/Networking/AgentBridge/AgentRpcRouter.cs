@@ -30,7 +30,7 @@ namespace xFrame.Runtime.Networking.AgentBridge
             _logger = logger ?? new XLogManager().GetLogger("AgentBridge.Router");
         }
 
-        public string Handle(string payload, string connectionId)
+        public string Handle(string payload, string connectionId, Action<string> notificationSink = null)
         {
             var normalizedConnectionId = NormalizeConnectionId(connectionId);
             _logger.Debug(
@@ -57,7 +57,7 @@ namespace xFrame.Runtime.Networking.AgentBridge
             }
 
             var isNotification = request.Id == null || request.Id.Type == JTokenType.Null;
-            var context = GetOrCreateContext(connectionId);
+            var context = GetOrCreateContext(connectionId, notificationSink);
 
             try
             {
@@ -148,14 +148,18 @@ namespace xFrame.Runtime.Networking.AgentBridge
             }
         }
 
-        private AgentRpcContext GetOrCreateContext(string connectionId)
+        private AgentRpcContext GetOrCreateContext(string connectionId, Action<string> notificationSink)
         {
             var key = NormalizeConnectionId(connectionId);
             lock (_contextLock)
             {
-                if (_contexts.TryGetValue(key, out var context)) return context;
+                if (_contexts.TryGetValue(key, out var context))
+                {
+                    context.UpdateNotificationSink(notificationSink);
+                    return context;
+                }
 
-                context = new AgentRpcContext(key, _options, _registry);
+                context = new AgentRpcContext(key, _options, _registry, notificationSink);
                 _contexts[key] = context;
                 return context;
             }

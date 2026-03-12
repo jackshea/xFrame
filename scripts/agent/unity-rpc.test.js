@@ -4,6 +4,8 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 
 const {
+    buildProgressPayload,
+    extractTestRunResult,
     RpcError,
     UnityJsonRpcClient,
     buildRequest,
@@ -109,6 +111,114 @@ test('runAsync 应支持从环境变量解析 endpoint', async () =>
 
     assert.equal(exitCode, 0);
     assert.match(stdout.value(), /"pong":true/);
+});
+
+test('runAsync 执行 unity.tests.run 时应转发服务端推送的进度事件', async () =>
+{
+    const stdout = createBufferWriter();
+    const stderr = createBufferWriter();
+
+    const exitCode = await runAsync(
+        [
+            'call',
+            '--endpoint', 'ws://127.0.0.1:17777',
+            '--method', 'unity.tests.run',
+            '--params', '{"mode":"EditMode"}'
+        ],
+        {
+            stdout,
+            stderr,
+            clientFactory: () => ({
+                async runTestsWithProgress(params, onProgress)
+                {
+                    assert.equal(params.mode, 'EditMode');
+                    onProgress({ event: 'started', runId: 'run-1', mode: 'EditMode', status: 'running' });
+                    onProgress({
+                        event: 'progress',
+                        runId: 'run-1',
+                        mode: 'EditMode',
+                        status: 'running',
+                        summary: { total: 2, completed: 1, currentTest: 'A' },
+                        failures: []
+                    });
+                    onProgress({
+                        event: 'completed',
+                        runId: 'run-1',
+                        mode: 'EditMode',
+                        status: 'passed',
+                        summary: { total: 2, completed: 2, passed: 2 },
+                        failures: []
+                    });
+
+                    return {
+                        completed: true,
+                        runId: 'run-1',
+                        mode: 'EditMode',
+                        status: 'passed',
+                        summary: { total: 2, completed: 2, passed: 2 },
+                        failures: []
+                    };
+                }
+            })
+        });
+
+    assert.equal(exitCode, 0);
+
+    const progressLines = stderr.value().trim().split('\n').map(line => JSON.parse(line));
+    assert.deepEqual(progressLines.map(line => line.event), ['started', 'progress', 'completed']);
+    assert.equal(progressLines.at(-1).status, 'passed');
+    assert.match(stdout.value(), /"status":"passed"/);
+});
+
+test('runTestsWithProgress 应处理响应前到达的进度通知', async () =>
+{
+    const notifications = [];
+    const fakeTransport = new FakeTransport([
+        '{"jsonrpc":"2.0","id":"1","result":{"pong":true}}',
+        '{"jsonrpc":"2.0","method":"agent.event","params":{"name":"unity.tests.progress","payload":{"event":"started","runId":"run-2","status":"running"}}}',
+        '{"jsonrpc":"2.0","id":"2","result":{"started":true,"completed":false,"runId":"run-2","status":"running"}}',
+        '{"jsonrpc":"2.0","method":"agent.event","params":{"name":"unity.tests.progress","payload":{"event":"progress","runId":"run-2","status":"running","summary":{"total":1,"completed":1}}}}',
+        '{"jsonrpc":"2.0","method":"agent.event","params":{"name":"unity.tests.progress","payload":{"event":"completed","runId":"run-2","status":"passed","summary":{"total":1,"completed":1,"passed":1},"failures":[]}}}'
+    ]);
+
+    const client = new UnityJsonRpcClient(
+        { endpoint: 'ws://127.0.0.1:17777', timeoutSeconds: 5 },
+        () => fakeTransport);
+
+    const result = await client.runTestsWithProgress(
+        { mode: 'EditMode' },
+        payload => notifications.push(payload));
+
+    assert.equal(result.status, 'passed');
+    assert.deepEqual(notifications.map(item => item.event), ['started', 'progress', 'completed']);
+    assert.equal(fakeTransport.closed, true);
+});
+
+test('buildProgressPayload 应包含标准进度字段', () =>
+{
+    const payload = buildProgressPayload({ event: 'progress', runId: 'run-3', status: 'running' });
+
+    assert.equal(payload.event, 'progress');
+    assert.equal(payload.source, 'unity.tests.run');
+    assert.equal(payload.runId, 'run-3');
+    assert.equal(payload.status, 'running');
+});
+
+test('extractTestRunResult 应将完成事件转换为最终结果', () =>
+{
+    const result = extractTestRunResult({
+        event: 'completed',
+        runId: 'run-4',
+        mode: 'PlayMode',
+        status: 'failed',
+        summary: { total: 3, completed: 3, failed: 1 },
+        failures: [{ name: 'SampleTest' }]
+    });
+
+    assert.equal(result.completed, true);
+    assert.equal(result.mode, 'PlayMode');
+    assert.equal(result.status, 'failed');
+    assert.equal(result.failures[0].name, 'SampleTest');
 });
 
 test('resolveEndpoint 应支持从本地多实例配置中选择最近运行实例', () =>

@@ -46,4 +46,14 @@ namespace xFrame.Runtime.Networking.AgentBridge
         [JsonProperty("error", NullValueHandling = NullValueHandling.Ignore)]
         public JsonRpcError Error { get; set; }
     }
+
+    public sealed class JsonRpcNotification
+    {
+        [JsonProperty("jsonrpc")] public string JsonRpc { get; set; } = "2.0";
+
+        [JsonProperty("method")] public string Method { get; set; }
+
+        [JsonProperty("params", NullValueHandling = NullValueHandling.Ignore)]
+        public object Params { get; set; }
+    }
 }

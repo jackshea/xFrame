@@ -14,7 +14,7 @@ namespace xFrame.Runtime.Scheduler
     /// </summary>
     public class SchedulerService : ISchedulerService, ITickable, IDisposable
     {
-        private const float EditModeFallbackDeltaTime = 1f / 60f;
+        private const float EditModeFallbackDeltaTime = 0.1f;
         private readonly IXLogger _logger;
         private readonly List<IScheduledTask> _pendingTasks;
         private readonly Dictionary<int, IScheduledTask> _tasks;
@@ -221,7 +221,10 @@ namespace xFrame.Runtime.Scheduler
 
             // 获取时间增量，应用timeScale
             var unscaledDeltaTime = Time.unscaledDeltaTime;
-            if (unscaledDeltaTime <= 0f) unscaledDeltaTime = EditModeFallbackDeltaTime;
+            if (!Application.isPlaying)
+                unscaledDeltaTime = Mathf.Max(unscaledDeltaTime, EditModeFallbackDeltaTime);
+            else if (unscaledDeltaTime <= 0f) unscaledDeltaTime = EditModeFallbackDeltaTime;
+
             var deltaTime = unscaledDeltaTime * Time.timeScale;
 
             foreach (var task in _tasks.Values)

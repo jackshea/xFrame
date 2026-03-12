@@ -148,7 +148,7 @@ namespace xFrame.Editor.AgentBridge
                     socket.OnMessage = message =>
                     {
                         var connectionId = socket.ConnectionInfo.Id.ToString();
-                        var response = HandleMessage(message, connectionId);
+                        var response = HandleMessage(message, connectionId, payload => SendNotification(socket, payload));
                         if (!string.IsNullOrWhiteSpace(response)) socket.Send(response);
                     };
                 });
@@ -196,19 +196,34 @@ namespace xFrame.Editor.AgentBridge
             }
         }
 
-        private string HandleMessage(string message, string connectionId)
+        private string HandleMessage(string message, string connectionId, Action<string> notificationSink)
         {
             try
             {
                 if (_dispatcher == null)
                     throw new InvalidOperationException("Main thread dispatcher is not available.");
 
-                return _dispatcher.Invoke(() => _router.Handle(message, connectionId), _dispatchTimeout);
+                return _dispatcher.Invoke(() => _router.Handle(message, connectionId, notificationSink), _dispatchTimeout);
             }
             catch (Exception ex)
             {
                 _logger.Error("AgentBridge request handling failed.", ex);
                 return BuildInternalErrorResponse(message, ex);
+            }
+        }
+
+        private void SendNotification(IWebSocketConnection socket, string payload)
+        {
+            if (socket == null || string.IsNullOrWhiteSpace(payload)) return;
+
+            try
+            {
+                socket.Send(payload);
+            }
+            catch (Exception ex)
+            {
+                _logger.Warning(
+                    $"AgentBridge notification send failed. endpoint={Endpoint}, connectionId={socket.ConnectionInfo?.Id}, error={ex.Message}");
             }
         }
 

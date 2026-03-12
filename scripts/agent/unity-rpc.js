@@ -6,7 +6,6 @@ const path = require('node:path');
 
 const DEFAULT_TIMEOUT_SECONDS = 5;
 const DEFAULT_PORT = 17777;
-
 class RpcError extends Error
 {
     constructor(code, message, data)
@@ -160,34 +159,128 @@ class UnityJsonRpcClient
         }
     }
 
-    async _sendAndReceive(transport, method, params)
+    async runTestsWithProgress(params, onProgress)
+    {
+        const timeoutMs = Math.max(1, Math.floor(this._config.timeoutSeconds * 1000));
+        const transport = this._transportFactory(this._config.endpoint, timeoutMs);
+        const handleProgressNotification = (notificationParams, notificationMethod) =>
+        {
+            if (notificationMethod !== 'agent.event')
+            {
+                return false;
+            }
+
+            if (notificationParams?.name !== 'unity.tests.progress')
+            {
+                return false;
+            }
+
+            if (typeof onProgress === 'function')
+            {
+                onProgress(notificationParams.payload ?? null);
+            }
+
+            return true;
+        };
+
+        try
+        {
+            await this._sendAndReceive(transport, 'agent.ping', {}, handleProgressNotification);
+            const result = await this._sendAndReceive(transport, 'unity.tests.run', params ?? {}, handleProgressNotification);
+            if (result?.completed === true)
+            {
+                return result;
+            }
+
+            while (true)
+            {
+                const message = await this._receiveMessage(transport, timeoutMs);
+                if (!message.notification)
+                {
+                    continue;
+                }
+
+                if (!handleProgressNotification(message.notification.params, message.notification.method))
+                {
+                    continue;
+                }
+
+                const progress = message.notification.params?.payload ?? null;
+                if (progress && progress.status !== 'running')
+                {
+                    return extractTestRunResult(progress);
+                }
+            }
+        }
+        finally
+        {
+            await transport.close();
+        }
+    }
+
+    async _sendAndReceive(transport, method, params, onNotification)
     {
         const request = buildRequest(this._nextId(), method, params);
         await transport.send(JSON.stringify(request));
 
         const timeoutMs = Math.max(1, Math.floor(this._config.timeoutSeconds * 1000));
-        const responsePayload = await transport.receive(timeoutMs);
-        const response = JSON.parse(responsePayload);
-
-        if (!response || typeof response !== 'object')
+        while (true)
         {
-            throw new Error('Invalid JSON-RPC response.');
-        }
+            const message = await this._receiveMessage(transport, timeoutMs);
+            if (message.notification)
+            {
+                if (typeof onNotification === 'function')
+                {
+                    onNotification(message.notification.params ?? null, message.notification.method);
+                }
 
-        if (response.error && typeof response.error === 'object')
-        {
-            const code = typeof response.error.code === 'number' ? response.error.code : -32603;
-            const message = typeof response.error.message === 'string' ? response.error.message : 'Unknown';
-            throw new RpcError(code, message, response.error.data);
-        }
+                continue;
+            }
 
-        return response.result ?? null;
+            const response = message.response;
+            if (!response || typeof response !== 'object')
+            {
+                throw new Error('Invalid JSON-RPC response.');
+            }
+
+            if (String(response.id ?? '') !== request.id)
+            {
+                continue;
+            }
+
+            if (response.error && typeof response.error === 'object')
+            {
+                const code = typeof response.error.code === 'number' ? response.error.code : -32603;
+                const message = typeof response.error.message === 'string' ? response.error.message : 'Unknown';
+                throw new RpcError(code, message, response.error.data);
+            }
+
+            return response.result ?? null;
+        }
     }
 
     _nextId()
     {
         this._sequence += 1;
         return String(this._sequence);
+    }
+
+    async _receiveMessage(transport, timeoutMs)
+    {
+        const responsePayload = await transport.receive(timeoutMs);
+        const message = JSON.parse(responsePayload);
+
+        if (!message || typeof message !== 'object')
+        {
+            throw new Error('Invalid JSON-RPC response.');
+        }
+
+        const isNotification = (message.id === null || typeof message.id === 'undefined') &&
+            typeof message.method === 'string';
+
+        return isNotification
+            ? { notification: message }
+            : { response: message };
     }
 }
 
@@ -357,6 +450,18 @@ async function runAsync(args, dependencies = {})
 
     try
     {
+        if (method === 'unity.tests.run')
+        {
+            const finalResult = await client.runTestsWithProgress(
+                params,
+                payload =>
+                {
+                    stderr.write(`${JSON.stringify(buildProgressPayload(payload))}\n`);
+                });
+            stdout.write(`${JSON.stringify(finalResult ?? null)}\n`);
+            return 0;
+        }
+
         const result = await client.call(method, params);
         stdout.write(`${JSON.stringify(result ?? null)}\n`);
         return 0;
@@ -382,6 +487,33 @@ async function runAsync(args, dependencies = {})
         stderr.write(`${error.message}\n`);
         return 1;
     }
+}
+
+function buildProgressPayload(payload)
+{
+    return {
+        event: payload?.event ?? null,
+        source: 'unity.tests.run',
+        runId: payload?.runId ?? null,
+        mode: payload?.mode ?? null,
+        filter: payload?.filter ?? null,
+        status: payload?.status ?? null,
+        summary: payload?.summary ?? null,
+        failures: payload?.failures ?? null
+    };
+}
+
+function extractTestRunResult(progress)
+{
+    return {
+        completed: progress?.status !== 'running',
+        runId: progress?.runId ?? null,
+        mode: progress?.mode ?? null,
+        filter: progress?.filter ?? null,
+        status: progress?.status ?? null,
+        summary: progress?.summary ?? null,
+        failures: progress?.failures ?? null
+    };
 }
 
 function loadAgentBridgeSettings(dependencies = {})
@@ -452,7 +584,9 @@ module.exports = {
     RpcError,
     UnityJsonRpcClient,
     WebSocketTransport,
+    buildProgressPayload,
     buildRequest,
+    extractTestRunResult,
     loadAgentBridgeSettings,
     main,
     parseOptions,

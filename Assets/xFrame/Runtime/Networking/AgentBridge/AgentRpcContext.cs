@@ -1,3 +1,6 @@
+using System;
+using Newtonsoft.Json;
+
 namespace xFrame.Runtime.Networking.AgentBridge
 {
     /// <summary>
@@ -5,12 +8,16 @@ namespace xFrame.Runtime.Networking.AgentBridge
     /// </summary>
     public sealed class AgentRpcContext
     {
-        public AgentRpcContext(string connectionId, AgentBridgeOptions options, AgentCommandRegistry registry)
+        private Action<string> _notificationSink;
+
+        public AgentRpcContext(string connectionId, AgentBridgeOptions options, AgentCommandRegistry registry,
+            Action<string> notificationSink = null)
         {
             ConnectionId = connectionId;
             Options = options;
             Registry = registry;
             IsAuthenticated = options == null || !options.AuthenticationEnabled;
+            _notificationSink = notificationSink;
         }
 
         public string ConnectionId { get; }
@@ -20,6 +27,35 @@ namespace xFrame.Runtime.Networking.AgentBridge
         public AgentCommandRegistry Registry { get; }
 
         public bool IsAuthenticated { get; set; }
+
+        public void UpdateNotificationSink(Action<string> notificationSink)
+        {
+            _notificationSink = notificationSink;
+        }
+
+        public void Notify(string method, object payload)
+        {
+            if (_notificationSink == null || string.IsNullOrWhiteSpace(method)) return;
+
+            var notification = new JsonRpcNotification
+            {
+                Method = method,
+                Params = payload
+            };
+
+            _notificationSink(JsonConvert.SerializeObject(notification));
+        }
+
+        public void PublishEvent(string eventName, object payload)
+        {
+            if (string.IsNullOrWhiteSpace(eventName)) return;
+
+            Notify("agent.event", new
+            {
+                name = eventName,
+                payload
+            });
+        }
     }
 
     public sealed class AgentRpcExecutionResult
