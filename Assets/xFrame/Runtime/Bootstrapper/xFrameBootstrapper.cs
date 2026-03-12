@@ -51,7 +51,7 @@ namespace xFrame.Runtime
         /// <summary>
         ///     获取单例实例
         /// </summary>
-        public static xFrameBootstrapper Instance => Instance;
+        public static xFrameBootstrapper Instance => _instance;
 
         /// <summary>
         ///     获取生命周期容器

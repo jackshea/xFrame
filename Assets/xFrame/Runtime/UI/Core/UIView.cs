@@ -50,6 +50,11 @@ namespace xFrame.Runtime.UI
         public UIComponentManager ComponentManager { get; private set; }
 
         /// <summary>
+        ///     关闭过渡延迟时间。
+        /// </summary>
+        internal float CloseTransitionDelay => Mathf.Max(0f, GetCloseTransitionDelay());
+
+        /// <summary>
         ///     Unity Awake生命周期
         /// </summary>
         protected virtual void Awake()
@@ -114,6 +119,19 @@ namespace xFrame.Runtime.UI
         /// </summary>
         protected virtual void OnUIDestroy()
         {
+        }
+
+        /// <summary>
+        ///     关闭前是否先执行隐藏生命周期。
+        /// </summary>
+        protected virtual bool HideBeforeClose => true;
+
+        /// <summary>
+        ///     获取关闭过渡时长。
+        /// </summary>
+        protected virtual float GetCloseTransitionDelay()
+        {
+            return 0f;
         }
 
         #endregion
@@ -225,17 +243,23 @@ namespace xFrame.Runtime.UI
         {
             if (IsOpen)
             {
-                // 关闭前先隐藏
-                InternalOnHide();
+                if (HideBeforeClose) InternalOnHide();
 
                 OnClose();
                 IsOpen = false;
 
-                gameObject.SetActive(false);
-
                 // 通知子组件父UI已关闭
                 ComponentManager?.OnParentClose();
             }
+        }
+
+        /// <summary>
+        ///     内部：完成关闭后的最终状态收敛。
+        /// </summary>
+        internal void FinalizeAfterClose()
+        {
+            if (!HideBeforeClose) InternalOnHide();
+            gameObject.SetActive(false);
         }
 
         /// <summary>

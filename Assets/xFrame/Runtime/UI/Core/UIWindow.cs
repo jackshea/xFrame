@@ -36,6 +36,11 @@ namespace xFrame.Runtime.UI
         protected virtual float AnimationDuration => 0.2f;
 
         /// <summary>
+        ///     关闭前保留可见状态以便播放退场动画。
+        /// </summary>
+        protected override bool HideBeforeClose => false;
+
+        /// <summary>
         ///     遮罩GameObject（由UIManager创建）
         /// </summary>
         internal GameObject MaskObject { get; set; }
@@ -58,7 +63,8 @@ namespace xFrame.Runtime.UI
         {
             if (RectTransform != null)
             {
-                RectTransform.localScale = Vector3.one;
+                RectTransform.localScale = Vector3.zero;
+                RectTransform.DOKill();
                 RectTransform.DOScale(Vector3.one, AnimationDuration).SetEase(Ease.OutBack);
             }
         }
@@ -69,7 +75,19 @@ namespace xFrame.Runtime.UI
         /// </summary>
         protected virtual void PlayCloseAnimation()
         {
-            if (RectTransform != null) RectTransform.DOScale(Vector3.zero, AnimationDuration).SetEase(Ease.InBack);
+            if (RectTransform != null)
+            {
+                RectTransform.DOKill();
+                RectTransform.DOScale(Vector3.zero, AnimationDuration).SetEase(Ease.InBack);
+            }
+        }
+
+        /// <summary>
+        ///     关闭动画时长。
+        /// </summary>
+        protected override float GetCloseTransitionDelay()
+        {
+            return AnimationDuration;
         }
 
         /// <summary>

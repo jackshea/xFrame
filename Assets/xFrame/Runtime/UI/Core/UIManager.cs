@@ -36,6 +36,9 @@ namespace xFrame.Runtime.UI
         // UI对象池（按类型存储）
         private readonly Dictionary<Type, Queue<UIView>> _uiPools = new();
 
+        // 正在执行关闭过渡的UI
+        private readonly Dictionary<UIView, Coroutine> _pendingCloseOperations = new();
+
         /// <summary>
         ///     资源管理器
         /// </summary>
@@ -99,6 +102,12 @@ namespace xFrame.Runtime.UI
         private void OnDestroy()
         {
             if (_instance == this) _instance = null;
+
+            foreach (var pendingClose in _pendingCloseOperations.Values)
+                if (pendingClose != null)
+                    StopCoroutine(pendingClose);
+
+            _pendingCloseOperations.Clear();
 
             CloseAll();
 
@@ -201,12 +210,10 @@ namespace xFrame.Runtime.UI
         {
             if (_assetManager == null || uiView == null) return;
 
-            // 注意：这里我们不直接释放预制体，因为可能还有其他实例在使用
-            // 实际项目中可能需要更复杂的资源管理策略
-            // 这里仅作为示例展示如何使用资源管理器
+            var uiType = uiView.GetType();
+            if (_preloadedPrefabs.ContainsKey(uiType)) return;
 
-            // 可以考虑在适当的时候批量释放未使用的资源
-            // 例如：_assetManager.ReleaseAsset(assetAddress);
+            _assetManager.ReleaseAsset(GetUIPrefabAddress(uiType));
         }
 
         #region 打开UI
@@ -318,7 +325,7 @@ namespace xFrame.Runtime.UI
         private async Task<GameObject> LoadUIPrefabAsync(Type uiType)
         {
             // 构造资源地址
-            var assetAddress = $"UI/{uiType.Name}";
+            var assetAddress = GetUIPrefabAddress(uiType);
 
             try
             {
@@ -518,20 +525,7 @@ namespace xFrame.Runtime.UI
             RaiseUIClosedEvent(uiType, uiInstance.Layer);
 
             // 如果可缓存，放入对象池
-            if (uiInstance.Cacheable)
-            {
-                ReturnToPool(uiInstance);
-            }
-            else
-            {
-                // 销毁UI实例
-                uiInstance.InternalOnDestroy();
-
-                // 尝试释放UI预制体资源
-                ReleaseUIPrefab(uiInstance);
-
-                Destroy(uiInstance.gameObject);
-            }
+            BeginFinalizeClosedUI(uiInstance);
         }
 
         /// <summary>
@@ -666,7 +660,7 @@ namespace xFrame.Runtime.UI
             }
 
             // 构造资源地址
-            var assetAddress = $"UI/{uiType.Name}";
+            var assetAddress = GetUIPrefabAddress(uiType);
 
             try
             {
@@ -715,8 +709,17 @@ namespace xFrame.Runtime.UI
         {
             if (_assetManager == null) return;
 
-            // 在实际项目中，这里可以实现更复杂的资源释放逻辑
-            // 例如：检查哪些预制体长时间未使用并释放它们
+            var retainedTypes = new HashSet<Type>(_openedUIs.Keys);
+            foreach (var pool in _uiPools)
+                if (pool.Value.Count > 0)
+                    retainedTypes.Add(pool.Key);
+
+            var stalePrefabs = _preloadedPrefabs.Keys.Where(type => !retainedTypes.Contains(type)).ToList();
+            foreach (var staleType in stalePrefabs)
+            {
+                _assetManager.ReleaseAsset(GetUIPrefabAddress(staleType));
+                _preloadedPrefabs.Remove(staleType);
+            }
 
             Debug.Log("[UIManager] 资源释放完成");
         }
@@ -729,6 +732,9 @@ namespace xFrame.Runtime.UI
             if (_assetManager == null) return;
 
             // 清理预加载的预制体缓存
+            foreach (var preloadedType in _preloadedPrefabs.Keys.ToList())
+                _assetManager.ReleaseAsset(GetUIPrefabAddress(preloadedType));
+
             _preloadedPrefabs.Clear();
 
             // 清理对象池
@@ -744,6 +750,7 @@ namespace xFrame.Runtime.UI
                 }
 
             _uiPools.Clear();
+            _assetManager.ClearCache();
 
             Debug.Log("[UIManager] 所有UI资源已清理");
         }
@@ -835,6 +842,63 @@ namespace xFrame.Runtime.UI
         {
             var navEvent = new UINavigationEvent(fromType, toType, navigationType);
             xFrameEventBus.Raise(navEvent);
+        }
+
+        /// <summary>
+        ///     计算UI预制体地址。
+        /// </summary>
+        private static string GetUIPrefabAddress(Type uiType)
+        {
+            return $"UI/{uiType.Name}";
+        }
+
+        /// <summary>
+        ///     开始执行关闭后的收尾逻辑。
+        /// </summary>
+        private void BeginFinalizeClosedUI(UIView uiInstance)
+        {
+            if (uiInstance == null) return;
+
+            if (_pendingCloseOperations.TryGetValue(uiInstance, out var pendingClose) && pendingClose != null)
+                StopCoroutine(pendingClose);
+
+            if (uiInstance.CloseTransitionDelay > 0f && uiInstance.isActiveAndEnabled)
+            {
+                _pendingCloseOperations[uiInstance] = StartCoroutine(FinalizeClosedUIAfterDelay(uiInstance));
+                return;
+            }
+
+            FinalizeClosedUI(uiInstance);
+        }
+
+        /// <summary>
+        ///     等待关闭过渡结束后完成销毁或回池。
+        /// </summary>
+        private System.Collections.IEnumerator FinalizeClosedUIAfterDelay(UIView uiInstance)
+        {
+            yield return new WaitForSecondsRealtime(uiInstance.CloseTransitionDelay);
+            FinalizeClosedUI(uiInstance);
+        }
+
+        /// <summary>
+        ///     完成关闭后的资源处理。
+        /// </summary>
+        private void FinalizeClosedUI(UIView uiInstance)
+        {
+            if (uiInstance == null) return;
+
+            _pendingCloseOperations.Remove(uiInstance);
+            uiInstance.FinalizeAfterClose();
+
+            if (uiInstance.Cacheable)
+            {
+                ReturnToPool(uiInstance);
+                return;
+            }
+
+            uiInstance.InternalOnDestroy();
+            ReleaseUIPrefab(uiInstance);
+            Destroy(uiInstance.gameObject);
         }
 
         #endregion

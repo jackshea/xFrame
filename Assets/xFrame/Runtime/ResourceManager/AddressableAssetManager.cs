@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using xFrame.Runtime.DataStructures;
 using Object = UnityEngine.Object;
 #if UNITY_ADDRESSABLES
 using UnityEngine.AddressableAssets;
-using UnityEngine.ResourceManagement.AsyncOperations;
 #endif
 
 namespace xFrame.Runtime.ResourceManager
@@ -18,13 +18,11 @@ namespace xFrame.Runtime.ResourceManager
     public class AddressableAssetManager : IAssetManager, IDisposable
     {
         private readonly ILRUCache<string, Object> _assetCache;
-#if UNITY_ADDRESSABLES
-        private readonly Dictionary<string, AsyncOperationHandle> _loadingOperations;
-#else
-        private readonly Dictionary<string, ResourceRequest> _loadingOperations;
-#endif
+        private readonly Dictionary<string, Task<Object>> _inflightLoads;
         private readonly Dictionary<Object, string> _assetToAddressMap;
         private readonly object _lockObject = new();
+        private readonly Func<string, Type, Object> _syncLoader;
+        private readonly Func<string, Type, Task<Object>> _asyncLoader;
 
         // 缓存统计信息
         private int _cacheHitCount;
@@ -35,15 +33,21 @@ namespace xFrame.Runtime.ResourceManager
         /// </summary>
         /// <param name="cacheCapacity">缓存容量，默认为100</param>
         public AddressableAssetManager(int cacheCapacity = 100)
+            : this(cacheCapacity, null, null)
+        {
+        }
+
+        internal AddressableAssetManager(
+            int cacheCapacity,
+            Func<string, Type, Object> syncLoader,
+            Func<string, Type, Task<Object>> asyncLoader)
         {
             // 直接实例化ThreadSafeLRUCache
             _assetCache = new ThreadSafeLRUCache<string, Object>(cacheCapacity);
-#if UNITY_ADDRESSABLES
-            _loadingOperations = new Dictionary<string, AsyncOperationHandle>();
-#else
-            _loadingOperations = new Dictionary<string, ResourceRequest>();
-#endif
+            _inflightLoads = new Dictionary<string, Task<Object>>();
             _assetToAddressMap = new Dictionary<Object, string>();
+            _syncLoader = syncLoader ?? DefaultSyncLoad;
+            _asyncLoader = asyncLoader ?? DefaultAsyncLoad;
         }
 
         /// <summary>
@@ -71,35 +75,28 @@ namespace xFrame.Runtime.ResourceManager
                 return cachedAsset as T;
             }
 
+            Task<Object> inflightTask = null;
             lock (_lockObject)
             {
-                _cacheMissCount++;
+                if (_inflightLoads.TryGetValue(address, out inflightTask))
+                {
+                    _cacheHitCount++;
+                }
+                else
+                {
+                    _cacheMissCount++;
+                }
             }
+
+            if (inflightTask != null) return inflightTask.GetAwaiter().GetResult() as T;
 
             try
             {
-#if UNITY_ADDRESSABLES
-                // 使用Addressable同步加载
-                var handle = Addressables.LoadAssetAsync<T>(address);
-                var asset = handle.WaitForCompletion();
-#else
-                // 没有Addressable时使用Resources.Load
-                var asset = Resources.Load<T>(address);
-#endif
+                var asset = _syncLoader.Invoke(address, typeof(T)) as T;
 
                 if (asset != null)
                 {
-                    // 添加到缓存
-                    _assetCache.Put(address, asset);
-                    _assetToAddressMap[asset] = address;
-
-                    // 保存操作句柄用于后续释放
-                    lock (_lockObject)
-                    {
-#if UNITY_ADDRESSABLES
-                        _loadingOperations[address] = handle;
-#endif
-                    }
+                    TrackLoadedAsset(address, asset);
                 }
                 else
                 {
@@ -140,54 +137,7 @@ namespace xFrame.Runtime.ResourceManager
                 return cachedAsset as T;
             }
 
-            lock (_lockObject)
-            {
-                _cacheMissCount++;
-            }
-
-            try
-            {
-#if UNITY_ADDRESSABLES
-                // 使用Addressable异步加载
-                var handle = Addressables.LoadAssetAsync<T>(address);
-                var asset = await handle.Task;
-#else
-                // 没有Addressable时使用Resources.LoadAsync
-                var request = Resources.LoadAsync<T>(address);
-
-                while (!request.isDone) await Task.Yield();
-
-                var asset = request.asset as T;
-#endif
-
-                if (asset != null)
-                {
-                    // 添加到缓存
-                    _assetCache.Put(address, asset);
-                    _assetToAddressMap[asset] = address;
-
-                    // 保存操作句柄用于后续释放
-                    lock (_lockObject)
-                    {
-#if UNITY_ADDRESSABLES
-                        _loadingOperations[address] = handle;
-#else
-                        _loadingOperations[address] = request;
-#endif
-                    }
-                }
-                else
-                {
-                    Debug.LogError($"[AddressableAssetManager] 异步加载资源失败: {address}");
-                }
-
-                return asset;
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"[AddressableAssetManager] 异步加载资源异常: {address}, 错误: {ex.Message}");
-                return null;
-            }
+            return await LoadAssetAsyncInternal(address, typeof(T)) as T;
         }
 
         /// <summary>
@@ -221,35 +171,28 @@ namespace xFrame.Runtime.ResourceManager
                 return cachedAsset;
             }
 
+            Task<Object> inflightTask = null;
             lock (_lockObject)
             {
-                _cacheMissCount++;
+                if (_inflightLoads.TryGetValue(address, out inflightTask))
+                {
+                    _cacheHitCount++;
+                }
+                else
+                {
+                    _cacheMissCount++;
+                }
             }
+
+            if (inflightTask != null) return inflightTask.GetAwaiter().GetResult();
 
             try
             {
-#if UNITY_ADDRESSABLES
-                // 使用Addressable同步加载
-                var handle = Addressables.LoadAssetAsync(address, type);
-                var asset = handle.WaitForCompletion();
-#else
-                // 没有Addressable时使用Resources.Load
-                var asset = Resources.Load(address, type);
-#endif
+                var asset = _syncLoader.Invoke(address, type);
 
                 if (asset != null)
                 {
-                    // 添加到缓存
-                    _assetCache.Put(address, asset);
-                    _assetToAddressMap[asset] = address;
-
-                    // 保存操作句柄用于后续释放
-                    lock (_lockObject)
-                    {
-#if UNITY_ADDRESSABLES
-                        _loadingOperations[address] = handle;
-#endif
-                    }
+                    TrackLoadedAsset(address, asset);
                 }
                 else
                 {
@@ -296,54 +239,7 @@ namespace xFrame.Runtime.ResourceManager
                 return cachedAsset;
             }
 
-            lock (_lockObject)
-            {
-                _cacheMissCount++;
-            }
-
-            try
-            {
-#if UNITY_ADDRESSABLES
-                // 使用Addressable异步加载
-                var handle = Addressables.LoadAssetAsync(address, type);
-                var asset = await handle.Task;
-#else
-                // 没有Addressable时使用Resources.LoadAsync
-                var request = Resources.LoadAsync(address, type);
-
-                while (!request.isDone) await Task.Yield();
-
-                var asset = request.asset;
-#endif
-
-                if (asset != null)
-                {
-                    // 添加到缓存
-                    _assetCache.Put(address, asset);
-                    _assetToAddressMap[asset] = address;
-
-                    // 保存操作句柄用于后续释放
-                    lock (_lockObject)
-                    {
-#if UNITY_ADDRESSABLES
-                        _loadingOperations[address] = handle;
-#else
-                        _loadingOperations[address] = request;
-#endif
-                    }
-                }
-                else
-                {
-                    Debug.LogError($"[AddressableAssetManager] 异步加载资源失败: {address}");
-                }
-
-                return asset;
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"[AddressableAssetManager] 异步加载资源异常: {address}, 错误: {ex.Message}");
-                return null;
-            }
+            return await LoadAssetAsyncInternal(address, type);
         }
 
         /// <summary>
@@ -386,17 +282,9 @@ namespace xFrame.Runtime.ResourceManager
                     _assetToAddressMap.Remove(asset);
                 }
 
-                // 释放Addressable资源
-                if (_loadingOperations.TryGetValue(address, out var operation))
-                {
 #if UNITY_ADDRESSABLES
-                    if (operation.IsValid())
-                    {
-                        Addressables.Release(operation);
-                    }
+                if (asset != null) Addressables.Release(asset);
 #endif
-                    _loadingOperations.Remove(address);
-                }
             }
         }
 
@@ -433,17 +321,7 @@ namespace xFrame.Runtime.ResourceManager
 
                 if (asset != null)
                 {
-                    _assetCache.Put(address, asset);
-                    _assetToAddressMap[asset] = address;
-
-                    lock (_lockObject)
-                    {
-#if UNITY_ADDRESSABLES
-                        _loadingOperations[address] = handle;
-#else
-                        _loadingOperations[address] = request;
-#endif
-                    }
+                    TrackLoadedAsset(address, asset);
                 }
                 else
                 {
@@ -475,19 +353,11 @@ namespace xFrame.Runtime.ResourceManager
         {
             lock (_lockObject)
             {
-                // 释放所有Addressable资源
-                foreach (var kvp in _loadingOperations)
-                {
-#if UNITY_ADDRESSABLES
-                    if (kvp.Value.IsValid())
-                    {
-                        Addressables.Release(kvp.Value);
-                    }
-#endif
-                }
-
                 // 清理所有集合
-                _loadingOperations.Clear();
+#if UNITY_ADDRESSABLES
+                foreach (var asset in _assetToAddressMap.Keys.ToList()) Addressables.Release(asset);
+#endif
+                _inflightLoads.Clear();
                 _assetToAddressMap.Clear();
                 _assetCache.Clear();
 
@@ -520,6 +390,105 @@ namespace xFrame.Runtime.ResourceManager
         public void Dispose()
         {
             ClearCache();
+        }
+
+        private async Task<Object> LoadAssetAsyncInternal(string address, Type type)
+        {
+            Task<Object> loadTask;
+            var shouldCreate = false;
+
+            lock (_lockObject)
+            {
+                if (_assetCache.TryGet(address, out var cachedAsset))
+                {
+                    _cacheHitCount++;
+                    return cachedAsset;
+                }
+
+                if (_inflightLoads.TryGetValue(address, out loadTask))
+                {
+                    _cacheHitCount++;
+                }
+                else
+                {
+                    _cacheMissCount++;
+                    loadTask = LoadAndTrackAsync(address, type);
+                    _inflightLoads[address] = loadTask;
+                    shouldCreate = true;
+                }
+            }
+
+            try
+            {
+                return await loadTask;
+            }
+            finally
+            {
+                if (shouldCreate)
+                {
+                    lock (_lockObject)
+                    {
+                        if (_inflightLoads.TryGetValue(address, out var currentTask) && currentTask == loadTask)
+                            _inflightLoads.Remove(address);
+                    }
+                }
+            }
+        }
+
+        private async Task<Object> LoadAndTrackAsync(string address, Type type)
+        {
+            try
+            {
+                var asset = await _asyncLoader.Invoke(address, type);
+                if (asset != null)
+                {
+                    TrackLoadedAsset(address, asset);
+                }
+                else
+                {
+                    Debug.LogError($"[AddressableAssetManager] 异步加载资源失败: {address}");
+                }
+
+                return asset;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[AddressableAssetManager] 异步加载资源异常: {address}, 错误: {ex.Message}");
+                return null;
+            }
+        }
+
+        private void TrackLoadedAsset(string address, Object asset)
+        {
+            if (asset == null) return;
+
+            lock (_lockObject)
+            {
+                _assetCache.Put(address, asset);
+                _assetToAddressMap[asset] = address;
+            }
+        }
+
+        private static Object DefaultSyncLoad(string address, Type type)
+        {
+#if UNITY_ADDRESSABLES
+            var handle = Addressables.LoadAssetAsync(address, type);
+            return handle.WaitForCompletion();
+#else
+            return Resources.Load(address, type);
+#endif
+        }
+
+        private static async Task<Object> DefaultAsyncLoad(string address, Type type)
+        {
+#if UNITY_ADDRESSABLES
+            var handle = Addressables.LoadAssetAsync(address, type);
+            return await handle.Task;
+#else
+            var request = Resources.LoadAsync(address, type);
+            while (!request.isDone) await Task.Yield();
+            return request.asset;
+#endif
         }
     }
 }

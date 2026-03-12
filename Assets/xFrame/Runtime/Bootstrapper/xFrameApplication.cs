@@ -38,7 +38,7 @@ namespace xFrame.Runtime
         /// <summary>
         ///     获取单例实例
         /// </summary>
-        public static xFrameApplication Instance => Instance;
+        public static xFrameApplication Instance => _instance;
 
         /// <summary>
         ///     获取框架启动器
