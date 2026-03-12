@@ -2,6 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using xFrame.Runtime.Startup;
+using xFrame.Runtime.UI;
 
 namespace xFrame.Runtime.Unity.Startup
 {
@@ -25,6 +26,7 @@ namespace xFrame.Runtime.Unity.Startup
         private void Awake()
         {
             _lifetimeTokenSource = new CancellationTokenSource();
+            UIEventSystemUtility.EnsureEventSystem(transform);
             EnsureOrchestrator();
         }
 

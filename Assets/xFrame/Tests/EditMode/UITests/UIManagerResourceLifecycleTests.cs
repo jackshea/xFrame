@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using Object = UnityEngine.Object;
 using xFrame.Runtime.ResourceManager;
 using xFrame.Runtime.UI;
@@ -30,6 +31,8 @@ namespace xFrame.Tests
         {
             Time.timeScale = 1f;
             ResetUIManagerSingleton();
+            var eventSystem = Object.FindObjectOfType<EventSystem>();
+            if (eventSystem != null) Object.DestroyImmediate(eventSystem.gameObject);
             if (_managerGameObject != null) Object.DestroyImmediate(_managerGameObject);
             if (_viewGameObject != null) Object.DestroyImmediate(_viewGameObject);
             if (_prefabGameObject != null) Object.DestroyImmediate(_prefabGameObject);
@@ -70,6 +73,15 @@ namespace xFrame.Tests
 
             CollectionAssert.Contains(_assetManager.ReleasedAddresses, "UI/TestNonCacheableView");
             Assert.AreEqual(1, _assetManager.ClearCacheCallCount);
+        }
+
+        [Test]
+        public void Awake_WithoutEventSystem_ShouldCreateEventSystemWithStandaloneInputModule()
+        {
+            var eventSystem = Object.FindObjectOfType<EventSystem>();
+
+            Assert.IsNotNull(eventSystem, "应自动创建EventSystem");
+            Assert.IsNotNull(eventSystem.GetComponent<StandaloneInputModule>(), "应自动添加StandaloneInputModule");
         }
 
         private static T GetPrivateField<T>(object target, string fieldName)

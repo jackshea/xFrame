@@ -180,6 +180,8 @@ namespace xFrame.Runtime.UI
         {
             _uiRoot = transform;
 
+            UIEventSystemUtility.EnsureEventSystem(_uiRoot);
+
             // 为每个层级创建Canvas
             foreach (UILayer layer in Enum.GetValues(typeof(UILayer))) CreateLayerCanvas(layer);
         }
