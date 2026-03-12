@@ -38,3 +38,7 @@
 ## 执行清单
 - 改动前：确认改动层，参考同目录实现，确定最小验证命令。
 - 提交前：无编译错误，相关测试通过，无无关改动，文档/注释与行为一致。
+
+
+## UnitySkills
+- unity-skills: Unity Editor automation via REST API
