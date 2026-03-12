@@ -193,13 +193,13 @@ LRU（最近最少使用）缓存实现。
 OpenCode 侧可使用：
 
 ```bash
-node scripts/agent/unity-rpc.js call --method agent.commands --params '{}'
+python3 scripts/agent/unity-rpc.py call --method agent.commands --params '{}'
 ```
 
 如需连接指定实例，可显式传 endpoint，或从本地配置里按实例选择：
 
 ```bash
-node scripts/agent/unity-rpc.js call --instance 17778 --method agent.commands --params '{}'
+python3 scripts/agent/unity-rpc.py call --instance 17778 --method agent.commands --params '{}'
 ```
 
 ### Platform（平台特定工具）
