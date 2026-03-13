@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
@@ -55,7 +56,17 @@ namespace xFrame.Runtime.Unity.Startup
 
         private void EnsureLifetimeScope()
         {
-            LifetimeScope = UnityEngine.Object.FindObjectOfType<LifetimeScope>();
+            var loadedSceneScopes = Resources.FindObjectsOfTypeAll<LifetimeScope>()
+                .Where(scope => scope != null && scope.gameObject.scene.IsValid())
+                .ToArray();
+
+            if (loadedSceneScopes.Length > 1)
+            {
+                var scopeNames = string.Join(", ", loadedSceneScopes.Select(scope => scope.gameObject.name));
+                throw new InvalidOperationException($"启动场景中检测到多个 LifetimeScope: {scopeNames}");
+            }
+
+            LifetimeScope = loadedSceneScopes.Length == 1 ? loadedSceneScopes[0] : null;
             if (LifetimeScope == null)
             {
                 if (_lifetimeScopePrefab != null)

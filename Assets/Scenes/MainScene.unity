@@ -534,6 +534,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _environment: 1
   _autoRunOnStart: 1
+  _dontDestroyScopeOnLoad: 1
   _view: {fileID: 1642775701}
   _installer: {fileID: 1642775700}
 --- !u!4 &1642775703

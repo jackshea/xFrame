@@ -66,6 +66,27 @@ namespace xFrame.Tests
             Assert.AreSame(bootstrapper, xFrameBootstrapper.Instance);
         }
 
+        /// <summary>
+        ///     验证新入口在检测到旧入口共存时会输出统一告警。
+        /// </summary>
+        [Test]
+        public void UnityStartupEntry_AwakeWithLegacyBootstrapper_ShouldLogModernWarning()
+        {
+            var legacyRoot = new GameObject("TestLegacyBootstrapperRoot");
+            legacyRoot.SetActive(false);
+            legacyRoot.AddComponent<xFrameBootstrapper>();
+
+            var modernRoot = new GameObject("TestModernStartupRoot");
+            modernRoot.SetActive(false);
+            var modernEntry = modernRoot.AddComponent<UnityStartupEntry>();
+
+            LogAssert.Expect(
+                LogType.Warning,
+                LegacyStartupCompatibility.CreateModernEntryWarning(nameof(UnityStartupEntry), nameof(xFrameBootstrapper)));
+
+            InvokeLifecycleMethod(modernEntry, "Awake");
+        }
+
         private static void SetStaticInstance(System.Type type, string fieldName, Object value)
         {
             var field = type.GetField(fieldName, BindingFlags.Static | BindingFlags.NonPublic);

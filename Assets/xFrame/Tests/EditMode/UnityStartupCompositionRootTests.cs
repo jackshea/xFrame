@@ -1,3 +1,4 @@
+using System;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -58,6 +59,22 @@ namespace xFrame.Tests
 
             Assert.AreSame(existingScope, compositionRoot.LifetimeScope);
             Assert.AreEqual(1, Object.FindObjectsOfType<LifetimeScope>().Length);
+        }
+
+        [Test]
+        public void EnsureInitialized_WithMultipleExistingScopes_ShouldThrowInvalidOperationException()
+        {
+            var firstScopeObject = new GameObject("ExistingScopeA");
+            firstScopeObject.AddComponent<xFrameLifetimeScope>();
+
+            var secondScopeObject = new GameObject("ExistingScopeB");
+            secondScopeObject.AddComponent<xFrameLifetimeScope>();
+
+            var rootObject = new GameObject("TestStartupRoot");
+            var compositionRoot = new UnityStartupCompositionRoot(rootObject.transform, null, false);
+
+            var exception = Assert.Throws<InvalidOperationException>(() => compositionRoot.EnsureInitialized());
+            StringAssert.Contains("多个 LifetimeScope", exception.Message);
         }
 
         [Test]

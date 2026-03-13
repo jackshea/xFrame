@@ -33,6 +33,7 @@ namespace xFrame.Runtime.Unity.Startup
 
         private void Awake()
         {
+            LegacyStartupCompatibility.WarnIfLegacyStartupEntryExists(nameof(UnityStartupEntry));
             _lifetimeTokenSource = new CancellationTokenSource();
             _compositionRoot = new UnityStartupCompositionRoot(transform, _lifetimeScopePrefab, _dontDestroyScopeOnLoad);
             if (_view != null)
