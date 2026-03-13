@@ -1,8 +1,8 @@
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using VContainer.Unity;
 using xFrame.Runtime.Startup;
-using xFrame.Runtime.UI;
 
 namespace xFrame.Runtime.Unity.Startup
 {
@@ -15,19 +15,37 @@ namespace xFrame.Runtime.Unity.Startup
 
         [SerializeField] private bool _autoRunOnStart = true;
 
+        [SerializeField] private bool _dontDestroyScopeOnLoad = true;
+
         [Header("Dependencies")] [SerializeField]
         private UnityStartupView _view;
 
         [SerializeField] private UnityStartupInstallerBase _installer;
+        [SerializeField] private LifetimeScope _lifetimeScopePrefab;
         private CancellationTokenSource _lifetimeTokenSource;
+        private UnityStartupCompositionRoot _compositionRoot;
+        private StartupRuntime _runtime;
 
-        private IStartupOrchestrator _orchestrator;
+        /// <summary>
+        ///     当前启动链路绑定的 DI 容器。
+        /// </summary>
+        public LifetimeScope LifetimeScope => _compositionRoot?.LifetimeScope;
 
         private void Awake()
         {
             _lifetimeTokenSource = new CancellationTokenSource();
-            UIEventSystemUtility.EnsureEventSystem(transform);
-            EnsureOrchestrator();
+            _compositionRoot = new UnityStartupCompositionRoot(transform, _lifetimeScopePrefab, _dontDestroyScopeOnLoad);
+            if (_view != null)
+            {
+                _compositionRoot.RegisterLocalService<IStartupView>(_view);
+                _compositionRoot.RegisterLocalService<IStartupErrorPresentationService>(_view);
+            }
+
+            _runtime = new StartupRuntime(
+                _compositionRoot,
+                _installer,
+                view: (IStartupView)_view ?? NullStartupView.Instance);
+            _runtime.EnsureInitialized();
         }
 
         private async void Start()
@@ -43,10 +61,11 @@ namespace xFrame.Runtime.Unity.Startup
 
             _lifetimeTokenSource.Cancel();
 
-            if (_orchestrator != null)
+            if (_runtime != null)
             {
-                _orchestrator.ShutdownAsync(CancellationToken.None).GetAwaiter().GetResult();
-                _orchestrator = null;
+                _runtime.ShutdownAsync(CancellationToken.None).GetAwaiter().GetResult();
+                _runtime.Dispose();
+                _runtime = null;
             }
 
             _lifetimeTokenSource.Dispose();
@@ -55,19 +74,7 @@ namespace xFrame.Runtime.Unity.Startup
 
         public async Task<StartupPipelineResult> RunAsync()
         {
-            EnsureOrchestrator();
-            return await _orchestrator.RunAsync(_environment, _lifetimeTokenSource.Token);
-        }
-
-        private void EnsureOrchestrator()
-        {
-            if (_orchestrator != null) return;
-
-            StartupOrchestratorHost.Configure(
-                _installer,
-                view: (IStartupView)_view ?? NullStartupView.Instance);
-
-            _orchestrator = StartupOrchestratorHost.GetOrCreate();
+            return await _runtime.RunAsync(_environment, _lifetimeTokenSource.Token);
         }
     }
 }

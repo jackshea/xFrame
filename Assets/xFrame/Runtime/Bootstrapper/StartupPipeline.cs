@@ -444,9 +444,23 @@ namespace xFrame.Runtime.Startup
     /// </summary>
     public sealed class StartupTaskRegistry
     {
-        private readonly Dictionary<StartupTaskKey, Func<IStartupTask>> _factories = new();
+        private readonly Dictionary<StartupTaskKey, Func<StartupTaskContext, IStartupTask>> _factories = new();
+
+        public StartupTaskContext Context { get; private set; }
+
+        public void SetContext(StartupTaskContext context)
+        {
+            Context = context;
+        }
 
         public void Register(StartupTaskKey key, Func<IStartupTask> factory)
+        {
+            if (factory == null) throw new ArgumentNullException(nameof(factory));
+
+            Register(key, _ => factory.Invoke());
+        }
+
+        public void Register(StartupTaskKey key, Func<StartupTaskContext, IStartupTask> factory)
         {
             if (factory == null) throw new ArgumentNullException(nameof(factory));
 
@@ -457,7 +471,7 @@ namespace xFrame.Runtime.Startup
         {
             if (!_factories.TryGetValue(key, out var factory)) throw new KeyNotFoundException($"未注册启动任务: {key}");
 
-            var task = factory.Invoke();
+            var task = factory.Invoke(Context);
             if (task == null) throw new InvalidOperationException($"任务工厂返回 null: {key}");
 
             return task;
@@ -714,6 +728,7 @@ namespace xFrame.Runtime.Startup
 
         public Task<StartupPipelineResult> RunAsync(BootEnvironment environment, CancellationToken cancellationToken)
         {
+            _registry.Context?.SetValue(StartupContextKeys.BootEnvironment, environment);
             var profile = _profileProvider.GetProfile(environment);
             return RunAsync(profile, cancellationToken);
         }

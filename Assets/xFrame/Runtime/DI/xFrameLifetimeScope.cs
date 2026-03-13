@@ -9,6 +9,7 @@ using xFrame.Runtime.Platform;
 using xFrame.Runtime.ResourceManager;
 using xFrame.Runtime.Scheduler;
 using xFrame.Runtime.Serialization;
+using xFrame.Runtime.Startup;
 using xFrame.Runtime.StateMachine;
 using xFrame.Runtime.Utilities;
 
@@ -41,6 +42,7 @@ namespace xFrame.Runtime.DI
             RegisterPlatformModule(builder);
             RegisterUtilitiesModule(builder);
             RegisterMVVMModule(builder);
+            RegisterStartupModule(builder);
         }
 
 
@@ -160,6 +162,30 @@ namespace xFrame.Runtime.DI
         private void RegisterMVVMModule(IContainerBuilder builder)
         {
             builder.RegisterMVVMModule();
+        }
+
+        /// <summary>
+        ///     注册启动生命周期模块到 VContainer。
+        /// </summary>
+        /// <param name="builder">容器构建器</param>
+        private void RegisterStartupModule(IContainerBuilder builder)
+        {
+            builder.Register<StartupLifecycleStateStore>(Lifetime.Singleton)
+                .As<IStartupLifecycleState>()
+                .As<IStartupLifecycleSink>()
+                .AsSelf();
+
+            builder.Register<StartupDefaultFailureHandler>(Lifetime.Singleton)
+                .As<IStartupFailureHandler>()
+                .AsSelf();
+
+            builder.Register<StartupLifecycleEventBusBridge>(Lifetime.Singleton)
+                .As<IStartupLifecycleHandler>()
+                .AsSelf();
+
+            builder.Register<StartupBusinessFlowLifecycleHandler>(Lifetime.Singleton)
+                .As<IStartupLifecycleHandler>()
+                .AsSelf();
         }
     }
 }

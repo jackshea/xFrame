@@ -8,7 +8,7 @@ namespace xFrame.Runtime.Unity.Startup
     /// <summary>
     ///     Unity 启动视图薄适配层。
     /// </summary>
-    public class UnityStartupView : MonoBehaviour, IStartupView
+    public class UnityStartupView : MonoBehaviour, IStartupView, IStartupErrorPresentationService
     {
         [SerializeField] private bool _autoRetryOnError;
         [SerializeField] private GameObject _loadingRoot;
@@ -34,8 +34,20 @@ namespace xFrame.Runtime.Unity.Startup
         {
             if (_errorRoot != null) _errorRoot.SetActive(true);
 
+            LastMessage = message;
             Debug.LogError($"[Startup] {message}");
             return Task.FromResult(_autoRetryOnError);
+        }
+
+        /// <summary>
+        ///     展示统一启动失败出口传入的错误信息。
+        /// </summary>
+        public Task PresentErrorAsync(
+            StartupLifecycleSnapshot snapshot,
+            StartupTaskContext context,
+            CancellationToken cancellationToken)
+        {
+            return ShowErrorDialogAsync(CreateErrorMessage(snapshot), cancellationToken);
         }
 
         public void HideLoading()
@@ -43,6 +55,17 @@ namespace xFrame.Runtime.Unity.Startup
             if (_loadingRoot != null) _loadingRoot.SetActive(false);
 
             Debug.Log("[Startup] completed");
+        }
+
+        private static string CreateErrorMessage(StartupLifecycleSnapshot snapshot)
+        {
+            var failureResult = snapshot.PipelineResult.FailureResult;
+            if (!string.IsNullOrWhiteSpace(failureResult.ErrorMessage))
+                return failureResult.ErrorMessage;
+
+            return string.IsNullOrWhiteSpace(snapshot.PipelineResult.FailedTaskName)
+                ? "启动失败"
+                : $"启动失败: {snapshot.PipelineResult.FailedTaskName}";
         }
     }
 }

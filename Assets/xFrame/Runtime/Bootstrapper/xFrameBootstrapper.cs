@@ -7,9 +7,10 @@ using xFrame.Runtime.Logging;
 namespace xFrame.Runtime
 {
     /// <summary>
-    ///     xFrame框架启动器
-    ///     作为游戏的入口点，负责初始化框架的核心组件
+    ///     xFrame 旧框架启动器兼容层。
+    ///     仅为历史接入保留，新的游戏启动流程应统一走 UnityStartupEntry。
     /// </summary>
+    [AddComponentMenu("xFrame/Legacy/xFrame Bootstrapper")]
     public class xFrameBootstrapper : MonoBehaviour
     {
         /// <summary>
@@ -76,6 +77,7 @@ namespace xFrame.Runtime
             }
 
             _instance = this;
+            LegacyStartupCompatibility.WarnIfModernStartupEntryExists(nameof(xFrameBootstrapper));
 
             // 设置DontDestroyOnLoad
             if (dontDestroyOnLoad) DontDestroyOnLoad(gameObject);

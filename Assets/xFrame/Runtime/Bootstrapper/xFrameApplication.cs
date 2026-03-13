@@ -4,9 +4,10 @@ using xFrame.Runtime.EventBus;
 namespace xFrame.Runtime
 {
     /// <summary>
-    ///     xFrame应用程序
-    ///     作为游戏的主应用程序入口，管理游戏的生命周期和核心系统
+    ///     xFrame 旧应用入口兼容层。
+    ///     仅为历史接入保留，新的游戏启动流程应统一走 UnityStartupEntry。
     /// </summary>
+    [AddComponentMenu("xFrame/Legacy/xFrame Application")]
     public class xFrameApplication : MonoBehaviour
     {
         /// <summary>
@@ -63,6 +64,7 @@ namespace xFrame.Runtime
             }
 
             _instance = this;
+            LegacyStartupCompatibility.WarnIfModernStartupEntryExists(nameof(xFrameApplication));
             DontDestroyOnLoad(gameObject);
 
             // 创建默认配置（如果未指定）

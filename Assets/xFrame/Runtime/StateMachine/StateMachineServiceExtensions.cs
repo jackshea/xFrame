@@ -13,10 +13,9 @@ namespace xFrame.Runtime.StateMachine
         /// <param name="builder">容器构建器</param>
         public static void RegisterStateMachineModule(this IContainerBuilder builder)
         {
-            // 注册服务实现为单例，同时注册接口和实现类
+            // AsImplementedInterfaces 已覆盖 IStateMachineService，这里避免重复注册同一契约。
             builder.Register<StateMachineServiceService>(Lifetime.Singleton)
-                .As<IStateMachineService>()
-                .AsImplementedInterfaces() // 自动注册ITickable和IDisposable
+                .AsImplementedInterfaces()
                 .AsSelf();
         }
     }
