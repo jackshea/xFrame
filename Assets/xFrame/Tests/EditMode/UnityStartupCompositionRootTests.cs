@@ -16,19 +16,32 @@ namespace xFrame.Tests
     [TestFixture]
     public class UnityStartupCompositionRootTests
     {
+        [SetUp]
+        public void SetUp()
+        {
+            CleanupSceneObjects();
+        }
+
         [TearDown]
         public void TearDown()
         {
-            foreach (var scope in Object.FindObjectsOfType<LifetimeScope>())
-                if (scope != null)
+            CleanupSceneObjects();
+        }
+
+        private static void CleanupSceneObjects()
+        {
+            foreach (var scope in Resources.FindObjectsOfTypeAll<LifetimeScope>())
+                if (scope != null && scope.gameObject.scene.IsValid())
                     Object.DestroyImmediate(scope.gameObject);
 
-            foreach (var eventSystem in Object.FindObjectsOfType<EventSystem>())
-                if (eventSystem != null)
+            foreach (var eventSystem in Resources.FindObjectsOfTypeAll<EventSystem>())
+                if (eventSystem != null && eventSystem.gameObject.scene.IsValid())
                     Object.DestroyImmediate(eventSystem.gameObject);
 
-            foreach (var transform in Object.FindObjectsOfType<Transform>())
-                if (transform != null && transform.name.StartsWith("Test"))
+            foreach (var transform in Resources.FindObjectsOfTypeAll<Transform>())
+                if (transform != null &&
+                    transform.gameObject.scene.IsValid() &&
+                    transform.name.StartsWith("Test"))
                     Object.DestroyImmediate(transform.gameObject);
         }
 

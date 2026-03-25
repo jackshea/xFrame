@@ -85,7 +85,10 @@ namespace xFrame.Runtime.DI
             builder.RegisterInstance(assetManagerCacheCapacity);
 
             // 注册资源管理器实现为单例
-            builder.Register<IAssetManager, AddressableAssetManager>(Lifetime.Singleton);
+            builder.Register<AddressableAssetManager>(Lifetime.Singleton)
+                .As<IAssetManager>()
+                .As<IResourceDomainAssetManager>()
+                .AsSelf();
 
             // 注册资源管理模块为单例，并标记为可初始化
             builder.Register<AssetManagerModule>(Lifetime.Singleton)

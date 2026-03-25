@@ -17,16 +17,23 @@ namespace xFrame.Tests
         [SetUp]
         public void SetUp()
         {
+            CleanupEventSystems();
             _parent = new GameObject("UIRoot");
         }
 
         [TearDown]
         public void TearDown()
         {
-            var eventSystem = Object.FindObjectOfType<EventSystem>();
-            if (eventSystem != null) Object.DestroyImmediate(eventSystem.gameObject);
+            CleanupEventSystems();
 
             if (_parent != null) Object.DestroyImmediate(_parent);
+        }
+
+        private static void CleanupEventSystems()
+        {
+            foreach (var eventSystem in Resources.FindObjectsOfTypeAll<EventSystem>())
+                if (eventSystem != null && eventSystem.gameObject.scene.IsValid())
+                    Object.DestroyImmediate(eventSystem.gameObject);
         }
 
         [Test]

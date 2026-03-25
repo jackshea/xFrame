@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 using VContainer;
 using VContainer.Unity;
 using xFrame.Runtime.DI;
@@ -54,6 +57,18 @@ namespace xFrame.Runtime.Unity.Startup
             UIEventSystemUtility.EnsureEventSystem(_rootTransform);
         }
 
+        /// <summary>
+        ///     当前是否允许在该运行上下文中调用 DontDestroyOnLoad。
+        /// </summary>
+        private static bool CanUseDontDestroyOnLoad()
+        {
+#if UNITY_EDITOR
+            return EditorApplication.isPlaying;
+#else
+            return Application.isPlaying;
+#endif
+        }
+
         private void EnsureLifetimeScope()
         {
             var loadedSceneScopes = Resources.FindObjectsOfTypeAll<LifetimeScope>()
@@ -84,7 +99,7 @@ namespace xFrame.Runtime.Unity.Startup
             if (LifetimeScope != null && LifetimeScope.Container == null)
                 LifetimeScope.Build();
 
-            if (_dontDestroyOnLoad && LifetimeScope != null)
+            if (_dontDestroyOnLoad && LifetimeScope != null && CanUseDontDestroyOnLoad())
                 UnityEngine.Object.DontDestroyOnLoad(LifetimeScope.gameObject);
         }
 

@@ -70,12 +70,24 @@ namespace xFrame.Runtime.UI
                         // 创建新的UIManager实例
                         var go = new GameObject("UIManager");
                         _instance = go.AddComponent<UIManager>();
-                        DontDestroyOnLoad(go);
+                        if (CanUseDontDestroyOnLoad()) DontDestroyOnLoad(go);
                     }
                 }
 
                 return _instance;
             }
+        }
+
+        /// <summary>
+        ///     当前是否允许在该运行上下文中调用 DontDestroyOnLoad。
+        /// </summary>
+        private static bool CanUseDontDestroyOnLoad()
+        {
+#if UNITY_EDITOR
+            return EditorApplication.isPlaying;
+#else
+            return Application.isPlaying;
+#endif
         }
 
         /// <summary>
@@ -90,7 +102,7 @@ namespace xFrame.Runtime.UI
             }
 
             _instance = this;
-            DontDestroyOnLoad(gameObject);
+            if (CanUseDontDestroyOnLoad()) DontDestroyOnLoad(gameObject);
 
             InitializeAssetManager();
 

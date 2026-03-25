@@ -14,17 +14,34 @@ namespace xFrame.Tests
     [TestFixture]
     public class LegacyStartupCompatibilityTests
     {
+        [SetUp]
+        public void SetUp()
+        {
+            CleanupTestObjects();
+        }
+
         /// <summary>
         ///     清理测试对象与旧入口单例状态。
         /// </summary>
         [TearDown]
         public void TearDown()
         {
+            CleanupTestObjects();
+        }
+
+        private static void CleanupTestObjects()
+        {
             SetStaticInstance(typeof(xFrameBootstrapper), "_instance", null);
             SetStaticInstance(typeof(xFrameApplication), "_instance", null);
 
-            foreach (var gameObject in Object.FindObjectsOfType<GameObject>())
-                if (gameObject.name.StartsWith("Test", System.StringComparison.Ordinal))
+            foreach (var scope in Resources.FindObjectsOfTypeAll<VContainer.Unity.LifetimeScope>())
+                if (scope != null && scope.gameObject.scene.IsValid())
+                    Object.DestroyImmediate(scope.gameObject);
+
+            foreach (var gameObject in Resources.FindObjectsOfTypeAll<GameObject>())
+                if (gameObject != null &&
+                    gameObject.scene.IsValid() &&
+                    gameObject.name.StartsWith("Test", System.StringComparison.Ordinal))
                     Object.DestroyImmediate(gameObject);
         }
 

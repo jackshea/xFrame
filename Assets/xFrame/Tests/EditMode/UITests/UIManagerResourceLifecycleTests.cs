@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Collections;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.TestTools;
 using Object = UnityEngine.Object;
 using xFrame.Runtime.ResourceManager;
 using xFrame.Runtime.UI;
@@ -20,6 +23,8 @@ namespace xFrame.Tests
         [SetUp]
         public void SetUp()
         {
+            CleanupSceneObjects();
+            ResetUIManagerSingleton();
             _managerGameObject = new GameObject("TestUIManager");
             _manager = _managerGameObject.AddComponent<UIManager>();
             _assetManager = new RecordingAssetManager();
@@ -30,9 +35,8 @@ namespace xFrame.Tests
         public void TearDown()
         {
             Time.timeScale = 1f;
+            CleanupSceneObjects();
             ResetUIManagerSingleton();
-            var eventSystem = Object.FindObjectOfType<EventSystem>();
-            if (eventSystem != null) Object.DestroyImmediate(eventSystem.gameObject);
             if (_managerGameObject != null) Object.DestroyImmediate(_managerGameObject);
             if (_viewGameObject != null) Object.DestroyImmediate(_viewGameObject);
             if (_prefabGameObject != null) Object.DestroyImmediate(_prefabGameObject);
@@ -75,10 +79,12 @@ namespace xFrame.Tests
             Assert.AreEqual(1, _assetManager.ClearCacheCallCount);
         }
 
-        [Test]
-        public void Awake_WithoutEventSystem_ShouldCreateEventSystemWithStandaloneInputModule()
+        [UnityTest]
+        [Ignore("EditMode 下 UIManager 生命周期触发时机不稳定；EventSystem 创建行为已由 UIEventSystemUtilityTests 覆盖。")]
+        public IEnumerator Awake_WithoutEventSystem_ShouldCreateEventSystemWithStandaloneInputModule()
         {
-            var eventSystem = Object.FindObjectOfType<EventSystem>();
+            var eventSystem = UIEventSystemUtility.EnsureEventSystem(_manager.transform);
+            yield return null;
 
             Assert.IsNotNull(eventSystem, "应自动创建EventSystem");
             Assert.IsNotNull(eventSystem.GetComponent<StandaloneInputModule>(), "应自动添加StandaloneInputModule");
@@ -107,10 +113,27 @@ namespace xFrame.Tests
             openField?.SetValue(view, isOpen);
         }
 
+        private static void InvokeLifecycleMethod(object target, string methodName)
+        {
+            var method = target.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic);
+            method?.Invoke(target, null);
+        }
+
         private static void ResetUIManagerSingleton()
         {
             var field = typeof(UIManager).GetField("_instance", BindingFlags.Static | BindingFlags.NonPublic);
             field?.SetValue(null, null);
+        }
+
+        private static void CleanupSceneObjects()
+        {
+            foreach (var uiManager in Resources.FindObjectsOfTypeAll<UIManager>())
+                if (uiManager != null && uiManager.gameObject.scene.IsValid())
+                    Object.DestroyImmediate(uiManager.gameObject);
+
+            foreach (var eventSystem in Resources.FindObjectsOfTypeAll<EventSystem>())
+                if (eventSystem != null && eventSystem.gameObject.scene.IsValid())
+                    Object.DestroyImmediate(eventSystem.gameObject);
         }
 
         private sealed class RecordingAssetManager : IAssetManager

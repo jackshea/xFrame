@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using System.Linq;
 
 namespace xFrame.Runtime.UI
 {
@@ -16,7 +17,9 @@ namespace xFrame.Runtime.UI
         /// <returns>可用的 EventSystem 实例。</returns>
         public static EventSystem EnsureEventSystem(Transform parent = null)
         {
-            var eventSystem = Object.FindObjectOfType<EventSystem>();
+            var eventSystem = Resources.FindObjectsOfTypeAll<EventSystem>()
+                .FirstOrDefault(candidate => candidate != null && candidate.gameObject.scene.IsValid());
+
             if (eventSystem == null)
             {
                 var eventSystemGO = new GameObject("EventSystem");
