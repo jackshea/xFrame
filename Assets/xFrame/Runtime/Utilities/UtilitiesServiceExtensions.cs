@@ -15,6 +15,10 @@ namespace xFrame.Runtime.Utilities
             builder.Register<GuidService>(Lifetime.Singleton)
                 .As<IGuidService>()
                 .AsSelf();
+
+            builder.Register<RuntimeIdGenerator>(Lifetime.Singleton)
+                .As<IRuntimeIdGenerator>()
+                .AsSelf();
         }
     }
 }
